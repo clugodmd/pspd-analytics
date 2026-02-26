@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSPD Analytics Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0a0e17;
+    --bg-secondary: #111827;
+    --bg-card: #1a2234;
+    --bg-card-hover: #1f2a40;
+    --bg-sidebar: #0d1321;
+    --accent: #3b82f6;
+    --accent-glow: rgba(59, 130, 246, 0.15);
+    --accent-soft: #2563eb;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: rgba(255,255,255,0.06);
+    --border-accent: rgba(59, 130, 246, 0.3);
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --cat-production: #8b5cf6;
+    --cat-patients: #06b6d4;
+    --cat-operations: #f59e0b;
+    --radius: 12px;
+    --sidebar-width: 260px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── LOGIN SCREEN ─── */
+  .login-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: var(--bg-primary);
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeIn 0.4s ease;
+  }
+  .login-overlay.hidden { display: none; }
+
+  .login-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 40px;
+    width: 400px;
+    max-width: 90vw;
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+    animation: slideUp 0.5s ease;
+  }
+
+  .login-logo {
+    font-family: 'Instrument Serif', serif;
+    font-size: 32px;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent), #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .login-subtitle {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 36px;
+  }
+
+  .login-field {
+    margin-bottom: 16px;
+    text-align: left;
+  }
+
+  .login-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .login-field select,
+  .login-field input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .login-field select:focus,
+  .login-field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .login-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 24px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .login-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.35);
+  }
+
+  .login-error {
+    color: var(--danger);
+    font-size: 13px;
+    margin-top: 12px;
+    display: none;
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: var(--sidebar-width);
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
+    padding: 28px 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar-logo {
+    padding: 0 24px;
+    margin-bottom: 8px;
+  }
+
+  .sidebar-logo h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 24px;
+    letter-spacing: -0.3px;
+    background: linear-gradient(135deg, var(--accent), #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .sidebar-logo p {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+    margin-top: 4px;
+  }
+
+  .sidebar-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 20px 24px;
+  }
+
+  .sidebar-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 0 24px;
+    margin-bottom: 10px;
+  }
+
+  .sidebar-nav {
+    list-style: none;
+    flex: 1;
+  }
+
+  .sidebar-nav li {
+    margin-bottom: 2px;
+  }
+
+  .sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 24px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 400;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+  }
+
+  .sidebar-nav a:hover {
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.03);
+  }
+
+  .sidebar-nav a.active {
+    color: var(--accent);
+    background: var(--accent-glow);
+    border-left-color: var(--accent);
+    font-weight: 500;
+  }
+
+  .sidebar-nav a svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+
+  .sidebar-nav a.active svg { opacity: 1; }
+
+  .sidebar-nav .badge {
+    margin-left: auto;
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+
+  .sidebar-user {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .sidebar-user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), #818cf8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .sidebar-user-info {
+    overflow: hidden;
+  }
+
+  .sidebar-user-name {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sidebar-user-role {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .sidebar-logout {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .sidebar-logout:hover {
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.1);
+  }
+
+  /* ─── MAIN CONTENT ─── */
+  .main {
+    margin-left: var(--sidebar-width);
+    padding: 32px 40px;
+    min-height: 100vh;
+  }
+
+  .main.hidden { display: none; }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .header-left h2 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: -0.3px;
+  }
+
+  .header-left p {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  .search-bar {
+    position: relative;
+    width: 320px;
+  }
+
+  .search-bar input {
+    width: 100%;
+    padding: 11px 16px 11px 42px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  .search-bar input::placeholder { color: var(--text-muted); }
+
+  .search-bar input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .search-bar svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    width: 16px;
+    height: 16px;
+  }
+
+  /* ─── CATEGORY FILTER PILLS ─── */
+  .filter-pills {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .filter-pill {
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 400;
+  }
+
+  .filter-pill:hover {
+    border-color: var(--text-muted);
+    color: var(--text-primary);
+  }
+
+  .filter-pill.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    font-weight: 500;
+  }
+
+  /* ─── REPORT CARDS GRID ─── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+
+  .report-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInCard 0.4s ease backwards;
+  }
+
+  .report-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-accent);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .report-card:hover {
+    border-color: var(--border-accent);
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+
+  .report-card:hover::before { opacity: 1; }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .card-icon svg {
+    width: 20px;
+    height: 20px;
+    color: white;
+  }
+
+  .card-category-tag {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: -0.2px;
+  }
+
+  .card-description {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 18px;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .card-meta svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .card-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    animation: pulse 2s ease infinite;
+  }
+
+  .card-open-btn {
+    padding: 7px 16px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 8px;
+    color: var(--accent);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .card-open-btn:hover {
+    background: var(--accent);
+    color: white;
+  }
+
+  /* ─── CATEGORY COLORS ─── */
+  .cat-production .card-icon { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+  .cat-production .card-category-tag { color: var(--cat-production); }
+  .cat-production { --card-accent: var(--cat-production); }
+
+  .cat-patients .card-icon { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+  .cat-patients .card-category-tag { color: var(--cat-patients); }
+  .cat-patients { --card-accent: var(--cat-patients); }
+
+  .cat-operations .card-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .cat-operations .card-category-tag { color: var(--cat-operations); }
+  .cat-operations { --card-accent: var(--cat-operations); }
+
+  /* ─── EMPTY STATE ─── */
+  .empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    color: var(--text-muted);
+  }
+
+  .empty-state svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+
+  .empty-state h3 {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+
+  .empty-state p { font-size: 13px; }
+
+  /* ─── ACCESS DENIED OVERLAY ON CARDS ─── */
+  .report-card.locked {
+    opacity: 0.45;
+    pointer-events: none;
+    filter: grayscale(0.3);
+  }
+
+  .report-card.locked::after {
+    content: '🔒 Access Restricted';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: rgba(10, 14, 23, 0.7);
+    border-radius: var(--radius);
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeInCard {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; padding: 24px 20px; }
+    .header { flex-direction: column; gap: 16px; align-items: flex-start; }
+    .search-bar { width: 100%; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .mobile-toggle { display: flex !important; }
+  }
+
+  .mobile-toggle {
+    display: none !important;
+    position: fixed;
+    top: 16px; left: 16px;
+    z-index: 200;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN SCREEN ═══════════ -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo">PSPD Analytics</div>
+    <div class="login-subtitle">Command Center — Sign in to continue</div>
+
+    <div class="login-field">
+      <label>Select Your Name</label>
+      <select id="loginUser">
+        <option value="">Choose your profile...</option>
+        <!-- ✏️ ADD/REMOVE STAFF MEMBERS HERE -->
+        <option value="christopher">Dr. Lugo</option>
+        <option value="tanya">Tanya</option>
+        <option value="jessica">Jessica</option>
+        <option value="chelsey">Chelsey</option>
+      </select>
+    </div>
+
+    <div class="login-field">
+      <label>PIN</label>
+      <input type="password" id="loginPin" placeholder="Enter your 4-digit PIN" maxlength="4">
+    </div>
+
+    <button class="login-btn" onclick="handleLogin()">Sign In</button>
+    <div class="login-error" id="loginError">Invalid PIN. Please try again.</div>
+  </div>
+</div>
+
+<!-- ═══════════ MOBILE MENU TOGGLE ═══════════ -->
+<button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">
+  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h14M3 10h14M3 14h14"/></svg>
+</button>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h1>PSPD Analytics</h1>
+    <p>Command Center</p>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
+  <div class="sidebar-section-label">Navigation</div>
+  <ul class="sidebar-nav">
+    <li>
+      <a class="active" onclick="filterCategory('all', this)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        All Reports
+        <span class="badge" id="totalBadge">4</span>
+      </a>
+    </li>
+    <li>
+      <a onclick="filterCategory('production', this)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="10"/></svg>
+        Production
+      </a>
+    </li>
+    <li>
+      <a onclick="filterCategory('patients', this)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Patient Management
+      </a>
+    </li>
+    <li>
+      <a onclick="filterCategory('operations', this)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 20V10M6 20V4M18 20v-6"/></svg>
+        Operations
+      </a>
+    </li>
+  </ul>
+
+  <div class="sidebar-divider"></div>
+
+  <div class="sidebar-user" id="sidebarUser">
+    <div class="sidebar-user-avatar" id="userAvatar">C</div>
+    <div class="sidebar-user-info">
+      <div class="sidebar-user-name" id="userName">Christopher</div>
+      <div class="sidebar-user-role" id="userRole">Admin</div>
+    </div>
+    <button class="sidebar-logout" onclick="handleLogout()" title="Sign out">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<main class="main hidden" id="mainContent">
+  <div class="header">
+    <div class="header-left">
+      <h2>Dashboard</h2>
+      <p id="welcomeMsg">Welcome back — here are your analytics reports.</p>
+    </div>
+    <div class="search-bar">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Search reports..." oninput="filterReports()">
+    </div>
+  </div>
+
+  <div class="filter-pills" id="filterPills">
+    <button class="filter-pill active" onclick="filterCategory('all', null, this)">All</button>
+    <button class="filter-pill" onclick="filterCategory('production', null, this)">⚙️ Production</button>
+    <button class="filter-pill" onclick="filterCategory('patients', null, this)">👥 Patient Management</button>
+    <button class="filter-pill" onclick="filterCategory('operations', null, this)">📊 Operations</button>
+  </div>
+
+  <div class="cards-grid" id="cardsGrid"></div>
+
+  <div class="empty-state" id="emptyState" style="display:none">
+    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <h3>No reports found</h3>
+    <p>Try adjusting your search or filter criteria.</p>
+  </div>
+</main>
+
+<script>
+// ╔══════════════════════════════════════════════════╗
+// ║  📋 CONFIGURATION — EDIT THIS SECTION            ║
+// ╚══════════════════════════════════════════════════╝
+
+// ── REPORT DEFINITIONS ──
+// To add a new report: copy one block, change the fields.
+// url: Go to the report in Power BI service → File → Embed report → Website or portal → copy the URL
+// If you just want a link (not embed), use the regular Power BI report URL.
+
+const REPORTS = [
+  {
+    id: 'doctor-production',
+    title: 'Doctor Production',
+    description: 'Provider payroll and production totals by pay period. Track individual doctor output and revenue.',
+    category: 'production',
+    categoryLabel: 'Production',
+    icon: 'dollar',
+    url: 'https://app.powerbi.com/groups/me/reports/28d67d19-4ea5-4f13-a675-8d39a543a2f3?experience=power-bi',
+    lastRefreshed: '1/28/2026',
+    status: 'live',
+    // Which roles can see this report? Use role keys from ROLES below.
+    access: ['admin']
+  },
+  {
+    id: 'production-model',
+    title: 'Production Model (2025)',
+    description: 'Locked production model with targets, forecasts, and KPIs for the 2025 fiscal year.',
+    category: 'production',
+    categoryLabel: 'Production',
+    icon: 'chart',
+    url: 'https://app.powerbi.com/groups/me/reports/c98fcc58-247e-42af-8531-0135ed4e7213/56a05638d5e5f181f855?experience=power-bi',
+    lastRefreshed: '2/25/2026',
+    status: 'live',
+    access: ['admin']
+  },
+  {
+    id: 'recall-calllists',
+    title: 'Recall Call Lists',
+    description: 'Patient recall tracking — overdue appointments, call priorities, and outreach status.',
+    category: 'patients',
+    categoryLabel: 'Patient Mgmt',
+    icon: 'phone',
+    url: 'https://app.powerbi.com/groups/me/reports/ec723259-69be-4b36-a8fd-1e82f4a7fb34/72dc7e008c216186d938?experience=power-bi',
+    lastRefreshed: '2/25/2026',
+    status: 'live',
+    access: ['admin', 'frontdesk']
+  },
+  {
+    id: 'treatment-unscheduled',
+    title: 'Treatment — Unscheduled',
+    description: 'Patients with diagnosed but unscheduled treatment plans. Follow-up tracking and revenue recovery.',
+    category: 'patients',
+    categoryLabel: 'Patient Mgmt',
+    icon: 'calendar',
+    url: 'https://app.powerbi.com/groups/me/reports/e271adac-b68e-425d-afaa-a838a1384364/e114c9b44cd6065e7b8e?experience=power-bi',
+    lastRefreshed: '2/25/2026',
+    status: 'live',
+    access: ['admin', 'frontdesk']
+  }
+];
+
+// ── ROLES & ACCESS ──
+// Each user maps to a role. The role controls which reports they see.
+// To add staff: add a line below. The key must match the <option value=""> in the HTML above.
+
+const USERS = {
+  christopher:  { name: 'Dr. Lugo',         role: 'admin',     pin: '0802' },
+  tanya:        { name: 'Tanya',            role: 'admin',     pin: '1111' },
+  jessica:      { name: 'Jessica',          role: 'billing',   pin: '2222' },
+  chelsey:      { name: 'Chelsey',          role: 'frontdesk', pin: '3333' }
+};
+
+const ROLES = {
+  admin:     { label: 'Administrator', color: '#3b82f6' },
+  manager:   { label: 'Manager',       color: '#8b5cf6' },
+  billing:   { label: 'Billing',       color: '#f59e0b' },
+  frontdesk: { label: 'Front Desk',    color: '#06b6d4' }
+};
+
+// ╔══════════════════════════════════════════════════╗
+// ║  🔧 APP LOGIC — You shouldn't need to edit below ║
+// ╚══════════════════════════════════════════════════╝
+
+let currentUser = null;
+let currentFilter = 'all';
+
+const ICONS = {
+  dollar: '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg>',
+  chart: '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>',
+  phone: '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>',
+  calendar: '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>'
+};
+
+function handleLogin() {
+  const userId = document.getElementById('loginUser').value;
+  const pin = document.getElementById('loginPin').value;
+  const errorEl = document.getElementById('loginError');
+
+  if (!userId || !pin) {
+    errorEl.textContent = 'Please select your name and enter your PIN.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  const user = USERS[userId];
+  if (!user || user.pin !== pin) {
+    errorEl.textContent = 'Invalid PIN. Please try again.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  currentUser = { ...user, id: userId };
+  document.getElementById('loginOverlay').classList.add('hidden');
+  document.getElementById('mainContent').classList.remove('hidden');
+
+  // Update sidebar user
+  document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+  document.getElementById('userName').textContent = user.name;
+  document.getElementById('userRole').textContent = ROLES[user.role]?.label || user.role;
+  document.getElementById('welcomeMsg').textContent = `Welcome back, ${user.name.split(' ').pop()} — here are your analytics reports.`;
+
+  renderCards();
+}
+
+function handleLogout() {
+  currentUser = null;
+  document.getElementById('loginOverlay').classList.remove('hidden');
+  document.getElementById('mainContent').classList.add('hidden');
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPin').value = '';
+  document.getElementById('loginError').style.display = 'none';
+}
+
+function renderCards() {
+  const grid = document.getElementById('cardsGrid');
+  const emptyState = document.getElementById('emptyState');
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+  let filtered = REPORTS.filter(r => {
+    const matchesCategory = currentFilter === 'all' || r.category === currentFilter;
+    const matchesSearch = r.title.toLowerCase().includes(searchTerm) ||
+                          r.description.toLowerCase().includes(searchTerm) ||
+                          r.categoryLabel.toLowerCase().includes(searchTerm);
+    return matchesCategory && matchesSearch;
+  });
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    emptyState.style.display = 'block';
+    return;
+  }
+
+  emptyState.style.display = 'none';
+
+  grid.innerHTML = filtered.map((r, i) => {
+    const hasAccess = currentUser && r.access.includes(currentUser.role);
+    const lockedClass = hasAccess ? '' : 'locked';
+    const statusColor = r.status === 'live' ? 'var(--success)' : 'var(--warning)';
+    const statusLabel = r.status === 'live' ? 'Live' : 'Paused';
+
+    return `
+      <div class="report-card cat-${r.category} ${lockedClass}" style="animation-delay: ${i * 0.06}s"
+           ${hasAccess ? `onclick="window.open('${r.url}', '_blank')"` : ''}>
+        <div class="card-header">
+          <div class="card-icon">${ICONS[r.icon] || ICONS.chart}</div>
+          <span class="card-category-tag">${r.categoryLabel}</span>
+        </div>
+        <div class="card-title">${r.title}</div>
+        <div class="card-description">${r.description}</div>
+        <div class="card-footer">
+          <div class="card-meta">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Updated ${r.lastRefreshed}
+          </div>
+          <div class="card-status">
+            <span class="status-dot" style="background:${statusColor}"></span>
+            <span style="color:${statusColor}">${statusLabel}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Update badge
+  const accessibleCount = REPORTS.filter(r => currentUser && r.access.includes(currentUser.role)).length;
+  document.getElementById('totalBadge').textContent = accessibleCount;
+}
+
+function filterCategory(category, sidebarLink, pillBtn) {
+  currentFilter = category;
+
+  // Update sidebar active
+  document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+  if (sidebarLink) sidebarLink.classList.add('active');
+  else {
+    const idx = ['all','production','patients','operations'].indexOf(category);
+    const links = document.querySelectorAll('.sidebar-nav a');
+    if (links[idx]) links[idx].classList.add('active');
+  }
+
+  // Update pills active
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  if (pillBtn) pillBtn.classList.add('active');
+  else {
+    const idx = ['all','production','patients','operations'].indexOf(category);
+    const pills = document.querySelectorAll('.filter-pill');
+    if (pills[idx]) pills[idx].classList.add('active');
+  }
+
+  renderCards();
+}
+
+function filterReports() {
+  renderCards();
+}
+
+// Allow Enter key on PIN field
+document.getElementById('loginPin').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') handleLogin();
+});
+</script>
+
+</body>
+</html>
