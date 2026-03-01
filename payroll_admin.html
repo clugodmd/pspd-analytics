@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSPD Payroll Admin — Internal Validation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #1E3228;
+    --bg-secondary: #253D32;
+    --bg-card: #2E483A;
+    --bg-card-hover: #3D5E4C;
+    --accent: #CD7823;
+    --accent-glow: rgba(205, 120, 35, 0.15);
+    --accent-soft: #A8611B;
+    --text-primary: #F5F5F5;
+    --text-secondary: #94A3B8;
+    --text-muted: #6F8090;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-accent: rgba(205, 120, 35, 0.3);
+    --success: #3D7A4A;
+    --warning: #CD7823;
+    --danger: #B5403E;
+    --exact: #5DBE6E;
+    --over: #CD7823;
+    --under: #7EB8CC;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 32px;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header h1 {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 34px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .header h1 span {
+    background: linear-gradient(135deg, var(--accent) 0%, #E8943D 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 16px; }
+  .header .admin-badge {
+    display: inline-block;
+    padding: 7px 20px;
+    background: rgba(181, 64, 62, 0.15);
+    border: 1px solid rgba(181, 64, 62, 0.3);
+    border-radius: 20px;
+    font-size: 13px;
+    color: #E8655E;
+    font-weight: 600;
+  }
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .kpi {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    text-align: center;
+    transition: all 0.2s ease;
+  }
+  .kpi:hover { border-color: var(--border-accent); box-shadow: 0 0 20px var(--accent-glow); }
+  .kpi .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
+  .kpi .value { font-size: 34px; font-weight: 700; }
+  .kpi .value.accent {
+    background: linear-gradient(135deg, var(--accent) 0%, #E8943D 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .kpi .value.success { color: var(--exact); }
+  .kpi .detail { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+  .section-title {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 20px; font-weight: 600; margin-bottom: 16px;
+    padding-left: 14px; border-left: 3px solid var(--accent); color: var(--text-primary);
+  }
+  .card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; margin-bottom: 24px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; padding: 10px 12px; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted);
+    border-bottom: 2px solid rgba(255,255,255,0.06); font-weight: 600;
+  }
+  th.right, td.right { text-align: right; }
+  td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  tr:hover td { background: rgba(205, 120, 35, 0.05); }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .badge-exact { background: rgba(93, 190, 110, 0.15); color: var(--exact); }
+  .badge-over { background: rgba(205, 120, 35, 0.15); color: var(--over); }
+  .badge-under { background: rgba(126, 184, 204, 0.15); color: var(--under); }
+  .progress-bar { height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } .kpi-row { grid-template-columns: 1fr 1fr; } body { padding: 16px; } }
+  .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .dot-exact { background: var(--exact); }
+  .dot-over { background: var(--over); }
+  .dot-under { background: var(--under); }
+  .footer {
+    text-align: center; margin-top: 40px; padding-top: 20px;
+    border-top: 1px solid var(--border); color: var(--text-muted); font-size: 12px; line-height: 1.6;
+  }
+  .footer strong { color: var(--accent); font-weight: 600; }
+  .formula-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-accent);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+    font-family: 'DM Sans', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+  }
+  .formula-card code {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg-primary); }
+  ::-webkit-scrollbar-thumb { background: var(--bg-secondary); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Puget Sound <span>Pediatric Dentistry</span></h1>
+  <div class="subtitle">Dentrepreneur Control Tower &mdash; Payroll Validation (Admin)</div>
+  <div class="admin-badge">INTERNAL ONLY &nbsp;&bull;&nbsp; Pay Period 2.27.26</div>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="label">Accuracy</div>
+    <div class="value accent">99.98%</div>
+    <div class="detail">$67.68 variance on $366,627</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Pay Codes Exact</div>
+    <div class="value success">17/20</div>
+    <div class="detail">Penny-perfect match</div>
+  </div>
+  <div class="kpi">
+    <div class="label">SQL Total</div>
+    <div class="value">$366,695</div>
+    <div class="detail">9,229 allocation rows</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Denticon Total</div>
+    <div class="value">$366,627</div>
+    <div class="detail">Target from manual report</div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div>
+    <div class="section-title">Pay Code Validation</div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th class="right">SQL</th>
+            <th class="right">Denticon</th>
+            <th class="right">Status</th>
+          </tr>
+        </thead>
+        <tbody id="paycode-table"></tbody>
+      </table>
+    </div>
+  </div>
+  <div>
+    <div class="section-title">Date Source Breakdown</div>
+    <div class="card">
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:13px">CREATEDON</span>
+          <span style="font-size:13px;color:var(--exact)">$365,749 (99.7%)</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:99.7%;background:var(--exact)"></div>
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:13px">PROC_DOS</span>
+          <span style="font-size:13px;color:var(--under)">$588 (0.16%)</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:10%;background:var(--under)"></div>
+        </div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:13px">MODIFIEDON</span>
+          <span style="font-size:13px;color:var(--accent)">$358 (0.10%)</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:6%;background:linear-gradient(135deg, var(--accent) 0%, #E8943D 100%)"></div>
+        </div>
+      </div>
+      <div style="margin-top:20px;font-size:12px;color:var(--text-muted);line-height:1.5">
+        Three date mechanisms work together to match Denticon's allocation logic.
+        MODIFIEDON captures reprocessed payments (like Dr. D's Provider One adjustments).
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:24px">Remaining Variance (3 codes)</div>
+    <div class="card">
+      <table>
+        <thead><tr><th>Code</th><th class="right">Diff</th><th class="right">Reason</th></tr></thead>
+        <tbody>
+          <tr><td><span class="dot-over status-dot"></span>PP008</td><td class="right" style="font-family:'DM Sans',monospace">+$34.84</td><td class="right" style="color:var(--text-muted);font-size:12px">MODIFIEDON junk rows</td></tr>
+          <tr><td><span class="dot-over status-dot"></span>PF002</td><td class="right" style="font-family:'DM Sans',monospace">+$41.84</td><td class="right" style="color:var(--text-muted);font-size:12px">Unknown mechanism</td></tr>
+          <tr><td><span class="dot-over status-dot"></span>AINSO</td><td class="right" style="font-family:'DM Sans',monospace">+$9.00</td><td class="right" style="color:var(--text-muted);font-size:12px">Stale allocation</td></tr>
+          <tr style="border-top:2px solid rgba(255,255,255,0.08)"><td style="font-weight:700">Total</td><td class="right" style="font-family:'DM Sans',monospace;font-weight:700">+$67.68</td><td class="right"><span class="badge badge-over">0.018%</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">Period Trend (Cross-Validation)</div>
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Period</th>
+        <th class="right">SQL Total</th>
+        <th class="right">Denticon Total</th>
+        <th class="right">Variance</th>
+        <th class="right">Accuracy</th>
+      </tr>
+    </thead>
+    <tbody id="period-table"></tbody>
+  </table>
+  <div style="margin-top:16px;font-size:12px;color:var(--text-muted);line-height:1.5">
+    Older periods degrade because MODIFIEDON exclusions grow over time. Current period is always most accurate.
+    The gap for 1.16.26 and 1.30.26 cannot be closed with any LEDGERPAYALLOC date field alone.
+  </div>
+</div>
+
+<div class="section-title">SQL View Architecture (rpt.vw_income_allocation v3.1)</div>
+<div class="card">
+  <div class="formula-card">
+    <strong style="color:var(--text-primary)">3-Part UNION ALL View:</strong><br><br>
+    <code>Part 1 — CREATEDON</code> (99.7% of rows)<br>
+    &nbsp;&nbsp;Period assigned by CREATEDON date. Excludes rows where MODIFIEDON moves them out of period.<br>
+    &nbsp;&nbsp;Filters: AMOUNT &lt;&gt; 0, LTYPE IN ('I','P') + AR/ADJ codes, excludes PP001/PP018<br>
+    &nbsp;&nbsp;Excludes: AINSX/PP014/PP005 with NULL proc code (orphan adjustments)<br><br>
+    <code>Part 2 — PROC_DOS</code> (0.16% of rows, PP012 &amp; PP015 only)<br>
+    &nbsp;&nbsp;Pre-paid allocations assigned by procedure date-of-service (not CREATEDON).<br>
+    &nbsp;&nbsp;Only included when CREATEDON falls BEFORE the period start.<br>
+    &nbsp;&nbsp;NOT EXISTS check prevents double-counting with Part 1.<br><br>
+    <code>Part 3 — MODIFIEDON</code> (0.10% of rows, 4 codes only)<br>
+    &nbsp;&nbsp;Reprocessed payments assigned by MODIFIEDON date.<br>
+    &nbsp;&nbsp;LIMITED TO: <code>PP017, PP014, PP012, AINSX</code><br>
+    &nbsp;&nbsp;PP008 excluded (111 junk MODIFIEDON rows = $4,332 overcounting).<br>
+    &nbsp;&nbsp;PF002 excluded (5 rows = $42 overcounting).<br>
+    &nbsp;&nbsp;NOT EXISTS checks prevent overlap with Parts 1 &amp; 2.
+  </div>
+
+  <div class="formula-card" style="margin-top:12px">
+    <strong style="color:var(--text-primary)">Doctor Pay Calculation:</strong><br><br>
+    <code>Collections</code> = SUM(alloc_amount) per provider per office per period<br>
+    <code>X-Ray Amount</code> = Collections from x-ray procedure codes<br>
+    <code>Adjusted Collections</code> = Collections - X-Ray Amount<br>
+    <code>Pay</code> = Adjusted Collections &times; Pay Schedule %<br><br>
+    <strong style="color:var(--text-primary)">Pay Schedules:</strong><br>
+    &nbsp;&nbsp;Dr. Schrack: <code>45%</code> &nbsp;|&nbsp; Dr. Lugo, Dr. Slaven: <code>36%</code><br>
+    &nbsp;&nbsp;Dr. Bell, Dr. Choong, Dr. Menon: <code>35%</code><br>
+    &nbsp;&nbsp;Dr. Benton, Dr. Patel: <code>32%</code> &nbsp;|&nbsp; Dr. Welter: <code>31%</code>
+  </div>
+</div>
+
+<div class="footer">
+  <strong>Dentrepreneur Control Tower</strong> &nbsp;&bull;&nbsp; ADMIN INTERNAL &nbsp;&bull;&nbsp; Automated from Azure SQL
+  <br>Built by Chris Lugo + Claude AI &nbsp;&bull;&nbsp; Data as of Feb 28, 2026
+</div>
+
+<script>
+const paycodes = [
+  {code:'PINSE', sql:297725.99, dent:297725.99},
+  {code:'PP008', sql:30374.76, dent:30339.92},
+  {code:'PI002', sql:24530.62, dent:24530.62},
+  {code:'PINCC', sql:11713.26, dent:11713.26},
+  {code:'PF002', sql:2719.52, dent:2677.68},
+  {code:'AR001', sql:2328.00, dent:2328.00},
+  {code:'AINSO', sql:2044.39, dent:2035.39},
+  {code:'PP012', sql:1461.08, dent:1461.08},
+  {code:'PP010', sql:1120.60, dent:1120.60},
+  {code:'AINSX', sql:948.38, dent:948.38},
+  {code:'PP005', sql:335.81, dent:335.81},
+  {code:'PP014', sql:270.17, dent:270.17},
+  {code:'AR003', sql:193.10, dent:193.10},
+  {code:'PP015', sql:112.60, dent:112.60},
+  {code:'AR004', sql:65.79, dent:65.79},
+  {code:'AR002', sql:50.00, dent:50.00},
+  {code:'PP017', sql:42.00, dent:42.00},
+  {code:'PP009', sql:21.20, dent:21.20},
+  {code:'ACX01', sql:3.92, dent:3.92},
+  {code:'ADX01', sql:3.92, dent:3.92},
+];
+const tbody = document.getElementById('paycode-table');
+paycodes.forEach(p => {
+  const diff = Math.abs(p.sql - p.dent);
+  const isExact = diff < 0.01;
+  const dir = p.sql > p.dent ? 'over' : 'under';
+  const statusClass = isExact ? 'exact' : dir;
+  const statusText = isExact ? 'EXACT' : `$${diff.toFixed(2)} ${dir}`;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><span class="status-dot dot-${statusClass}"></span>${p.code}</td>
+    <td class="right" style="font-family:'DM Sans',monospace">$${p.sql.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+    <td class="right" style="font-family:'DM Sans',monospace">$${p.dent.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+    <td class="right"><span class="badge badge-${statusClass}">${statusText}</span></td>
+  `;
+  tbody.appendChild(tr);
+});
+
+const periods = [
+  {label:'1.16.26', sql:265350.66, dent:270051.51},
+  {label:'1.30.26', sql:313603.31, dent:318884.39},
+  {label:'2.13.26', sql:355299.73, dent:359143.49},
+  {label:'2.27.26', sql:366694.71, dent:366627.03},
+];
+const ptbody = document.getElementById('period-table');
+periods.forEach(p => {
+  const diff = Math.abs(p.sql - p.dent);
+  const pct = (diff / p.dent * 100);
+  const accuracy = (100 - pct).toFixed(2);
+  const dir = p.sql > p.dent ? 'over' : 'under';
+  const isCurrent = p.label === '2.27.26';
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${p.label}${isCurrent ? ' <span class="badge badge-exact">CURRENT</span>' : ''}</td>
+    <td class="right" style="font-family:'DM Sans',monospace">$${p.sql.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+    <td class="right" style="font-family:'DM Sans',monospace">$${p.dent.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+    <td class="right" style="font-family:'DM Sans',monospace;color:${isCurrent ? 'var(--exact)' : 'var(--text-muted)'}">$${diff.toFixed(2)} ${dir}</td>
+    <td class="right"><span style="color:${isCurrent ? 'var(--exact)' : pct < 1 ? 'var(--text-primary)' : 'var(--text-muted)'};font-weight:${isCurrent?700:400}">${accuracy}%</span></td>
+  `;
+  ptbody.appendChild(tr);
+});
+</script>
+</body>
+</html>
