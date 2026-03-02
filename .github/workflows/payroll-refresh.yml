@@ -1,0 +1,152 @@
+name: Payroll Data Refresh
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pymssql
+
+      - name: Query SQL and generate payroll.json
+        env:
+          SQL_SERVER: ${{ secrets.SQL_SERVER }}
+          SQL_DATABASE: ${{ secrets.SQL_DATABASE }}
+          SQL_USER: ${{ secrets.SQL_USER }}
+          SQL_PASSWORD: ${{ secrets.SQL_PASSWORD }}
+        run: |
+          python << 'SCRIPT'
+          import pymssql, json, os
+          from collections import defaultdict
+          from datetime import datetime
+
+          PROVIDER_MAP = {
+              100: {"name": "Lugo", "rate": 0.36, "status": "active"},
+              102: {"name": "Bell", "rate": 0.35, "status": "active"},
+              103: {"name": "Slaven", "rate": 0.36, "status": "active"},
+              104: {"name": "Benton", "rate": 0.32, "status": "active"},
+              106: {"name": "Choong", "rate": 0.35, "status": "active"},
+              108: {"name": "Schrack", "rate": 0.45, "status": "active"},
+              117: {"name": "Menon", "rate": 0.35, "status": "active"},
+              125: {"name": "Welter", "rate": 0.31, "status": "active"},
+              126: {"name": "Patel", "rate": 0.32, "status": "active"},
+              105: {"name": "Term Assoc.", "rate": 0, "status": "termed"},
+              107: {"name": "Ping", "rate": 0, "status": "termed"},
+              109: {"name": "Laws", "rate": 0, "status": "termed"},
+              111: {"name": "Termed 111", "rate": 0, "status": "termed"},
+              112: {"name": "Termed 112", "rate": 0, "status": "termed"},
+              116: {"name": "Termed 116", "rate": 0, "status": "termed"},
+              124: {"name": "Kirk", "rate": 0, "status": "termed"},
+          }
+
+          OFFICE_MAP = {
+              100: "Marysville",
+              101: "Monroe",
+              102: "Lake Stevens",
+              103: "Stanwood",
+              104: "Everett",
+          }
+
+          XRAY_PREFIXES = ("D02", "D03")
+
+          print("Connecting to Azure SQL...")
+          conn = pymssql.connect(
+              server=os.environ["SQL_SERVER"],
+              user=os.environ["SQL_USER"],
+              password=os.environ["SQL_PASSWORD"],
+              database=os.environ["SQL_DATABASE"],
+              tds_version="7.3"
+          )
+          cursor = conn.cursor(as_dict=True)
+          cursor.execute("""
+              SELECT period_label, period_start, period_end,
+                     alloc_provider_id, OID, alloc_amount, proc_ada_code
+              FROM rpt.vw_income_allocation
+              WHERE period_start >= DATEADD(month, -3, GETDATE())
+              ORDER BY period_start DESC, alloc_provider_id, OID
+          """)
+          rows = cursor.fetchall()
+          conn.close()
+          print(f"Got {len(rows)} rows")
+
+          period_groups = defaultdict(list)
+          for row in rows:
+              period_groups[row["period_label"]].append(row)
+
+          periods = {}
+          for label, prows in period_groups.items():
+              start = prows[0]["period_start"]
+              end = prows[0]["period_end"]
+
+              provider_data = defaultdict(lambda: {"collections": 0, "xrays": 0, "offices": defaultdict(float)})
+              for r in prows:
+                  pid = r["alloc_provider_id"]
+                  amount = -float(r["alloc_amount"])
+                  oid = r["OID"]
+                  ada = r.get("proc_ada_code", "")
+
+                  provider_data[pid]["collections"] += amount
+                  if oid in OFFICE_MAP:
+                      provider_data[pid]["offices"][OFFICE_MAP[oid]] += amount
+                  if ada and str(ada).strip().upper().startswith(XRAY_PREFIXES):
+                      provider_data[pid]["xrays"] += 1
+
+              doctors = {}
+              for pid, data in provider_data.items():
+                  if pid not in PROVIDER_MAP:
+                      continue
+                  info = PROVIDER_MAP[pid]
+                  if info["status"] == "termed":
+                      continue
+                  name = info["name"]
+                  coll = round(data["collections"], 2)
+                  rate = info["rate"]
+                  doctors[name] = {
+                      "collections": coll,
+                      "rate": rate,
+                      "commission": round(coll * rate, 2),
+                      "xrays": data["xrays"],
+                      "offices": {k: round(v, 2) for k, v in data["offices"].items()}
+                  }
+
+              months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+              if start.month == end.month:
+                  date_range = f"{months[start.month-1]} {start.day} - {end.day}, {end.year}"
+              else:
+                  date_range = f"{months[start.month-1]} {start.day} - {months[end.month-1]} {end.day}, {end.year}"
+
+              periods[label] = {
+                  "dateRange": date_range,
+                  "doctors": doctors
+              }
+
+          output = {
+              "periods": periods,
+              "last_updated": datetime.utcnow().isoformat() + "Z",
+              "source": "azure_sql",
+              "view": "rpt.vw_income_allocation"
+          }
+
+          os.makedirs("data", exist_ok=True)
+          with open("data/payroll.json", "w") as f:
+              json.dump(output, f, indent=2, default=str)
+          print(f"Wrote {len(periods)} periods to data/payroll.json")
+          SCRIPT
+
+      - name: Commit and push
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add data/payroll.json
+          git diff --cached --quiet || git commit -m "Auto-update payroll data $(date -u +%Y-%m-%d)"
+          git push
