@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PSPD Doctor Payroll â Dentrepreneur Control Tower</title>
+<title>PSPD Doctor Payroll — Dentrepreneur Control Tower</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -223,7 +223,7 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
 <script>
 const PERIODS = {
 '1.16.26': {
-label:'1.16.26', dates:'Dec 27, 2025 â Jan 9, 2026', payDate:'Jan 16, 2026', status:'closed',
+label:'1.16.26', dates:'Dec 27, 2025 – Jan 9, 2026', payDate:'Jan 16, 2026', status:'closed',
 doctors: [
 {name:'Dr. Slaven', pct:0.36, coll:61203.44, payNo:19033.07, payWith:22033.24},
 {name:'Dr. Menon', pct:0.35, coll:46512.10, payNo:14228.71, payWith:16279.24},
@@ -239,7 +239,7 @@ offices: [{name:'Monroe',amt:82545.87},{name:'Marysville',amt:58154.50},{name:'S
 termed: [{name:'Dr. Kirk',coll:1853.44,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:671.12,note:'Legacy'}],
 },
 '1.30.26': {
-label:'1.30.26', dates:'Jan 10 â Jan 23, 2026', payDate:'Jan 30, 2026', status:'closed',
+label:'1.30.26', dates:'Jan 10 – Jan 23, 2026', payDate:'Jan 30, 2026', status:'closed',
 doctors: [
 {name:'Dr. Slaven', pct:0.36, coll:72584.21, payNo:22565.63, payWith:26130.32},
 {name:'Dr. Menon', pct:0.35, coll:51293.44, payNo:15695.60, payWith:17952.70},
@@ -255,7 +255,7 @@ offices: [{name:'Monroe',amt:84035.16},{name:'Marysville',amt:100800.74},{name:'
 termed: [{name:'Dr. Kirk',coll:2154.55,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:998.00,note:'Legacy'}],
 },
 '2.13.26': {
-label:'2.13.26', dates:'Jan 24 â Feb 6, 2026', payDate:'Feb 13, 2026', status:'closed',
+label:'2.13.26', dates:'Jan 24 – Feb 6, 2026', payDate:'Feb 13, 2026', status:'closed',
 doctors: [
 {name:'Dr. Slaven', pct:0.36, coll:76422.98, payNo:23763.37, payWith:27512.27},
 {name:'Dr. Menon', pct:0.35, coll:52834.61, payNo:16165.59, payWith:18492.11},
@@ -271,7 +271,7 @@ offices: [{name:'Monroe',amt:77629.78},{name:'Marysville',amt:78477.67},{name:'L
 termed: [{name:'Dr. Kirk',coll:2510.94,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:1206.00,note:'Legacy'}],
 },
 '2.27.26': {
-label:'2.27.26', dates:'Feb 7 â Feb 20, 2026', payDate:'Feb 27, 2026', status:'closed',
+label:'2.27.26', dates:'Feb 7 – Feb 20, 2026', payDate:'Feb 27, 2026', status:'closed',
 doctors: [
 {name:'Dr. Slaven', pct:0.36, coll:79367.09, payNo:24664.54, payWith:28572.15, off:{MV:31955.29,MO:12059.51,LS:0,SW:35352.29,EV:0}},
 {name:'Dr. Menon', pct:0.35, coll:55076.25, payNo:17389.04, payWith:19276.69, off:{MV:157,MO:22720.80,LS:16970.31,SW:0,EV:15228.14}},
@@ -287,7 +287,7 @@ offices: [{name:'Monroe',amt:100459.04},{name:'Marysville',amt:92928.79},{name:'
 termed: [{name:'Dr. Kirk',coll:2756.88,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:1579.13,note:'Legacy'}],
 },
 '3.13.26': {
-label:'3.13.26', dates:'Feb 21 â Mar 6, 2026', payDate:'Mar 13, 2026', status:'live',
+label:'3.13.26', dates:'Feb 21 – Mar 6, 2026', payDate:'Mar 13, 2026', status:'live',
 daysElapsed: 9,
 daysTotal: 14,
 doctors: [
@@ -362,7 +362,7 @@ banner.innerHTML = `
 <div class="card live-card" style="margin-bottom:24px">
 <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
 <span class="live-dot"></span>
-<span class="sec-title blue" style="margin-bottom:0;font-size:18px">Period In Progress â ${p.dates}</span>
+<span class="sec-title blue" style="margin-bottom:0;font-size:18px">Period In Progress — ${p.dates}</span>
 </div>
 <div class="period-progress">
 <div class="bar-outer"><div class="bar-inner" style="width:${pct}%"></div></div>
@@ -499,7 +499,7 @@ function buildTermed() {
 const p = getPeriodData();
 let rows = '';
 p.termed.forEach(d => {
-rows += '<tr><td><span class="dot dot-purple"></span>'+d.name+'</td><td class="r mono dim">'+(d.coll > 0 ? '$'+fmt(d.coll) : 'â')+'</td><td class="r"><span class="badge badge-purple">'+d.note+'</span></td></tr>';
+rows += '<tr><td><span class="dot dot-purple"></span>'+d.name+'</td><td class="r mono dim">'+(d.coll > 0 ? '$'+fmt(d.coll) : '—')+'</td><td class="r"><span class="badge badge-purple">'+d.note+'</span></td></tr>';
 });
 $('termed-card').innerHTML = `
 <table>
@@ -573,7 +573,7 @@ buildAll();
     buildPeriodSelector();
     buildAll();
   } catch(e) {
-    // Live data not available â dashboard works fine with hardcoded data
+    // Live data not available — dashboard works fine with hardcoded data
     console.log('Live data not loaded:', e.message);
   }
 })();
