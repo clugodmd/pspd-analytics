@@ -15,8 +15,15 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
-        run: pip install pymssql
+      - name: Install ODBC Driver 18
+        run: |
+          curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
+          curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc-dev
+
+      - name: Install Python dependencies
+        run: pip install pyodbc
 
       - name: Query SQL and generate payroll.json
         env:
@@ -26,7 +33,7 @@ jobs:
           SQL_PASSWORD: ${{ secrets.SQL_PASSWORD }}
         run: |
           python << 'SCRIPT'
-          import pymssql, json, os
+          import pyodbc, json, os
           from collections import defaultdict
           from datetime import datetime
 
@@ -59,15 +66,17 @@ jobs:
 
           XRAY_PREFIXES = ("D02", "D03")
 
-          print("Connecting to Azure SQL...")
-          conn = pymssql.connect(
-              server=os.environ["SQL_SERVER"],
-              user=os.environ["SQL_USER"],
-              password=os.environ["SQL_PASSWORD"],
-              database=os.environ["SQL_DATABASE"],
-              tds_version="7.3"
+          print("Connecting to Azure SQL via ODBC...")
+          conn_str = (
+              f"DRIVER={{ODBC Driver 18 for SQL Server}};"
+              f"SERVER={os.environ['SQL_SERVER']};"
+              f"DATABASE={os.environ['SQL_DATABASE']};"
+              f"UID={os.environ['SQL_USER']};"
+              f"PWD={os.environ['SQL_PASSWORD']};"
+              "Encrypt=yes;TrustServerCertificate=no;"
           )
-          cursor = conn.cursor(as_dict=True)
+          conn = pyodbc.connect(conn_str, timeout=30)
+          cursor = conn.cursor()
           cursor.execute("""
               SELECT period_label, period_start, period_end,
                      alloc_provider_id, OID, alloc_amount, proc_ada_code
@@ -75,7 +84,8 @@ jobs:
               WHERE period_start >= DATEADD(month, -3, GETDATE())
               ORDER BY period_start DESC, alloc_provider_id, OID
           """)
-          rows = cursor.fetchall()
+          columns = [col[0] for col in cursor.description]
+          rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
           conn.close()
           print(f"Got {len(rows)} rows")
 
