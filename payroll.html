@@ -319,7 +319,8 @@ function getTotals(p) {
 const tc = p.doctors.reduce((s,d)=>s+d.coll,0);
 const tpn = p.doctors.reduce((s,d)=>s+d.payNo,0);
 const tpw = p.doctors.reduce((s,d)=>s+d.payWith,0);
-return { totalColl:tc, totalPayNo:tpn, totalPayWith:tpw, totalSaved:tpw-tpn };
+const termedColl = p.termed ? p.termed.reduce((s,t)=>s+(t.coll||0),0) : 0;
+return { totalColl:tc+termedColl, activeColl:tc, totalPayNo:tpn, totalPayWith:tpw, totalSaved:tpw-tpn, termedColl:termedColl };
 }
 
 function buildPeriodSelector() {
@@ -432,7 +433,7 @@ tb.appendChild(xr);
 
 const tot = document.createElement('tr');
 tot.className = 'total-row';
-tot.innerHTML = '<td>Total '+(p.status==='live'?'<span class="badge badge-blue">IN PROGRESS</span>':'')+'</td><td></td><td class="r mono">$'+fmt(t.totalColl)+'</td><td class="r mono">$'+fmt(t.totalPayNo)+'</td>';
+tot.innerHTML = '<td>Total '+(p.status==='live'?'<span class="badge badge-blue">IN PROGRESS</span>':'')+'</td><td></td><td class="r mono">$'+fmt(t.activeColl)+'</td><td class="r mono">$'+fmt(t.totalPayNo)+'</td>';
 tb.appendChild(tot);
 }
 
