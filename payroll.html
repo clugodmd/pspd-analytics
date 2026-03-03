@@ -552,8 +552,8 @@ const m = ds.match(/([A-Za-z]+ \d+)\s*-\s*([A-Za-z]+ \d+),?\s*(\d{4})/);
 if (!m) return;
 const s = new Date(m[1]+', '+m[3]), e = new Date(m[2]+', '+m[3]);
 const now = new Date(); now.setHours(0,0,0,0);
-p.daysTotal = Math.round((e - s)/(86400000));
-p.daysElapsed = Math.max(0, Math.min(p.daysTotal, Math.round((now - s)/(86400000))));
+p.daysTotal = Math.round((e - s)/(86400000)) + 1;
+p.daysElapsed = Math.max(1, Math.min(p.daysTotal, Math.round((now - s)/(86400000)) + 1));
 });
 }
 function buildAll() {
