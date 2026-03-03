@@ -35,10 +35,10 @@ jobs:
           python << 'SCRIPT'
           import pyodbc, json, os
           from collections import defaultdict
-          from datetime import datetime
+          from datetime import datetime, date
 
           PROVIDER_MAP = {
-              100: {"name": "Lugo", "rate": 0.36, "status": "active"},
+              100: {"name": "Lugo", "rate": 0.36, "status": "active", "isOwner": True},
               102: {"name": "Bell", "rate": 0.35, "status": "active"},
               103: {"name": "Slaven", "rate": 0.36, "status": "active"},
               104: {"name": "Benton", "rate": 0.32, "status": "active"},
@@ -57,11 +57,11 @@ jobs:
           }
 
           OFFICE_MAP = {
-              100: "Marysville",
-              101: "Monroe",
-              102: "Lake Stevens",
-              103: "Stanwood",
-              104: "Everett",
+              100: {"name": "Marysville", "short": "MV"},
+              101: {"name": "Monroe", "short": "MO"},
+              102: {"name": "Lake Stevens", "short": "LS"},
+              103: {"name": "Stanwood", "short": "SW"},
+              104: {"name": "Everett", "short": "EV"},
           }
 
           XRAY_PREFIXES = ("D02", "D03")
@@ -94,58 +94,128 @@ jobs:
           for row in rows:
               period_groups[row["period_label"]].append(row)
 
+          today = date.today()
+          months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
           periods = {}
+
           for label, prows in period_groups.items():
               start = prows[0]["period_start"]
               end = prows[0]["period_end"]
+              start_d = start.date() if hasattr(start, 'date') else start
+              end_d = end.date() if hasattr(end, 'date') else end
 
-              provider_data = defaultdict(lambda: {"collections": 0, "xrays": 0, "offices": defaultdict(float)})
+              is_live = end_d >= today
+              days_total = (end_d - start_d).days + 1
+              days_elapsed = min((today - start_d).days + 1, days_total) if is_live else days_total
+
+              if start_d.month == end_d.month:
+                  date_range = f"{months[start_d.month-1]} {start_d.day} \u2013 {end_d.day}, {end_d.year}"
+              else:
+                  date_range = f"{months[start_d.month-1]} {start_d.day} \u2013 {months[end_d.month-1]} {end_d.day}, {end_d.year}"
+
+              parts = label.split('.')
+              pay_month = int(parts[0])
+              pay_day = int(parts[1])
+              pay_year = 2000 + int(parts[2])
+              pay_date = f"{months[pay_month-1]} {pay_day}, {pay_year}"
+
+              provider_data = defaultdict(lambda: {"coll": 0, "xray_amt": 0, "offices": defaultdict(float), "office_short": defaultdict(float)})
               for r in prows:
                   pid = r["alloc_provider_id"]
                   amount = -float(r["alloc_amount"])
                   oid = r["OID"]
-                  ada = r.get("proc_ada_code", "")
+                  ada = str(r.get("proc_ada_code", "") or "").strip().upper()
 
-                  provider_data[pid]["collections"] += amount
+                  provider_data[pid]["coll"] += amount
                   if oid in OFFICE_MAP:
-                      provider_data[pid]["offices"][OFFICE_MAP[oid]] += amount
-                  if ada and str(ada).strip().upper().startswith(XRAY_PREFIXES):
-                      provider_data[pid]["xrays"] += 1
+                      oinfo = OFFICE_MAP[oid]
+                      provider_data[pid]["offices"][oinfo["name"]] += amount
+                      provider_data[pid]["office_short"][oinfo["short"]] += amount
+                  if ada.startswith(XRAY_PREFIXES):
+                      provider_data[pid]["xray_amt"] += amount
 
-              doctors = {}
+              doctors = []
               for pid, data in provider_data.items():
                   if pid not in PROVIDER_MAP:
                       continue
                   info = PROVIDER_MAP[pid]
-                  if info["status"] == "termed":
+                  if info["status"] != "active":
                       continue
-                  name = info["name"]
-                  coll = round(data["collections"], 2)
+                  coll = round(data["coll"], 2)
                   rate = info["rate"]
-                  doctors[name] = {
-                      "collections": coll,
-                      "rate": rate,
-                      "commission": round(coll * rate, 2),
-                      "xrays": data["xrays"],
-                      "offices": {k: round(v, 2) for k, v in data["offices"].items()}
+                  xray_amt = round(data["xray_amt"], 2)
+                  coll_no_xray = coll - xray_amt
+                  is_owner = info.get("isOwner", False)
+
+                  doc = {
+                      "name": f"Dr. {info['name']}",
+                      "pct": rate,
+                      "coll": coll,
+                      "payNo": 0 if is_owner else round(coll_no_xray * rate, 2),
+                      "payWith": round(coll * rate, 2),
                   }
+                  off = {}
+                  for short, amt in data["office_short"].items():
+                      off[short] = round(amt, 2)
+                  if off:
+                      doc["off"] = off
+                  doctors.append(doc)
 
-              months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
-              if start.month == end.month:
-                  date_range = f"{months[start.month-1]} {start.day} - {end.day}, {end.year}"
-              else:
-                  date_range = f"{months[start.month-1]} {start.day} - {months[end.month-1]} {end.day}, {end.year}"
+              doctors.sort(key=lambda d: d["coll"], reverse=True)
 
-              periods[label] = {
-                  "dateRange": date_range,
-                  "doctors": doctors
+              office_totals = defaultdict(float)
+              for pid, data in provider_data.items():
+                  for oname, amt in data["offices"].items():
+                      office_totals[oname] += amt
+              offices = [{"name": n, "amt": round(a, 2)} for n, a in office_totals.items()]
+              offices.sort(key=lambda o: o["amt"], reverse=True)
+
+              termed = []
+              seen_termed = set()
+              for pid, data in provider_data.items():
+                  if pid not in PROVIDER_MAP:
+                      continue
+                  info = PROVIDER_MAP[pid]
+                  if info["status"] != "termed":
+                      continue
+                  seen_termed.add(pid)
+                  name = info["name"]
+                  display = name if name == "Term Assoc." else f"Dr. {name}"
+                  termed.append({
+                      "name": display,
+                      "coll": round(data["coll"], 2),
+                      "note": "Legacy" if name == "Term Assoc." else "Terminated"
+                  })
+              for pid, info in PROVIDER_MAP.items():
+                  if info["status"] == "termed" and pid not in seen_termed:
+                      name = info["name"]
+                      if name.startswith("Termed "):
+                          continue
+                      display = name if name == "Term Assoc." else f"Dr. {name}"
+                      termed.append({
+                          "name": display,
+                          "coll": 0,
+                          "note": "Legacy" if name == "Term Assoc." else "Terminated"
+                      })
+
+              period_obj = {
+                  "label": label,
+                  "dates": date_range,
+                  "payDate": pay_date,
+                  "status": "live" if is_live else "closed",
+                  "doctors": doctors,
+                  "offices": offices,
+                  "termed": termed,
               }
+              if is_live:
+                  period_obj["daysElapsed"] = days_elapsed
+                  period_obj["daysTotal"] = days_total
+
+              periods[label] = period_obj
 
           output = {
               "periods": periods,
               "last_updated": datetime.utcnow().isoformat() + "Z",
-              "source": "azure_sql",
-              "view": "rpt.vw_income_allocation"
           }
 
           os.makedirs("data", exist_ok=True)
