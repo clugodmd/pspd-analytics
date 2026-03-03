@@ -1,443 +1,685 @@
 {
   "periods": {
     "2.27.26": {
-      "dateRange": "Feb 7 - 20, 2026",
-      "doctors": {
-        "Lugo": {
-          "collections": 5510.84,
-          "rate": 0.36,
-          "commission": 1983.9,
-          "xrays": 6,
-          "offices": {
-            "Marysville": 4538.45,
-            "Monroe": 386.9,
-            "Lake Stevens": 73.07,
-            "Stanwood": 58.22,
-            "Everett": 454.2
+      "label": "2.27.26",
+      "dates": "Feb 7 \u2013 20, 2026",
+      "payDate": "Feb 27, 2026",
+      "status": "closed",
+      "doctors": [
+        {
+          "name": "Dr. Slaven",
+          "pct": 0.36,
+          "coll": 79505.43,
+          "payNo": 24718.34,
+          "payWith": 28621.95,
+          "off": {
+            "MV": 32135.79,
+            "MO": 11983.51,
+            "SW": 35386.13
           }
         },
-        "Bell": {
-          "collections": 29665.03,
-          "rate": 0.35,
-          "commission": 10382.76,
-          "xrays": 175,
-          "offices": {
-            "Marysville": 668.13,
-            "Monroe": 11663.14,
-            "Lake Stevens": 17059.96,
-            "Everett": 273.8
+        {
+          "name": "Dr. Menon",
+          "pct": 0.35,
+          "coll": 55414.01,
+          "payNo": 17514.61,
+          "payWith": 19394.9,
+          "off": {
+            "MV": 191.76,
+            "MO": 23023.8,
+            "LS": 16970.31,
+            "EV": 15228.14
           }
         },
-        "Slaven": {
-          "collections": 79505.43,
-          "rate": 0.36,
-          "commission": 28621.95,
-          "xrays": 480,
-          "offices": {
-            "Marysville": 32135.79,
-            "Monroe": 11983.51,
-            "Stanwood": 35386.13
+        {
+          "name": "Dr. Choong",
+          "pct": 0.35,
+          "coll": 53775.62,
+          "payNo": 16485.19,
+          "payWith": 18821.47,
+          "off": {
+            "MV": 22553.32,
+            "MO": 2276.0,
+            "LS": 15.8,
+            "SW": 28930.5
           }
         },
-        "Benton": {
-          "collections": 50467.41,
-          "rate": 0.32,
-          "commission": 16149.57,
-          "xrays": 360,
-          "offices": {
-            "Marysville": 12969.5,
-            "Monroe": 21593.47,
-            "Lake Stevens": 15032.95,
-            "Everett": 871.49
+        {
+          "name": "Dr. Benton",
+          "pct": 0.32,
+          "coll": 50467.41,
+          "payNo": 14296.07,
+          "payWith": 16149.57,
+          "off": {
+            "MV": 12969.5,
+            "MO": 21593.47,
+            "LS": 15032.95,
+            "EV": 871.49
           }
         },
-        "Choong": {
-          "collections": 53775.62,
-          "rate": 0.35,
-          "commission": 18821.47,
-          "xrays": 275,
-          "offices": {
-            "Marysville": 22553.32,
-            "Monroe": 2276.0,
-            "Lake Stevens": 15.8,
-            "Stanwood": 28930.5
+        {
+          "name": "Dr. Welter",
+          "pct": 0.31,
+          "coll": 44130.7,
+          "payNo": 11923.3,
+          "payWith": 13680.52,
+          "off": {
+            "MV": 6744.71,
+            "MO": 168.96,
+            "LS": 23778.13,
+            "SW": 4999.46,
+            "EV": 8439.44
           }
         },
-        "Schrack": {
-          "collections": 7278.7,
-          "rate": 0.45,
-          "commission": 3275.41,
-          "xrays": 2,
-          "offices": {
-            "Marysville": 3863.0,
-            "Everett": 3415.7
+        {
+          "name": "Dr. Patel",
+          "pct": 0.32,
+          "coll": 36499.82,
+          "payNo": 10086.39,
+          "payWith": 11679.94,
+          "off": {
+            "MV": 8269.51,
+            "MO": 28230.31
           }
         },
-        "Menon": {
-          "collections": 55414.01,
-          "rate": 0.35,
-          "commission": 19394.9,
-          "xrays": 337,
-          "offices": {
-            "Marysville": 191.76,
-            "Monroe": 23023.8,
-            "Lake Stevens": 16970.31,
-            "Everett": 15228.14
+        {
+          "name": "Dr. Bell",
+          "pct": 0.35,
+          "coll": 29665.03,
+          "payNo": 9205.83,
+          "payWith": 10382.76,
+          "off": {
+            "MV": 668.13,
+            "MO": 11663.14,
+            "LS": 17059.96,
+            "EV": 273.8
           }
         },
-        "Welter": {
-          "collections": 44130.7,
-          "rate": 0.31,
-          "commission": 13680.52,
-          "xrays": 331,
-          "offices": {
-            "Marysville": 6744.71,
-            "Monroe": 168.96,
-            "Lake Stevens": 23778.13,
-            "Stanwood": 4999.46,
-            "Everett": 8439.44
+        {
+          "name": "Dr. Schrack",
+          "pct": 0.45,
+          "coll": 7278.7,
+          "payNo": 3085.97,
+          "payWith": 3275.41,
+          "off": {
+            "MV": 3863.0,
+            "EV": 3415.7
           }
         },
-        "Patel": {
-          "collections": 36499.82,
-          "rate": 0.32,
-          "commission": 11679.94,
-          "xrays": 385,
-          "offices": {
-            "Marysville": 8269.51,
-            "Monroe": 28230.31
+        {
+          "name": "Dr. Lugo",
+          "pct": 0.36,
+          "coll": 5510.84,
+          "payNo": 0,
+          "payWith": 1983.9,
+          "off": {
+            "MV": 4538.45,
+            "MO": 386.9,
+            "LS": 73.07,
+            "SW": 58.22,
+            "EV": 454.2
           }
         }
-      }
+      ],
+      "offices": [
+        {
+          "name": "Monroe",
+          "amt": 101179.86
+        },
+        {
+          "name": "Marysville",
+          "amt": 92420.18
+        },
+        {
+          "name": "Lake Stevens",
+          "amt": 73788.85
+        },
+        {
+          "name": "Stanwood",
+          "amt": 69470.31
+        },
+        {
+          "name": "Everett",
+          "amt": 29835.51
+        }
+      ],
+      "termed": [
+        {
+          "name": "Term Assoc.",
+          "coll": 1371.77,
+          "note": "Legacy"
+        },
+        {
+          "name": "Dr. Ping",
+          "coll": 390.0,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Laws",
+          "coll": 400.0,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Termed 111",
+          "coll": 0.5,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Termed 112",
+          "coll": 160.0,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Kirk",
+          "coll": 2124.88,
+          "note": "Terminated"
+        }
+      ]
     },
     "2.13.26": {
-      "dateRange": "Jan 24 - Feb 6, 2026",
-      "doctors": {
-        "Lugo": {
-          "collections": 24645.25,
-          "rate": 0.36,
-          "commission": 8872.29,
-          "xrays": 35,
-          "offices": {
-            "Marysville": 11313.33,
-            "Monroe": 12939.1,
-            "Lake Stevens": 238.52,
-            "Stanwood": 0.75,
-            "Everett": 153.55
+      "label": "2.13.26",
+      "dates": "Jan 24 \u2013 Feb 6, 2026",
+      "payDate": "Feb 13, 2026",
+      "status": "closed",
+      "doctors": [
+        {
+          "name": "Dr. Slaven",
+          "pct": 0.36,
+          "coll": 79960.52,
+          "payNo": 24813.81,
+          "payWith": 28785.79,
+          "off": {
+            "MV": 39622.84,
+            "MO": 1931.4,
+            "SW": 38406.28
           }
         },
-        "Bell": {
-          "collections": 27479.96,
-          "rate": 0.35,
-          "commission": 9617.99,
-          "xrays": 145,
-          "offices": {
-            "Marysville": 469.4,
-            "Monroe": 13356.54,
-            "Lake Stevens": 13353.85,
-            "Everett": 300.17
+        {
+          "name": "Dr. Choong",
+          "pct": 0.35,
+          "coll": 60274.17,
+          "payNo": 18334.92,
+          "payWith": 21095.96,
+          "off": {
+            "MV": 27667.81,
+            "MO": 4127.7,
+            "LS": 6.78,
+            "SW": 28099.09,
+            "EV": 372.79
           }
         },
-        "Slaven": {
-          "collections": 79960.52,
-          "rate": 0.36,
-          "commission": 28785.79,
-          "xrays": 540,
-          "offices": {
-            "Marysville": 39622.84,
-            "Monroe": 1931.4,
-            "Stanwood": 38406.28
+        {
+          "name": "Dr. Welter",
+          "pct": 0.31,
+          "coll": 58319.48,
+          "payNo": 16433.49,
+          "payWith": 18079.04,
+          "off": {
+            "MV": 11091.64,
+            "MO": 5705.26,
+            "LS": 25140.49,
+            "SW": 953.98,
+            "EV": 15428.11
           }
         },
-        "Benton": {
-          "collections": 43507.59,
-          "rate": 0.32,
-          "commission": 13922.43,
-          "xrays": 334,
-          "offices": {
-            "Marysville": 7453.91,
-            "Monroe": 28184.7,
-            "Lake Stevens": 7515.98,
-            "Everett": 353.0
+        {
+          "name": "Dr. Menon",
+          "pct": 0.35,
+          "coll": 49619.64,
+          "payNo": 15079.04,
+          "payWith": 17366.87,
+          "off": {
+            "MV": 268.32,
+            "MO": 28677.95,
+            "LS": 13832.39,
+            "EV": 6840.98
           }
         },
-        "Choong": {
-          "collections": 60274.17,
-          "rate": 0.35,
-          "commission": 21095.96,
-          "xrays": 385,
-          "offices": {
-            "Marysville": 27667.81,
-            "Monroe": 4127.7,
-            "Lake Stevens": 6.78,
-            "Stanwood": 28099.09,
-            "Everett": 372.79
+        {
+          "name": "Dr. Benton",
+          "pct": 0.32,
+          "coll": 43507.59,
+          "payNo": 12139.21,
+          "payWith": 13922.43,
+          "off": {
+            "MV": 7453.91,
+            "MO": 28184.7,
+            "LS": 7515.98,
+            "EV": 353.0
           }
         },
-        "Schrack": {
-          "collections": 2023.41,
-          "rate": 0.45,
-          "commission": 910.53,
-          "xrays": 0,
-          "offices": {
-            "Marysville": 1544.01,
-            "Everett": 479.4
+        {
+          "name": "Dr. Bell",
+          "pct": 0.35,
+          "coll": 27479.96,
+          "payNo": 8605.64,
+          "payWith": 9617.99,
+          "off": {
+            "MV": 469.4,
+            "MO": 13356.54,
+            "LS": 13353.85,
+            "EV": 300.17
           }
         },
-        "Menon": {
-          "collections": 49619.64,
-          "rate": 0.35,
-          "commission": 17366.87,
-          "xrays": 342,
-          "offices": {
-            "Marysville": 268.32,
-            "Monroe": 28677.95,
-            "Lake Stevens": 13832.39,
-            "Everett": 6840.98
+        {
+          "name": "Dr. Lugo",
+          "pct": 0.36,
+          "coll": 24645.25,
+          "payNo": 0,
+          "payWith": 8872.29,
+          "off": {
+            "MV": 11313.33,
+            "MO": 12939.1,
+            "LS": 238.52,
+            "SW": 0.75,
+            "EV": 153.55
           }
         },
-        "Welter": {
-          "collections": 58319.48,
-          "rate": 0.31,
-          "commission": 18079.04,
-          "xrays": 286,
-          "offices": {
-            "Marysville": 11091.64,
-            "Monroe": 5705.26,
-            "Lake Stevens": 25140.49,
-            "Stanwood": 953.98,
-            "Everett": 15428.11
+        {
+          "name": "Dr. Patel",
+          "pct": 0.32,
+          "coll": 6748.41,
+          "payNo": 1760.11,
+          "payWith": 2159.49,
+          "off": {
+            "MV": 1506.64,
+            "MO": 5241.77
           }
         },
-        "Patel": {
-          "collections": 6748.41,
-          "rate": 0.32,
-          "commission": 2159.49,
-          "xrays": 32,
-          "offices": {
-            "Marysville": 1506.64,
-            "Monroe": 5241.77
+        {
+          "name": "Dr. Schrack",
+          "pct": 0.45,
+          "coll": 2023.41,
+          "payNo": 910.53,
+          "payWith": 910.53,
+          "off": {
+            "MV": 1544.01,
+            "EV": 479.4
           }
         }
-      }
+      ],
+      "offices": [
+        {
+          "name": "Monroe",
+          "amt": 101519.47
+        },
+        {
+          "name": "Marysville",
+          "amt": 101170.9
+        },
+        {
+          "name": "Stanwood",
+          "amt": 67504.1
+        },
+        {
+          "name": "Lake Stevens",
+          "amt": 60088.01
+        },
+        {
+          "name": "Everett",
+          "amt": 25017.25
+        }
+      ],
+      "termed": [
+        {
+          "name": "Term Assoc.",
+          "coll": 116.2,
+          "note": "Legacy"
+        },
+        {
+          "name": "Dr. Ping",
+          "coll": 984.9,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Laws",
+          "coll": 163.0,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Termed 112",
+          "coll": 250.0,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Termed 116",
+          "coll": 19.68,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Kirk",
+          "coll": 1187.52,
+          "note": "Terminated"
+        }
+      ]
     },
     "1.30.26": {
-      "dateRange": "Jan 10 - 23, 2026",
-      "doctors": {
-        "Lugo": {
-          "collections": 1918.33,
-          "rate": 0.36,
-          "commission": 690.6,
-          "xrays": 0,
-          "offices": {
-            "Marysville": 1035.2,
-            "Monroe": 980.72,
-            "Lake Stevens": -102.27,
-            "Stanwood": 2.6,
-            "Everett": 2.08
+      "label": "1.30.26",
+      "dates": "Jan 10 \u2013 23, 2026",
+      "payDate": "Jan 30, 2026",
+      "status": "closed",
+      "doctors": [
+        {
+          "name": "Dr. Slaven",
+          "pct": 0.36,
+          "coll": 65246.48,
+          "payNo": 20568.98,
+          "payWith": 23488.73,
+          "off": {
+            "MV": 26599.03,
+            "MO": 7772.63,
+            "SW": 30874.82
           }
         },
-        "Bell": {
-          "collections": 25485.73,
-          "rate": 0.35,
-          "commission": 8920.01,
-          "xrays": 172,
-          "offices": {
-            "Marysville": 399.8,
-            "Monroe": 19633.63,
-            "Lake Stevens": 1956.58,
-            "Everett": 3495.72
+        {
+          "name": "Dr. Menon",
+          "pct": 0.35,
+          "coll": 59188.11,
+          "payNo": 17853.81,
+          "payWith": 20715.84,
+          "off": {
+            "MV": 10954.74,
+            "MO": 36120.13,
+            "LS": 4699.25,
+            "EV": 7413.99
           }
         },
-        "Slaven": {
-          "collections": 65246.48,
-          "rate": 0.36,
-          "commission": 23488.73,
-          "xrays": 373,
-          "offices": {
-            "Marysville": 26599.03,
-            "Monroe": 7772.63,
-            "Stanwood": 30874.82
+        {
+          "name": "Dr. Benton",
+          "pct": 0.32,
+          "coll": 54270.1,
+          "payNo": 14654.16,
+          "payWith": 17366.43,
+          "off": {
+            "MV": 25024.12,
+            "MO": 26281.6,
+            "LS": 508.71,
+            "EV": 2455.67
           }
         },
-        "Benton": {
-          "collections": 54270.1,
-          "rate": 0.32,
-          "commission": 17366.43,
-          "xrays": 334,
-          "offices": {
-            "Marysville": 25024.12,
-            "Monroe": 26281.6,
-            "Lake Stevens": 508.71,
-            "Everett": 2455.67
+        {
+          "name": "Dr. Choong",
+          "pct": 0.35,
+          "coll": 49660.25,
+          "payNo": 14785.22,
+          "payWith": 17381.09,
+          "off": {
+            "MV": 24820.87,
+            "SW": 24468.51,
+            "EV": 370.87
           }
         },
-        "Choong": {
-          "collections": 49660.25,
-          "rate": 0.35,
-          "commission": 17381.09,
-          "xrays": 400,
-          "offices": {
-            "Marysville": 24820.87,
-            "Stanwood": 24468.51,
-            "Everett": 370.87
+        {
+          "name": "Dr. Welter",
+          "pct": 0.31,
+          "coll": 35197.21,
+          "payNo": 9174.04,
+          "payWith": 10911.14,
+          "off": {
+            "MV": 19546.69,
+            "MO": 4912.04,
+            "LS": 3033.62,
+            "SW": 80.11,
+            "EV": 7624.75
           }
         },
-        "Schrack": {
-          "collections": 660.76,
-          "rate": 0.45,
-          "commission": 297.34,
-          "xrays": 0,
-          "offices": {
-            "Marysville": 509.16,
-            "Everett": 151.6
+        {
+          "name": "Dr. Bell",
+          "pct": 0.35,
+          "coll": 25485.73,
+          "payNo": 7655.5,
+          "payWith": 8920.01,
+          "off": {
+            "MV": 399.8,
+            "MO": 19633.63,
+            "LS": 1956.58,
+            "EV": 3495.72
           }
         },
-        "Menon": {
-          "collections": 59188.11,
-          "rate": 0.35,
-          "commission": 20715.84,
-          "xrays": 379,
-          "offices": {
-            "Marysville": 10954.74,
-            "Monroe": 36120.13,
-            "Lake Stevens": 4699.25,
-            "Everett": 7413.99
+        {
+          "name": "Dr. Lugo",
+          "pct": 0.36,
+          "coll": 1918.33,
+          "payNo": 0,
+          "payWith": 690.6,
+          "off": {
+            "MV": 1035.2,
+            "MO": 980.72,
+            "LS": -102.27,
+            "SW": 2.6,
+            "EV": 2.08
           }
         },
-        "Welter": {
-          "collections": 35197.21,
-          "rate": 0.31,
-          "commission": 10911.14,
-          "xrays": 238,
-          "offices": {
-            "Marysville": 19546.69,
-            "Monroe": 4912.04,
-            "Lake Stevens": 3033.62,
-            "Stanwood": 80.11,
-            "Everett": 7624.75
+        {
+          "name": "Dr. Schrack",
+          "pct": 0.45,
+          "coll": 660.76,
+          "payNo": 297.34,
+          "payWith": 297.34,
+          "off": {
+            "MV": 509.16,
+            "EV": 151.6
           }
         },
-        "Patel": {
-          "collections": 442.5,
-          "rate": 0.32,
-          "commission": 141.6,
-          "xrays": 2,
-          "offices": {
-            "Monroe": 442.5
+        {
+          "name": "Dr. Patel",
+          "pct": 0.32,
+          "coll": 442.5,
+          "payNo": 136.86,
+          "payWith": 141.6,
+          "off": {
+            "MO": 442.5
           }
         }
-      }
+      ],
+      "offices": [
+        {
+          "name": "Marysville",
+          "amt": 117299.56
+        },
+        {
+          "name": "Monroe",
+          "amt": 97895.85
+        },
+        {
+          "name": "Stanwood",
+          "amt": 56182.59
+        },
+        {
+          "name": "Everett",
+          "amt": 30751.29
+        },
+        {
+          "name": "Lake Stevens",
+          "amt": 11474.02
+        }
+      ],
+      "termed": [
+        {
+          "name": "Term Assoc.",
+          "coll": 394.0,
+          "note": "Legacy"
+        },
+        {
+          "name": "Dr. Ping",
+          "coll": 85.19,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Laws",
+          "coll": 1.4,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Kirk",
+          "coll": 21053.25,
+          "note": "Terminated"
+        }
+      ]
     },
     "1.16.26": {
-      "dateRange": "Dec 27 - Jan 9, 2026",
-      "doctors": {
-        "Lugo": {
-          "collections": 1628.83,
-          "rate": 0.36,
-          "commission": 586.38,
-          "xrays": 3,
-          "offices": {
-            "Marysville": 965.8,
-            "Monroe": 660.34,
-            "Lake Stevens": 0.63,
-            "Everett": 2.06
+      "label": "1.16.26",
+      "dates": "Dec 27 \u2013 Jan 9, 2026",
+      "payDate": "Jan 16, 2026",
+      "status": "closed",
+      "doctors": [
+        {
+          "name": "Dr. Slaven",
+          "pct": 0.36,
+          "coll": 49010.37,
+          "payNo": 14816.74,
+          "payWith": 17643.73,
+          "off": {
+            "MV": 18379.9,
+            "MO": 1094.21,
+            "LS": 64.3,
+            "SW": 29471.96
           }
         },
-        "Bell": {
-          "collections": 25419.49,
-          "rate": 0.35,
-          "commission": 8896.82,
-          "xrays": 181,
-          "offices": {
-            "Marysville": 740.2,
-            "Monroe": 23249.22,
-            "Lake Stevens": 17.0,
-            "Everett": 1413.07
+        {
+          "name": "Dr. Choong",
+          "pct": 0.35,
+          "coll": 39637.26,
+          "payNo": 11674.68,
+          "payWith": 13873.04,
+          "off": {
+            "MV": 12366.2,
+            "SW": 27169.9,
+            "EV": 101.16
           }
         },
-        "Slaven": {
-          "collections": 49010.37,
-          "rate": 0.36,
-          "commission": 17643.73,
-          "xrays": 309,
-          "offices": {
-            "Marysville": 18379.9,
-            "Monroe": 1094.21,
-            "Lake Stevens": 64.3,
-            "Stanwood": 29471.96
+        {
+          "name": "Dr. Benton",
+          "pct": 0.32,
+          "coll": 39283.86,
+          "payNo": 11159.3,
+          "payWith": 12570.84,
+          "off": {
+            "MV": 10528.08,
+            "MO": 20607.98,
+            "LS": 403.0,
+            "EV": 7744.8
           }
         },
-        "Benton": {
-          "collections": 39283.86,
-          "rate": 0.32,
-          "commission": 12570.84,
-          "xrays": 216,
-          "offices": {
-            "Marysville": 10528.08,
-            "Monroe": 20607.98,
-            "Lake Stevens": 403.0,
-            "Everett": 7744.8
+        {
+          "name": "Dr. Menon",
+          "pct": 0.35,
+          "coll": 34673.64,
+          "payNo": 10439.25,
+          "payWith": 12135.77,
+          "off": {
+            "MV": 4392.95,
+            "MO": 23047.47,
+            "EV": 7233.22
           }
         },
-        "Choong": {
-          "collections": 39637.26,
-          "rate": 0.35,
-          "commission": 13873.04,
-          "xrays": 264,
-          "offices": {
-            "Marysville": 12366.2,
-            "Stanwood": 27169.9,
-            "Everett": 101.16
+        {
+          "name": "Dr. Welter",
+          "pct": 0.31,
+          "coll": 32121.77,
+          "payNo": 8243.57,
+          "payWith": 9957.75,
+          "off": {
+            "MV": 15967.48,
+            "MO": 15818.29,
+            "LS": 46.0,
+            "SW": 290.0
           }
         },
-        "Schrack": {
-          "collections": 7921.9,
-          "rate": 0.45,
-          "commission": 3564.86,
-          "xrays": 1,
-          "offices": {
-            "Marysville": 5448.58,
-            "Everett": 2473.32
+        {
+          "name": "Dr. Bell",
+          "pct": 0.35,
+          "coll": 25419.49,
+          "payNo": 7455.19,
+          "payWith": 8896.82,
+          "off": {
+            "MV": 740.2,
+            "MO": 23249.22,
+            "LS": 17.0,
+            "EV": 1413.07
           }
         },
-        "Menon": {
-          "collections": 34673.64,
-          "rate": 0.35,
-          "commission": 12135.77,
-          "xrays": 251,
-          "offices": {
-            "Marysville": 4392.95,
-            "Monroe": 23047.47,
-            "Everett": 7233.22
+        {
+          "name": "Dr. Schrack",
+          "pct": 0.45,
+          "coll": 7921.9,
+          "payNo": 3552.97,
+          "payWith": 3564.86,
+          "off": {
+            "MV": 5448.58,
+            "EV": 2473.32
           }
         },
-        "Welter": {
-          "collections": 32121.77,
-          "rate": 0.31,
-          "commission": 9957.75,
-          "xrays": 255,
-          "offices": {
-            "Marysville": 15967.48,
-            "Monroe": 15818.29,
-            "Lake Stevens": 46.0,
-            "Stanwood": 290.0
+        {
+          "name": "Dr. Lugo",
+          "pct": 0.36,
+          "coll": 1628.83,
+          "payNo": 0,
+          "payWith": 586.38,
+          "off": {
+            "MV": 965.8,
+            "MO": 660.34,
+            "LS": 0.63,
+            "EV": 2.06
           }
         },
-        "Patel": {
-          "collections": 549.7,
-          "rate": 0.32,
-          "commission": 175.9,
-          "xrays": 1,
-          "offices": {
-            "Marysville": 101.2,
-            "Monroe": 448.5
+        {
+          "name": "Dr. Patel",
+          "pct": 0.32,
+          "coll": 549.7,
+          "payNo": 144.22,
+          "payWith": 175.9,
+          "off": {
+            "MV": 101.2,
+            "MO": 448.5
           }
         }
-      }
+      ],
+      "offices": [
+        {
+          "name": "Monroe",
+          "amt": 96090.83
+        },
+        {
+          "name": "Marysville",
+          "amt": 74514.51
+        },
+        {
+          "name": "Stanwood",
+          "amt": 56931.86
+        },
+        {
+          "name": "Everett",
+          "amt": 35855.78
+        },
+        {
+          "name": "Lake Stevens",
+          "amt": 1957.68
+        }
+      ],
+      "termed": [
+        {
+          "name": "Term Assoc.",
+          "coll": 951.0,
+          "note": "Legacy"
+        },
+        {
+          "name": "Dr. Ping",
+          "coll": 41.4,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Kirk",
+          "coll": 34111.44,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Laws",
+          "coll": 0,
+          "note": "Terminated"
+        }
+      ]
     }
   },
-  "last_updated": "2026-03-03T00:45:14.346185Z",
-  "source": "azure_sql",
-  "view": "rpt.vw_income_allocation"
+  "last_updated": "2026-03-03T02:19:20.912688Z"
 }
