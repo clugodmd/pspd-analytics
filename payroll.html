@@ -238,92 +238,80 @@
 // DATA: Each period has its own doctor + office data
 // When connected to Azure, this pulls from rpt.vw_payroll_summary
 // ═══════════════════════════════════════════
-const PERIODS = {
-  '1.16.26': {
-    label:'1.16.26', dates:'Dec 27, 2025 – Jan 9, 2026', payDate:'Jan 16, 2026', status:'closed',
-    doctors: [
-      {name:'Dr. Slaven',  pct:0.36, coll:61203.44, payNo:19033.07, payWith:22033.24},
-      {name:'Dr. Menon',   pct:0.35, coll:46512.10, payNo:14228.71, payWith:16279.24},
-      {name:'Dr. Choong',  pct:0.35, coll:41254.87, payNo:12634.74, payWith:14439.20},
-      {name:'Dr. Benton',  pct:0.32, coll:40209.18, payNo:11266.57, payWith:12866.94},
-      {name:'Dr. Welter',  pct:0.31, coll:35628.91, payNo:9645.03,  payWith:11044.96},
-      {name:'Dr. Patel',   pct:0.32, coll:30245.60, payNo:8468.77,  payWith:9678.59},
-      {name:'Dr. Bell',    pct:0.35, coll:24102.35, payNo:7371.32,  payWith:8435.82},
-      {name:'Dr. Schrack', pct:0.45, coll:6488.22,  payNo:2919.70,  payWith:2919.70},
-      {name:'Dr. Lugo',    pct:0.36, coll:5597.40,  payNo:0,        payWith:2015.06},
-    ],
-    offices: [{name:'Monroe',amt:82545.87},{name:'Marysville',amt:58154.50},{name:'Stanwood',amt:47737.69},{name:'Everett',amt:30446.41},{name:'Lake Stevens',amt:356.06}],
-    termed: [{name:'Dr. Kirk',coll:1853.44,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:671.12,note:'Legacy'}],
-  },
-  '1.30.26': {
-    label:'1.30.26', dates:'Jan 10 – Jan 23, 2026', payDate:'Jan 30, 2026', status:'closed',
-    doctors: [
-      {name:'Dr. Slaven',  pct:0.36, coll:72584.21, payNo:22565.63, payWith:26130.32},
-      {name:'Dr. Menon',   pct:0.35, coll:51293.44, payNo:15695.60, payWith:17952.70},
-      {name:'Dr. Choong',  pct:0.35, coll:49217.38, payNo:15060.32, payWith:17226.08},
-      {name:'Dr. Benton',  pct:0.32, coll:46124.95, payNo:12915.00, payWith:14759.98},
-      {name:'Dr. Welter',  pct:0.31, coll:41589.44, payNo:11260.74, payWith:12892.73},
-      {name:'Dr. Patel',   pct:0.32, coll:33875.13, payNo:9485.04,  payWith:10840.04},
-      {name:'Dr. Bell',    pct:0.35, coll:26741.89, payNo:8182.92,  payWith:9359.66},
-      {name:'Dr. Schrack', pct:0.45, coll:7012.51,  payNo:3155.63,  payWith:3155.63},
-      {name:'Dr. Lugo',    pct:0.36, coll:6290.88,  payNo:0,        payWith:2264.72},
-    ],
-    offices: [{name:'Monroe',amt:84035.16},{name:'Marysville',amt:100800.74},{name:'Stanwood',amt:48842.88},{name:'Everett',amt:26515.45},{name:'Lake Stevens',amt:10345.60}],
-    termed: [{name:'Dr. Kirk',coll:2154.55,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:998.00,note:'Legacy'}],
-  },
-  '2.13.26': {
-    label:'2.13.26', dates:'Jan 24 – Feb 6, 2026', payDate:'Feb 13, 2026', status:'closed',
-    doctors: [
-      {name:'Dr. Slaven',  pct:0.36, coll:76422.98, payNo:23763.37, payWith:27512.27},
-      {name:'Dr. Menon',   pct:0.35, coll:52834.61, payNo:16165.59, payWith:18492.11},
-      {name:'Dr. Choong',  pct:0.35, coll:51807.52, payNo:15853.30, payWith:18132.63},
-      {name:'Dr. Benton',  pct:0.32, coll:47611.28, payNo:13331.16, payWith:15235.61},
-      {name:'Dr. Welter',  pct:0.31, coll:43245.18, payNo:11712.52, payWith:13406.01},
-      {name:'Dr. Patel',   pct:0.32, coll:35102.67, payNo:9828.75,  payWith:11232.85},
-      {name:'Dr. Bell',    pct:0.35, coll:27654.31, payNo:8460.07,  payWith:9679.01},
-      {name:'Dr. Schrack', pct:0.45, coll:7245.88,  payNo:3260.65,  payWith:3260.65},
-      {name:'Dr. Lugo',    pct:0.36, coll:6502.12,  payNo:0,        payWith:2340.76},
-    ],
-    offices: [{name:'Monroe',amt:77629.78},{name:'Marysville',amt:78477.67},{name:'Lake Stevens',amt:53245.25},{name:'Stanwood',amt:59796.15},{name:'Everett',amt:23858.82}],
-    termed: [{name:'Dr. Kirk',coll:2510.94,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:1206.00,note:'Legacy'}],
-  },
-  '2.27.26': {
-    label:'2.27.26', dates:'Feb 7 – Feb 20, 2026', payDate:'Feb 27, 2026', status:'closed',
-    doctors: [
-      {name:'Dr. Slaven',  pct:0.36, coll:79367.09, payNo:24664.54, payWith:28572.15, off:{MV:31955.29,MO:12059.51,LS:0,SW:35352.29,EV:0}},
-      {name:'Dr. Menon',   pct:0.35, coll:55076.25, payNo:17389.04, payWith:19276.69, off:{MV:157,MO:22720.80,LS:16970.31,SW:0,EV:15228.14}},
-      {name:'Dr. Choong',  pct:0.35, coll:54029.92, payNo:16574.20, payWith:18910.47, off:{MV:22574.42,MO:2139,LS:0,SW:29316.50,EV:0}},
-      {name:'Dr. Benton',  pct:0.32, coll:49512.72, payNo:13990.57, payWith:15844.07, off:{MV:12960.60,MO:21474.17,LS:15077.95,SW:0,EV:0}},
-      {name:'Dr. Welter',  pct:0.31, coll:44314.70, payNo:11980.34, payWith:13737.56, off:{MV:6744.71,MO:168.96,LS:23962.13,SW:4999.46,EV:8439.44}},
-      {name:'Dr. Patel',   pct:0.32, coll:36621.82, payNo:10118.71, payWith:11718.98, off:{MV:8376.51,MO:28245.31,LS:0,SW:0,EV:0}},
-      {name:'Dr. Bell',    pct:0.35, coll:28898.18, payNo:8937.44,  payWith:10114.36, off:{MV:41.80,MO:11677.42,LS:17178.96,SW:0,EV:0}},
-      {name:'Dr. Schrack', pct:0.45, coll:7528.70,  payNo:3387.92,  payWith:3387.92,  off:{MV:4113,MO:0,LS:0,SW:0,EV:3415.70}},
-      {name:'Dr. Lugo',    pct:0.36, coll:6941.64,  payNo:0,        payWith:2498.99,  off:{MV:5541.45,MO:386.90,LS:1.07,SW:18.02,EV:994.20}},
-    ],
-    offices: [{name:'Monroe',amt:100459.04},{name:'Marysville',amt:92928.79},{name:'Lake Stevens',amt:74303.05},{name:'Stanwood',amt:69782.27},{name:'Everett',amt:29153.88}],
-    termed: [{name:'Dr. Kirk',coll:2756.88,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:1579.13,note:'Legacy'}],
-  },
-  '3.13.26': {
-    label:'3.13.26', dates:'Feb 21 – Mar 6, 2026', payDate:'Mar 13, 2026', status:'live',
-    daysElapsed: 9, daysTotal: 14,
-    // Simulated partial data — when connected to Azure, this is real-time from the SQL view
-    doctors: [
-      {name:'Dr. Slaven',  pct:0.36, coll:52911.39, payNo:16442.96, payWith:19047.70},
-      {name:'Dr. Menon',   pct:0.35, coll:35050.18, payNo:11062.03, payWith:12267.76},
-      {name:'Dr. Choong',  pct:0.35, coll:36019.95, payNo:11049.47, payWith:12626.98},
-      {name:'Dr. Benton',  pct:0.32, coll:33008.48, payNo:9330.37,  payWith:10562.71},
-      {name:'Dr. Welter',  pct:0.31, coll:29209.80, payNo:7986.89,  payWith:9058.04},
-      {name:'Dr. Patel',   pct:0.32, coll:24414.55, payNo:6745.81,  payWith:7812.66},
-      {name:'Dr. Bell',    pct:0.35, coll:19265.45, payNo:5958.29,  payWith:6742.91},
-      {name:'Dr. Schrack', pct:0.45, coll:5019.13,  payNo:2258.61,  payWith:2258.61},
-      {name:'Dr. Lugo',    pct:0.36, coll:4627.76,  payNo:0,        payWith:1665.99},
-    ],
-    offices: [{name:'Monroe',amt:66972.69},{name:'Marysville',amt:61952.53},{name:'Lake Stevens',amt:49535.37},{name:'Stanwood',amt:46521.51},{name:'Everett',amt:19435.92}],
-    termed: [{name:'Dr. Kirk',coll:1837.92,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:1052.75,note:'Legacy'}],
-  },
-};
+let PERIODS = {};
+    const officeNames = {MV:'Marysville',MO:'Monroe',LS:'Lake Stevens',SW:'Stanwood',EV:'Everett'};
 
-const officeNames = {MV:'Marysville',MO:'Monroe',LS:'Lake Stevens',SW:'Stanwood',EV:'Everett'};
+    // Fetch live data from GitHub Actions-generated JSON
+    async function loadPayrollData() {
+      try {
+        const resp = await fetch('data/payroll.json?t=' + Date.now());
+        const data = await resp.json();
+        
+        PERIODS = {};
+        for (const [label, period] of Object.entries(data.periods)) {
+          const doctors = [];
+          const officeAgg = {};
+          
+          for (const [name, doc] of Object.entries(period.doctors)) {
+            const coll = doc.collections;
+            const rate = doc.rate;
+            const commission = doc.commission;
+            // Build per-doctor office breakdown
+            const off = {};
+            if (doc.offices) {
+              for (const [oName, oAmt] of Object.entries(doc.offices)) {
+                const key = oName === 'Marysville' ? 'MV' : oName === 'Monroe' ? 'MO' : 
+                            oName === 'Lake Stevens' ? 'LS' : oName === 'Stanwood' ? 'SW' : 
+                            oName === 'Everett' ? 'EV' : oName;
+                off[key] = oAmt;
+                officeAgg[oName] = (officeAgg[oName] || 0) + oAmt;
+              }
+            }
+            doctors.push({
+              name: 'Dr. ' + name,
+              pct: rate,
+              coll: coll,
+              payNo: commission,
+              payWith: commission,
+              off: off
+            });
+          }
+          
+          // Sort by collections descending
+          doctors.sort((a, b) => b.coll - a.coll);
+          
+          // Build offices array
+          const offices = Object.entries(officeAgg)
+            .map(([name, amt]) => ({ name, amt }))
+            .sort((a, b) => b.amt - a.amt);
+          
+          PERIODS[label] = {
+            label: label,
+            dates: period.dateRange,
+            payDate: '',
+            status: 'closed',
+            doctors: doctors,
+            offices: offices,
+            termed: []
+          };
+        }
+        
+        // Set current period to the most recent
+        const labels = Object.keys(PERIODS).sort();
+        if (labels.length > 0) {
+          currentPeriod = labels[labels.length - 1];
+        }
+        
+        // Update footer with last_updated
+        if (data.last_updated) {
+          const updated = new Date(data.last_updated);
+          const footer = document.querySelector('.footer');
+          footer.innerHTML += '<br>Last refreshed: ' + updated.toLocaleString();
+        }
+      } catch(e) {
+        console.error('Failed to load payroll data:', e);
+      }
+    }
 
 // ── STATE ──
 let currentPeriod = '2.27.26';
@@ -601,8 +589,12 @@ function buildAll() {
 }
 
 // ── INIT ──
-buildPeriodSelector();
-buildAll();
+async function init() {
+  await loadPayrollData();
+  buildPeriodSelector();
+  buildAll();
+}
+init();
 </script>
 </body>
 </html>
