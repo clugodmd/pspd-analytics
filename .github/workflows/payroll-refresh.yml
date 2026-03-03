@@ -20,7 +20,7 @@ jobs:
           curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
           curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
           sudo apt-get update
-          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc-dev
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc-dev libgssapi-krb5-2
 
       - name: Install Python dependencies
         run: pip install pyodbc
@@ -71,8 +71,9 @@ jobs:
               f"DRIVER={{ODBC Driver 18 for SQL Server}};"
               f"SERVER={os.environ['SQL_SERVER']};"
               f"DATABASE={os.environ['SQL_DATABASE']};"
-              f"UID={{{os.environ['SQL_USER']}}};"
-              f"PWD={{{os.environ['SQL_PASSWORD']}}};"
+              f"UID={os.environ['SQL_USER']};"
+              f"PWD={os.environ['SQL_PASSWORD']};"
+              "Authentication=ActiveDirectoryPassword;"
               "Encrypt=yes;TrustServerCertificate=no;"
           )
           conn = pyodbc.connect(conn_str, timeout=30)
