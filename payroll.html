@@ -325,12 +325,13 @@ return { totalColl:tc, totalPayNo:tpn, totalPayWith:tpw, totalSaved:tpw-tpn };
 function buildPeriodSelector() {
 const row = $('period-row');
 row.innerHTML = '';
-Object.values(PERIODS).forEach(p => {
+Object.entries(PERIODS).forEach(([key, p]) => {
 const btn = document.createElement('button');
 const isLive = p.status === 'live';
-btn.className = 'period-btn' + (p.label === currentPeriod ? ' active' : '') + (isLive ? ' live' : '');
-btn.innerHTML = (isLive ? '<span class="live-dot"></span>' : '') + p.label + (isLive ? ' LIVE' : '');
-btn.onclick = () => switchPeriod(p.label);
+const lbl = p.label || key;
+btn.className = 'period-btn' + (lbl === currentPeriod ? ' active' : '') + (isLive ? ' live' : '');
+btn.innerHTML = (isLive ? '<span class="live-dot"></span>' : '') + lbl + (isLive ? ' LIVE' : '');
+btn.onclick = () => switchPeriod(lbl);
 row.appendChild(btn);
 });
 }
