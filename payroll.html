@@ -218,6 +218,7 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
 <div class="footer">
 <strong>Dentrepreneur Control Tower</strong> &bull; Puget Sound Pediatric Dentistry &bull; Automated from Azure SQL
 <br>Built by Chris Lugo + Claude AI
+<br><span id="last-updated" style="font-size:11px;color:var(--text3)"></span>
 </div>
 
 <script>
@@ -574,6 +575,11 @@ buildAll();
     if (liveKey) currentPeriod = liveKey;
     buildPeriodSelector();
     buildAll();
+if (json.last_updated) {
+const d = new Date(json.last_updated);
+const el = document.getElementById('last-updated');
+if (el) el.textContent = 'Data refreshed: ' + d.toLocaleString('en-US', {month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});
+}
   } catch(e) {
     // Live data not available — dashboard works fine with hardcoded data
     console.log('Live data not loaded:', e.message);
