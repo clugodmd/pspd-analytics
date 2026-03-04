@@ -134,21 +134,104 @@
     <button class="tab-btn active" onclick="showView('overview',this)">Overview</button>
     <button class="tab-btn" onclick="showView('pnl',this)">Profit &amp; Loss</button>
     <button class="tab-btn" onclick="showView('balance',this)">Balance Sheet</button>
-    <button class="tab-btn" onclicZ�H���՚Y]�	��\�����\�H���\����؝]ۏ���]ۈ�\��H�X�X���ۘ�X��H���՚Y]�	ܙX�Z]�X�\��\�H��T��T؝]ۏ���]����]��\��H�XZ[����KKHՑT��QU�KO��]��\��H��Y]�X�]�H�YH��Y]�[ݙ\��Y]ȏ��]��\��H��K\��ȈYH��K[ݙ\��Y]ȏ��]���]��\��H���X�����]���]��\��H��X�]]HܙY[����]�[�YH��^[��\��]���]��\��H��\��YH��]�Y^X�\����]����]���]���]��\��H��X�]]H���ٚ]�]\��[�]���]��\��H��\��YH��]\��[X�\����]����]����]���]��\��H���X����[OH�X\��[�]�����]���]��\��H��X�]]H�YH���^[��H�]Y�ܚY\��]���]��\��H��\��YH��Y^[��\ȏ��]����]���]���]��\��H��X�]]H�Y��X���[���X�Z]�X�HY�[���]���]��\��H��\��YH�\�XY�[��\�]�Y]ȏ��]����]����]����]����KKH	�KO��]��\��H��Y]ȈYH��Y]�\����]��\��H��X�]]HܙY[����ٚ]	�[\�����][Y[��]���]��\��H��\��YH��]X�H��[OH�ݙ\����^�]]ȏ��]����]����KKH�SS��H�QU�O��]��\��H��Y]ȈYH��Y]�X�[[��H���]��\��H��X�]]H�YH���[[��H�Y]�]���]��\��H��\��YH��[[��K]X�H��[OH�ݙ\����^�]]ȏ��]����]����KKH�T����KO��]��\��H��Y]ȈYH��Y]�X�\���ȏ��]��\��H��X�]]H���\�����][Y[��]���]��\��H��\��YH��\����]X�H��[OH�ݙ\����^�]]ȏ��]����]����KKHT��TKO��]��\��H��Y]ȈYH��Y]�\�X�Z]�X�\ȏ��]��\��H���X�����]���]��\��H��X�]]H�Y��X���[���X�Z]�X�O�]���]��\��H��\��YH�\�Y]Z[���]����]���]���]��\��H��X�]]H�YH��X���[��^XX�O�]���]��\��H��\��YH�\Y]Z[���]����]����]����]����]����]��\��H����\������ۙϑ[��\�[�]\��۝����\����ۙψ	��[�Y�]��[�YX]�X�[�\��H	��[�]ZX�Л����ۛ[�H[�Yܘ][ۏ�����Z[�H��\�Y��
-��]YHRO�����[�YH�\�]\]Y��[OH��۝\�^�N�L\���܎��\�K]^�H����[����]�����ܚ\���ۜ�	H�O���[Y[���][[Y[��RY
-�N�ۜ��]H�O�X]�X���K����[T��[��	�[�UT���Z[�[][Q��X�[ۑY�]Ό�X^[][Q��X�[ۑY�]Ό�JN�ۜ��]�H�O�	�	��X]�X���K�L
-K�њ^Y
-JJ�����ۜ��]��HH�O�	�	��X]�X���K����[T��[��	�[�UT���X^[][Q��X�[ۑY�]ΌJN�]UHH�[]�\��[�[۝H�[��[��[ۈ��՚Y]�Y��H��[Y[��]Y\�T�[X�ܐ[
-	˝�Y]��K��ܑXX�
-�O����\��\���[[ݙJ	�X�]�I�JN��[Y[��]Y\�T�[X�ܐ[
-	˝X�X���K��ܑXX�
-�O����\��\���[[ݙJ	�X�]�I�JN	
-	ݚY]�I��Y
-K��\��\��Y
-	�X�]�I�N����\��\��Y
-	�X�]�I�NB���[��[ۈ���[\J
-H	
-	ݚY]�[ݙ\��Y]��K�[��\�SH�]��\��H�[\K\�]H���]��\��H�X�ۈ��'���]���]��\��H�]H���[�[��X[\���\��XYO�]���]��\��H�\�ȏ��\�\���\��[\�^H[�\�]ZX�Л����ۛ[�H�[�[��X[]Hۘ�HH�ۛ�X�[ۈ\���\]K��[��[H�[�HX�H��YH	��[[��H�Y]�\����[�T��T]H�[��K���]���]��\��H��\ȏ��]��\��H��\ۙH��]��\��H��\[�[H���$��]��]ZX�Л����]�[�\�\ܙX]Y�]���]��\��H��\ۙH��]��\��H��\[�[H���$��]��THܙY[�X[��ܙY[��]X��]���]��\��H��ep"><div class="step-num">3</div> Complete OAuth token exchange</div>
+    <button class="tab-btn" onclick="showView('cashflow',this)">Cash Flow</button>
+    <button class="tab-btn" onclick="showView('receivables',this)">AR / AP</button>
+  </div>
+
+  <div class="main">
+    <!-- OVERVIEW -->
+    <div class="view active" id="view-overview">
+      <div class="kpi-row" id="kpi-overview"></div>
+      <div class="two-col">
+        <div>
+          <div class="sec-title green">Revenue vs Expenses</div>
+          <div class="card" id="rev-exp-chart"></div>
+        </div>
+        <div>
+          <div class="sec-title">Profit Waterfall</div>
+          <div class="card" id="waterfall-chart"></div>
+        </div>
+      </div>
+      <div class="two-col" style="margin-top:0">
+        <div>
+          <div class="sec-title blue">Top Expense Categories</div>
+          <div class="card" id="top-expenses"></div>
+        </div>
+        <div>
+          <div class="sec-title red">Accounts Receivable Aging</div>
+          <div class="card" id="ar-aging-preview"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- P&L -->
+    <div class="view" id="view-pnl">
+      <div class="sec-title green">Profit &amp; Loss Statement</div>
+      <div class="card" id="pnl-table" style="overflow-x:auto"></div>
+    </div>
+
+    <!-- BALANCE SHEET -->
+    <div class="view" id="view-balance">
+      <div class="sec-title blue">Balance Sheet</div>
+      <div class="card" id="balance-table" style="overflow-x:auto"></div>
+    </div>
+
+    <!-- CASH FLOW -->
+    <div class="view" id="view-cashflow">
+      <div class="sec-title">Cash Flow Statement</div>
+      <div class="card" id="cashflow-table" style="overflow-x:auto"></div>
+    </div>
+
+    <!-- AR / AP -->
+    <div class="view" id="view-receivables">
+      <div class="two-col">
+        <div>
+          <div class="sec-title red">Accounts Receivable</div>
+          <div class="card" id="ar-detail"></div>
+        </div>
+        <div>
+          <div class="sec-title blue">Accounts Payable</div>
+          <div class="card" id="ap-detail"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <strong>Dentrepreneur Control Tower</strong> &bull; Puget Sound Pediatric Dentistry &bull; QuickBooks Online Integration<br>
+    Built by Chris Lugo + Claude AI<br>
+    <span id="last-updated" style="font-size:11px;color:var(--text3)"></span>
+  </div>
+
+  <script>
+    const $ = s => document.getElementById(s);
+    const fmt = n => Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const fmtK = n => '$'+(Math.abs(n)/1000).toFixed(1)+'K';
+    const fmtWhole = n => '$'+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:0});
+
+    let DATA = null;
+    let currentMonth = null;
+
+    function showView(id, btn) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      $('view-'+id).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    function showEmpty() {
+      $('view-overview').innerHTML = `
+        <div class="empty-state">
+          <div class="icon">📊</div>
+          <div class="title">Financial Dashboard Ready</div>
+          <div class="desc">
+            This dashboard will display your QuickBooks Online financial data once the connection is complete.
+            Angela will be able to see P&L, Balance Sheet, Cash Flow, and AR/AP at a glance.
+          </div>
+          <div class="steps">
+            <div class="step done"><div class="step-num">✓</div> QuickBooks Developer app created</div>
+            <div class="step done"><div class="step-num">✓</div> API credentials stored in GitHub</div>
+            <div class="step"><div class="step-num">3</div> Complete OAuth token exchange</div>
             <div class="step"><div class="step-num">4</div> Run first data pull from QBO</div>
           </div>
         </div>
