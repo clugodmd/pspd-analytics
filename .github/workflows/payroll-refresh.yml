@@ -61,9 +61,10 @@ jobs:
           ARGS="--output data/payroll.json"
           if [ -n "${{ github.event.inputs.period }}" ]; then
             ARGS="$ARGS --period ${{ github.event.inputs.period }}"
-          fi
-          if [ "${{ github.event.inputs.all_periods }}" = "true" ]; then
+          elif [ "${{ github.event.inputs.all_periods }}" = "true" ]; then
             ARGS="$ARGS --all-periods"
+          else
+            ARGS="$ARGS --recent"
           fi
           python scripts/payroll_refresh.py $ARGS
 
