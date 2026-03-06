@@ -5,18 +5,27 @@ payroll_refresh.py — PSPD Doctor Payroll Data Pipeline
 Generates data/payroll.json consumed by payroll.html's loadLiveData() function.
 
 TWO DATA PATHS (automatic failover):
-  1. Azure SQL  — queries Denticon's income allocation tables directly
+  1. Azure SQL  — queries rpt.vw_income_allocation + rpt.vw_doctor_payroll_by_period
   2. Excel file — reads Tanya's "Income Allocation Report - Detail" export
+
+Azure SQL Views Used:
+  rpt.vw_income_allocation        — transaction-level income allocations (Tanya's report)
+  rpt.vw_doctor_payroll_by_period — pre-calculated payroll per doctor/office/period
+  rpt.vw_pay_periods              — pay period definitions (auto-generated through 2037)
+  rpt.vw_doctor_collections_no_xray — collections excluding x-ray procedures
 
 Usage:
   # From Azure SQL (automated via GitHub Actions):
   python scripts/payroll_refresh.py
 
+  # From Azure SQL — all historical periods:
+  python scripts/payroll_refresh.py --all-periods
+
   # From Tanya's Excel export (manual fallback):
   python scripts/payroll_refresh.py --from-excel path/to/Denticon_NewMonthlyIncAllD.xlsx
 
-  # Discover available Azure SQL views (run once to find correct tables):
-  python scripts/payroll_refresh.py --discover
+  # Show available pay periods from database:
+  python scripts/payroll_refresh.py --list-periods
 
 Environment Variables (for Azure SQL path):
   AZURE_SQL_CONN_STR — Full ODBC connection string for Denticon Azure SQL
@@ -39,6 +48,7 @@ from pathlib import Path
 
 DOCTOR_CONFIG = {
     # Denticon provider name → display name, pay rate, owner flag
+    # Provider names must match "Last, First" format from PGID4951_PROVIDER
     'Slaven, Chad':       {'display': 'Dr. Slaven',  'pct': 0.36, 'owner': False},
     'Menon, Leena':       {'display': 'Dr. Menon',   'pct': 0.35, 'owner': False},
     'Choong, Carissa':    {'display': 'Dr. Choong',  'pct': 0.35, 'owner': False},
@@ -50,6 +60,11 @@ DOCTOR_CONFIG = {
     'Lugo, Christopher':  {'display': 'Dr. Lugo',    'pct': 0.36, 'owner': True},
 }
 
+# Provider ID → name mapping (from PGID4951_PROVIDER)
+# Used by Azure SQL queries that return provider_id instead of name
+# These IDs are populated automatically on first run via --build-id-map
+PROVIDER_ID_MAP = {}
+
 # Terminated/inactive doctors — tracked but not in active payroll
 TERMED_DOCTORS = {
     'Kirk, Kyle':  {'display': 'Dr. Kirk',    'note': 'Terminated'},
@@ -57,8 +72,14 @@ TERMED_DOCTORS = {
     'Laws':        {'display': 'Dr. Laws',    'note': 'Terminated'},
 }
 
-OFFICE_MAP = {
-    # Sheet header text → (display name, abbreviation for per-doctor breakdown)
+# Office ID → (display name, abbreviation)
+# IDs from PGID4951_OFFICE; update if offices change
+OFFICE_ID_MAP = {
+    # These will be auto-populated from the database
+}
+
+OFFICE_NAME_MAP = {
+    # Text matching for Excel path and fallback
     'EVERETT':      ('Everett',      'EV'),
     'LAKE STEVENS': ('Lake Stevens', 'LS'),
     'MARYSVILLE':   ('Marysville',  'MV'),
@@ -69,23 +90,287 @@ OFFICE_MAP = {
 # X-ray procedure code prefixes — excluded from payNo calculation
 XRAY_PREFIXES = ('D02', 'D03')
 
-# Pay periods: (label, start_date, end_date, pay_date)
-# Add new periods here as they come up
-PAY_PERIODS = [
-    ('1.16.26',  '2025-12-27', '2026-01-09', '2026-01-16'),
-    ('1.30.26',  '2026-01-10', '2026-01-23', '2026-01-30'),
-    ('2.13.26',  '2026-01-24', '2026-02-06', '2026-02-13'),
-    ('2.27.26',  '2026-02-07', '2026-02-20', '2026-02-27'),
-    ('3.13.26',  '2026-02-21', '2026-03-06', '2026-03-13'),
-    ('3.27.26',  '2026-03-07', '2026-03-20', '2026-03-27'),
-    ('4.10.26',  '2026-03-21', '2026-04-03', '2026-04-10'),
-    ('4.24.26',  '2026-04-04', '2026-04-17', '2026-04-24'),
-    ('5.8.26',   '2026-04-18', '2026-05-01', '2026-05-08'),
-    ('5.22.26',  '2026-05-02', '2026-05-15', '2026-05-22'),
-    ('6.5.26',   '2026-05-16', '2026-05-29', '2026-06-05'),
-    ('6.19.26',  '2026-06-30', '2026-06-12', '2026-06-19'),
-    ('7.2.26',   '2026-06-13', '2026-06-26', '2026-07-02'),
-]
+
+# ---------------------------------------------------------------------------
+# AZURE SQL — queries the real rpt.* views
+# ---------------------------------------------------------------------------
+
+def get_connection(conn_str):
+    """Create Azure SQL connection."""
+    try:
+        import pyodbc
+    except ImportError:
+        print("ERROR: pyodbc required. Install with: pip install pyodbc")
+        sys.exit(1)
+    return pyodbc.connect(conn_str)
+
+
+def load_id_maps(conn):
+    """Load provider and office ID→name mappings from Denticon tables."""
+    cursor = conn.cursor()
+
+    # Provider ID → "Last, First"
+    cursor.execute("""
+        SELECT PROVIDERID, LNAME, FNAME
+        FROM PGID4951_PROVIDER
+        WHERE LNAME IS NOT NULL
+    """)
+    for r in cursor.fetchall():
+        name = f"{r.LNAME.strip()}, {r.FNAME.strip()}"
+        PROVIDER_ID_MAP[r.PROVIDERID] = name
+
+    # Office ID → name
+    cursor.execute("""
+        SELECT OID, OFFICENAME
+        FROM PGID4951_OFFICE
+    """)
+    for r in cursor.fetchall():
+        office_name = r.OFFICENAME.strip() if r.OFFICENAME else f"Office {r.OID}"
+        OFFICE_ID_MAP[r.OID] = office_name
+
+    print(f"  Loaded {len(PROVIDER_ID_MAP)} providers, {len(OFFICE_ID_MAP)} offices")
+
+
+def get_pay_periods(conn):
+    """Fetch pay period definitions from rpt.vw_pay_periods."""
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT pay_period_num, period_start, period_end
+        FROM rpt.vw_pay_periods
+        ORDER BY period_start
+    """)
+    periods = []
+    for r in cursor.fetchall():
+        start = r.period_start if isinstance(r.period_start, date) else date.fromisoformat(str(r.period_start)[:10])
+        end = r.period_end if isinstance(r.period_end, date) else date.fromisoformat(str(r.period_end)[:10])
+        # Generate label: pay date is 7 days after period end (biweekly)
+        pay_date = end + timedelta(days=7)
+        label = f"{pay_date.month}.{pay_date.day}.{str(pay_date.year)[2:]}"
+        periods.append({
+            'num': r.pay_period_num,
+            'start': start,
+            'end': end,
+            'pay_date': pay_date,
+            'label': label,
+        })
+    return periods
+
+
+def find_current_period(periods):
+    """Find the current (or most recent) pay period."""
+    today = date.today()
+    # First: find a period containing today
+    for p in periods:
+        if p['start'] <= today <= p['end']:
+            return p
+    # Fallback: find the most recent completed period
+    past = [p for p in periods if p['end'] < today]
+    if past:
+        return past[-1]
+    # Last resort: first future period
+    return periods[0] if periods else None
+
+
+def query_income_allocation_azure(conn, period_start, period_end):
+    """
+    Query rpt.vw_income_allocation for transaction-level income data.
+    This is the same data as Tanya's "Income Allocation Report - Detail".
+
+    Returns list of transaction dicts matching the Excel parser output format.
+    """
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            alloc_provider_id,
+            OID AS office_id,
+            ALLOCDATE,
+            alloc_amount,
+            proc_ada_code,
+            period_label
+        FROM rpt.vw_income_allocation
+        WHERE period_start = ? AND period_end = ?
+    """, (str(period_start), str(period_end)))
+
+    transactions = []
+    for r in cursor.fetchall():
+        provider_name = PROVIDER_ID_MAP.get(r.alloc_provider_id, f"Provider {r.alloc_provider_id}")
+        office_name = OFFICE_ID_MAP.get(r.office_id, f"Office {r.office_id}")
+
+        # Normalize office name for matching
+        office_key = office_name.upper().replace('PSPD - ', '').replace('PSPD-', '').strip()
+
+        transactions.append({
+            'office': office_key,
+            'provider': provider_name,
+            'alloc_date': r.ALLOCDATE,
+            'proc_code': str(r.proc_ada_code).strip() if r.proc_ada_code else '',
+            'income': float(r.alloc_amount) if r.alloc_amount else 0.0,
+        })
+
+    print(f"    vw_income_allocation: {len(transactions)} rows")
+    return transactions
+
+
+def query_payroll_by_period_azure(conn, period_start, period_end):
+    """
+    Query rpt.vw_doctor_payroll_by_period for pre-calculated payroll data.
+    This view already has collected_no_xray, comp_pct, and doctor_pay.
+
+    Returns a dict keyed by (provider_id, office_id) with payroll metrics.
+    Used as a CROSS-CHECK against our own calculations from vw_income_allocation.
+    """
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            provider_id,
+            office_id,
+            collected_no_xray,
+            comp_pct,
+            doctor_pay
+        FROM rpt.vw_doctor_payroll_by_period
+        WHERE period_start = ? AND period_end = ?
+    """, (str(period_start), str(period_end)))
+
+    payroll = {}
+    for r in cursor.fetchall():
+        key = (r.provider_id, r.office_id)
+        payroll[key] = {
+            'collected_no_xray': float(r.collected_no_xray) if r.collected_no_xray else 0.0,
+            'comp_pct': float(r.comp_pct) if r.comp_pct else 0.0,
+            'doctor_pay': float(r.doctor_pay) if r.doctor_pay else 0.0,
+        }
+
+    print(f"    vw_doctor_payroll_by_period: {len(payroll)} entries")
+    return payroll
+
+
+def run_azure_pipeline(conn_str, target_periods, output_path):
+    """
+    Full Azure SQL pipeline:
+    1. Load ID maps (provider/office names)
+    2. Get pay period definitions from DB
+    3. For each target period, query income allocation data
+    4. Cross-check against pre-calculated payroll view
+    5. Generate payroll.json
+    """
+    conn = get_connection(conn_str)
+
+    print("  Loading provider/office ID maps...")
+    load_id_maps(conn)
+
+    print("  Fetching pay periods from rpt.vw_pay_periods...")
+    all_periods = get_pay_periods(conn)
+    print(f"    Found {len(all_periods)} pay periods ({all_periods[0]['label']} to {all_periods[-1]['label']})")
+
+    # Determine which periods to process
+    if target_periods == 'current':
+        current = find_current_period(all_periods)
+        if not current:
+            print("ERROR: Could not determine current pay period")
+            sys.exit(1)
+        periods_to_process = [current]
+    elif target_periods == 'all':
+        today = date.today()
+        periods_to_process = [p for p in all_periods if p['start'] <= today]
+    elif target_periods == 'recent':
+        # Last 5 periods (for dashboard history)
+        today = date.today()
+        past = [p for p in all_periods if p['start'] <= today]
+        periods_to_process = past[-5:] if len(past) >= 5 else past
+    else:
+        # Specific period label
+        match = [p for p in all_periods if p['label'] == target_periods]
+        if not match:
+            print(f"ERROR: Period '{target_periods}' not found in database")
+            print(f"  Available: {', '.join(p['label'] for p in all_periods[:20])}...")
+            sys.exit(1)
+        periods_to_process = match
+
+    periods_dict = {}
+    for period_info in periods_to_process:
+        label = period_info['label']
+        start = period_info['start']
+        end = period_info['end']
+        pay_date = period_info['pay_date']
+
+        print(f"\n  Processing period {label} ({start} to {end})...")
+
+        # Primary: get transaction-level data from vw_income_allocation
+        transactions = query_income_allocation_azure(conn, start, end)
+
+        if not transactions:
+            print(f"    No data for period {label} — skipping")
+            continue
+
+        # Cross-check: get pre-calculated payroll
+        payroll_check = query_payroll_by_period_azure(conn, start, end)
+
+        # Process transactions into dashboard format
+        period = process_transactions(transactions, start, end, label, pay_date)
+
+        # Cross-check our calculations against the database's pre-calculated values
+        if payroll_check:
+            cross_check_payroll(period, payroll_check)
+
+        periods_dict[label] = period
+
+    conn.close()
+
+    if not periods_dict:
+        print("ERROR: No data retrieved for any period")
+        sys.exit(1)
+
+    write_payroll_json(periods_dict, output_path)
+
+
+def cross_check_payroll(period, payroll_check):
+    """
+    Compare our calculated pay against rpt.vw_doctor_payroll_by_period.
+    Logs warnings if there are discrepancies.
+    """
+    # Build reverse lookup: provider display name → provider IDs seen
+    # We need to map our names back to IDs for comparison
+    name_to_ids = {}
+    for pid, pname in PROVIDER_ID_MAP.items():
+        name_to_ids.setdefault(pname, []).append(pid)
+
+    # Sum the database's pre-calculated values by provider
+    db_by_provider = {}
+    for (pid, oid), vals in payroll_check.items():
+        pname = PROVIDER_ID_MAP.get(pid, f"Provider {pid}")
+        if pname not in db_by_provider:
+            db_by_provider[pname] = {'collected_no_xray': 0.0, 'doctor_pay': 0.0}
+        db_by_provider[pname]['collected_no_xray'] += vals['collected_no_xray']
+        db_by_provider[pname]['doctor_pay'] += vals['doctor_pay']
+
+    # Compare
+    mismatches = 0
+    for doc in period['doctors']:
+        # Find the matching provider name in DOCTOR_CONFIG
+        denticon_name = None
+        for dname, cfg in DOCTOR_CONFIG.items():
+            if cfg['display'] == doc['name']:
+                denticon_name = dname
+                break
+
+        if not denticon_name or denticon_name not in db_by_provider:
+            continue
+
+        db_vals = db_by_provider[denticon_name]
+        our_pay = doc['payNo']
+        db_pay = round(db_vals['doctor_pay'], 2)
+
+        # Allow small rounding differences (< $1)
+        if abs(our_pay - db_pay) > 1.0:
+            mismatches += 1
+            print(f"    ⚠ PAY MISMATCH {doc['name']}: ours=${our_pay:,.2f} vs DB=${db_pay:,.2f} (diff=${our_pay - db_pay:,.2f})")
+
+    if mismatches == 0:
+        print(f"    ✓ Cross-check passed: all doctor pay amounts match database")
+    else:
+        print(f"    ⚠ {mismatches} pay mismatches detected — review vw_doctor_payroll_by_period")
 
 
 # ---------------------------------------------------------------------------
@@ -113,29 +398,26 @@ def parse_excel(filepath):
         current_provider = None
 
         for row in ws.iter_rows(min_row=1, values_only=False):
-            # Cell values
             a_val = row[0].value if len(row) > 0 else None
             b_val = row[1].value if len(row) > 1 else None
             c_val = row[2].value if len(row) > 2 else None
 
-            # Detect office from header: "Office: PSPD - EVERETT"
+            # Detect office: "Office: PSPD - EVERETT"
             if a_val and isinstance(a_val, str) and 'Office:' in a_val:
                 match = re.search(r'PSPD\s*-\s*(.+)', a_val)
                 if match:
-                    raw_office = match.group(1).strip().upper()
-                    office = raw_office
+                    office = match.group(1).strip().upper()
                 continue
 
-            # Detect provider header: "Provider :- Bell, Kendra  DDS  : BELL"
+            # Detect provider: "Provider :- Bell, Kendra  DDS  : BELL"
             if b_val and isinstance(b_val, str) and 'Provider :-' in b_val:
                 parts = b_val.split(':-')[1].strip()
-                # Extract "Last, First" before the double-space or DDS
                 provider_match = re.match(r'([^,]+,\s*\S+)', parts)
                 if provider_match:
                     current_provider = provider_match.group(1).strip()
                 continue
 
-            # Transaction rows have a datetime in column C (Alloc Date)
+            # Transaction rows have datetime in column C (Alloc Date)
             if c_val and isinstance(c_val, datetime) and current_provider and office:
                 income = row[14].value if len(row) > 14 else None  # Column O
                 proc_code = row[12].value if len(row) > 12 else None  # Column M
@@ -154,191 +436,49 @@ def parse_excel(filepath):
 
 
 # ---------------------------------------------------------------------------
-# AZURE SQL QUERYING — direct from Denticon database
-# ---------------------------------------------------------------------------
-
-def discover_azure_views(conn_str):
-    """List all views/tables that might contain income allocation data."""
-    import pyodbc
-    conn = pyodbc.connect(conn_str)
-    cursor = conn.cursor()
-
-    print("\n=== SEARCHING FOR INCOME/PAYMENT VIEWS ===")
-    cursor.execute("""
-        SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE
-        FROM INFORMATION_SCHEMA.TABLES
-        WHERE TABLE_NAME LIKE '%Income%'
-           OR TABLE_NAME LIKE '%Alloc%'
-           OR TABLE_NAME LIKE '%Payment%'
-           OR TABLE_NAME LIKE '%Pay%'
-           OR TABLE_NAME LIKE '%Collection%'
-           OR TABLE_NAME LIKE '%PAYMNT%'
-           OR TABLE_NAME LIKE '%Payroll%'
-        ORDER BY TABLE_TYPE, TABLE_NAME
-    """)
-    rows = cursor.fetchall()
-    if rows:
-        for r in rows:
-            print(f"  [{r.TABLE_TYPE}] {r.TABLE_SCHEMA}.{r.TABLE_NAME}")
-    else:
-        print("  No matching views found.")
-
-    print("\n=== ALL VIEWS (for reference) ===")
-    cursor.execute("""
-        SELECT TABLE_SCHEMA, TABLE_NAME
-        FROM INFORMATION_SCHEMA.TABLES
-        WHERE TABLE_TYPE = 'VIEW'
-        ORDER BY TABLE_NAME
-    """)
-    for r in cursor.fetchall():
-        print(f"  {r.TABLE_SCHEMA}.{r.TABLE_NAME}")
-
-    print("\n=== TABLES WITH 'PGID4951' PREFIX ===")
-    cursor.execute("""
-        SELECT TABLE_NAME
-        FROM INFORMATION_SCHEMA.TABLES
-        WHERE TABLE_NAME LIKE 'PGID4951%'
-        ORDER BY TABLE_NAME
-    """)
-    for r in cursor.fetchall():
-        print(f"  {r.TABLE_NAME}")
-
-    conn.close()
-
-
-def query_azure_income_allocation(conn_str, start_date, end_date):
-    """
-    Query income allocation data from Azure SQL.
-
-    NOTE: The exact view/table name needs to be discovered first.
-    Run with --discover to find it. Once found, update the query below.
-
-    Common Denticon table candidates:
-      - PGID4951_INCOMALLOC
-      - PGID4951_PAYMNT
-      - vw_IncomeAllocation_PBI
-      - vw_PaymentDetail
-    """
-    import pyodbc
-    conn = pyodbc.connect(conn_str)
-    cursor = conn.cursor()
-
-    # -----------------------------------------------------------------------
-    # IMPORTANT: Update this query once you discover the correct view/table
-    # by running: python payroll_refresh.py --discover
-    # -----------------------------------------------------------------------
-    # Try multiple possible table/view names in order of likelihood
-    CANDIDATE_QUERIES = [
-        # Candidate 1: PBI view (most likely if Denticon provides one)
-        """
-        SELECT
-            OfficeName,
-            ProviderName,
-            AllocDate,
-            ProcCode,
-            Income
-        FROM vw_IncomeAllocation_PBI
-        WHERE AllocDate >= ? AND AllocDate <= ?
-        """,
-        # Candidate 2: Direct Denticon payment table
-        """
-        SELECT
-            loc.OfficeName,
-            CONCAT(prov.LastName, ', ', prov.FirstName) AS ProviderName,
-            pa.AllocDate,
-            pa.ProcCode,
-            pa.Income
-        FROM PGID4951_PAYALLOC pa
-        JOIN PGID4951_PROVIDER prov ON pa.ProviderID = prov.ProviderID
-        JOIN PGID4951_LOCATION loc ON pa.LocationID = loc.LocationID
-        WHERE pa.AllocDate >= ? AND pa.AllocDate <= ?
-        """,
-        # Candidate 3: Another common pattern
-        """
-        SELECT
-            OfficeName,
-            ProviderName,
-            AllocationDate AS AllocDate,
-            ProcedureCode AS ProcCode,
-            Amount AS Income
-        FROM vw_IncomeAllocationDetail
-        WHERE AllocationDate >= ? AND AllocationDate <= ?
-        """,
-    ]
-
-    transactions = []
-    for i, query in enumerate(CANDIDATE_QUERIES):
-        try:
-            cursor.execute(query, (start_date, end_date))
-            rows = cursor.fetchall()
-            print(f"  Azure query candidate {i+1} succeeded: {len(rows)} rows")
-            for r in rows:
-                office_raw = str(r.OfficeName).upper()
-                # Normalize office name
-                for key in OFFICE_MAP:
-                    if key in office_raw:
-                        office_raw = key
-                        break
-                transactions.append({
-                    'office': office_raw,
-                    'provider': r.ProviderName,
-                    'alloc_date': r.AllocDate,
-                    'proc_code': str(r.ProcCode).strip() if r.ProcCode else '',
-                    'income': float(r.Income) if r.Income else 0.0,
-                })
-            break  # Success — stop trying candidates
-        except Exception as e:
-            print(f"  Azure query candidate {i+1} failed: {e}")
-            continue
-
-    conn.close()
-    return transactions
-
-
-# ---------------------------------------------------------------------------
 # PROCESSING — transform transactions into payroll.json format
 # ---------------------------------------------------------------------------
 
-def find_pay_period(target_date=None):
-    """Find the current pay period based on date."""
+# Hardcoded pay periods as fallback for Excel mode (when DB not available)
+FALLBACK_PAY_PERIODS = [
+    ('1.16.26',  '2025-12-27', '2026-01-09', '2026-01-16'),
+    ('1.30.26',  '2026-01-10', '2026-01-23', '2026-01-30'),
+    ('2.13.26',  '2026-01-24', '2026-02-06', '2026-02-13'),
+    ('2.27.26',  '2026-02-07', '2026-02-20', '2026-02-27'),
+    ('3.13.26',  '2026-02-21', '2026-03-06', '2026-03-13'),
+    ('3.27.26',  '2026-03-07', '2026-03-20', '2026-03-27'),
+    ('4.10.26',  '2026-03-21', '2026-04-03', '2026-04-10'),
+    ('4.24.26',  '2026-04-04', '2026-04-17', '2026-04-24'),
+]
+
+
+def find_pay_period_fallback(target_date=None):
+    """Find pay period from hardcoded list (for Excel mode)."""
     if target_date is None:
         target_date = date.today()
-    elif isinstance(target_date, str):
-        target_date = date.fromisoformat(target_date)
-
-    for label, start, end, pay in PAY_PERIODS:
+    for label, start, end, pay in FALLBACK_PAY_PERIODS:
         s = date.fromisoformat(start)
         e = date.fromisoformat(end)
         if s <= target_date <= e:
             return label, s, e, date.fromisoformat(pay)
-
-    # Default: return the most recent period
-    label, start, end, pay = PAY_PERIODS[-1]
+    label, start, end, pay = FALLBACK_PAY_PERIODS[-1]
     return label, date.fromisoformat(start), date.fromisoformat(end), date.fromisoformat(pay)
 
 
 def determine_period_for_transactions(transactions):
-    """Determine which pay period the transactions belong to based on alloc dates."""
+    """Determine which pay period transactions belong to based on alloc dates."""
     if not transactions:
         return None
-
-    # Get the date range from transactions
     dates = [t['alloc_date'] for t in transactions if isinstance(t['alloc_date'], datetime)]
     if not dates:
         return None
-
     min_date = min(dates).date()
     max_date = max(dates).date()
-    mid_date = min_date + (max_date - min_date) / 2
-
-    # Find best matching period
-    for label, start, end, pay in PAY_PERIODS:
+    for label, start, end, pay in FALLBACK_PAY_PERIODS:
         s = date.fromisoformat(start)
         e = date.fromisoformat(end)
-        # Check if the transaction dates overlap with this period
         if min_date <= e and max_date >= s:
             return label, s, e, date.fromisoformat(pay)
-
     return None
 
 
@@ -350,26 +490,25 @@ def process_transactions(transactions, period_start, period_end, label, pay_date
     today = date.today()
     days_total = (period_end - period_start).days + 1
     days_elapsed = max(1, min(days_total, (today - period_start).days + 1))
-    is_live = today <= period_end + timedelta(days=7)  # "live" until 7 days after period ends
+    is_live = today <= period_end + timedelta(days=7)
     is_closed = today > pay_date
 
     # Aggregate by provider and office
-    provider_data = {}   # provider_name → {coll, xray, offices: {office → amount}}
-    office_totals = {}   # office_name → total
+    provider_data = {}
+    office_totals = {}
 
     # IMPORTANT: Denticon Income values are SIGNED.
     # Payments received = negative, adjustments = positive.
     # We sum raw values (preserving sign) then take abs() of the NET total.
     # This matches Tanya's report which shows abs(sum), NOT sum(abs).
 
-    # First pass: accumulate raw signed values
-    raw_provider = {}    # provider → {total: float, xray: float, offices: {office: float}}
-    raw_office = {}      # office → float
+    raw_provider = {}
+    raw_office = {}
 
     for t in transactions:
         prov = t['provider']
         office = t['office']
-        income = t['income']  # Keep sign! Negative = payment received
+        income = t['income']
         proc_code = t['proc_code']
         is_xray = any(proc_code.startswith(p) for p in XRAY_PREFIXES)
 
@@ -386,14 +525,13 @@ def process_transactions(transactions, period_start, period_end, label, pay_date
             raw_office[office] = 0.0
         raw_office[office] += income
 
-    # Second pass: convert to absolute values (abs of net sum)
+    # Convert to absolute values (abs of net sum per provider/office)
     for prov, data in raw_provider.items():
         provider_data[prov] = {
             'coll': abs(data['total']),
             'xray': abs(data['xray']),
             'offices': {k: abs(v) for k, v in data['offices'].items()},
         }
-
     for office, total in raw_office.items():
         office_totals[office] = abs(total)
 
@@ -418,9 +556,9 @@ def process_transactions(transactions, period_start, period_end, label, pay_date
 
         # Per-office breakdown
         off = {}
-        for raw_office, amount in pdata['offices'].items():
-            for office_key, (_, abbr) in OFFICE_MAP.items():
-                if office_key in raw_office.upper():
+        for raw_office_name, amount in pdata['offices'].items():
+            for office_key, (_, abbr) in OFFICE_NAME_MAP.items():
+                if office_key in raw_office_name.upper():
                     off[abbr] = round(amount, 2)
                     break
         if off:
@@ -428,15 +566,14 @@ def process_transactions(transactions, period_start, period_end, label, pay_date
 
         doctors.append(doc_entry)
 
-    # Sort doctors by collections descending
     doctors.sort(key=lambda d: d['coll'], reverse=True)
 
     # Build office array
     offices = []
-    for raw_office, total in sorted(office_totals.items(), key=lambda x: -x[1]):
-        display_name = raw_office
-        for office_key, (disp, _) in OFFICE_MAP.items():
-            if office_key in raw_office.upper():
+    for raw_office_name, total in sorted(office_totals.items(), key=lambda x: -x[1]):
+        display_name = raw_office_name
+        for office_key, (disp, _) in OFFICE_NAME_MAP.items():
+            if office_key in raw_office_name.upper():
                 display_name = disp
                 break
         offices.append({'name': display_name, 'amt': round(total, 2)})
@@ -451,10 +588,9 @@ def process_transactions(transactions, period_start, period_end, label, pay_date
             'note': config['note'],
         })
 
-    # Format dates for display
+    # Format dates
     def fmt_date(d):
         return d.strftime('%b %-d, %Y')
-
     def fmt_date_short(d):
         return d.strftime('%b %-d')
 
@@ -474,7 +610,7 @@ def process_transactions(transactions, period_start, period_end, label, pay_date
 
 
 # ---------------------------------------------------------------------------
-# OUTPUT — write data/payroll.json
+# OUTPUT
 # ---------------------------------------------------------------------------
 
 def write_payroll_json(periods_dict, output_path):
@@ -483,7 +619,7 @@ def write_payroll_json(periods_dict, output_path):
         'periods': periods_dict,
         'last_updated': datetime.utcnow().isoformat() + 'Z',
         'generated_by': 'payroll_refresh.py',
-        'source': 'Denticon Income Allocation Report',
+        'source': 'rpt.vw_income_allocation (Azure SQL)',
     }
 
     os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
@@ -517,38 +653,24 @@ def main():
     parser = argparse.ArgumentParser(
         description='PSPD Payroll Data Pipeline — generates data/payroll.json'
     )
-    parser.add_argument(
-        '--from-excel', '-e',
-        help='Path to Denticon Income Allocation Report Excel file'
-    )
-    parser.add_argument(
-        '--discover',
-        action='store_true',
-        help='Discover available Azure SQL views/tables for income data'
-    )
-    parser.add_argument(
-        '--output', '-o',
-        default='data/payroll.json',
-        help='Output path for payroll.json (default: data/payroll.json)'
-    )
-    parser.add_argument(
-        '--period',
-        help='Specific pay period label to generate (e.g., "3.13.26"). Default: auto-detect.'
-    )
-    parser.add_argument(
-        '--all-periods',
-        action='store_true',
-        help='Generate all available periods (Azure SQL only)'
-    )
+    parser.add_argument('--from-excel', '-e',
+        help='Path to Denticon Income Allocation Report Excel file')
+    parser.add_argument('--output', '-o', default='data/payroll.json',
+        help='Output path (default: data/payroll.json)')
+    parser.add_argument('--period',
+        help='Specific pay period label (e.g. "3.13.26"). Default: current.')
+    parser.add_argument('--all-periods', action='store_true',
+        help='Generate all historical periods')
+    parser.add_argument('--recent', action='store_true',
+        help='Generate last 5 periods (default for automated runs)')
+    parser.add_argument('--list-periods', action='store_true',
+        help='List available pay periods from database')
 
     args = parser.parse_args()
 
     # Resolve output path relative to repo root
-    # When run from repo root: data/payroll.json
-    # When run from scripts/: ../data/payroll.json
     output_path = args.output
     if not os.path.isabs(output_path):
-        # Try to find repo root (look for payroll.html)
         for candidate in ['.', '..', '../..']:
             if os.path.exists(os.path.join(candidate, 'payroll.html')):
                 output_path = os.path.join(candidate, output_path)
@@ -556,12 +678,23 @@ def main():
 
     conn_str = os.environ.get('AZURE_SQL_CONN_STR', '')
 
-    # --- Discovery mode ---
-    if args.discover:
+    # --- List periods ---
+    if args.list_periods:
         if not conn_str:
-            print("ERROR: Set AZURE_SQL_CONN_STR environment variable")
+            print("ERROR: Set AZURE_SQL_CONN_STR")
             sys.exit(1)
-        discover_azure_views(conn_str)
+        conn = get_connection(conn_str)
+        periods = get_pay_periods(conn)
+        conn.close()
+        today = date.today()
+        print(f"\nPay Periods ({len(periods)} total):")
+        for p in periods[:30]:
+            marker = ' ← CURRENT' if p['start'] <= today <= p['end'] else ''
+            marker = marker or (' ← NEXT' if p['start'] > today and not any(
+                pp['start'] <= today <= pp['end'] for pp in periods) else '')
+            print(f"  {p['label']:10s}  {p['start']} to {p['end']}  (pay: {p['pay_date']}){marker}")
+        if len(periods) > 30:
+            print(f"  ... and {len(periods) - 30} more")
         return
 
     # --- Excel mode ---
@@ -576,26 +709,22 @@ def main():
         print(f"  Parsed {len(transactions)} transaction rows")
 
         if not transactions:
-            print("ERROR: No transactions found in file")
+            print("ERROR: No transactions found")
             sys.exit(1)
 
-        # Determine pay period
         period_info = determine_period_for_transactions(transactions)
+        if period_info is None and args.period:
+            for label, start, end, pay in FALLBACK_PAY_PERIODS:
+                if label == args.period:
+                    period_info = (label, date.fromisoformat(start),
+                                   date.fromisoformat(end), date.fromisoformat(pay))
+                    break
         if period_info is None:
-            print("WARNING: Could not auto-detect pay period from alloc dates")
-            if args.period:
-                for label, start, end, pay in PAY_PERIODS:
-                    if label == args.period:
-                        period_info = (label, date.fromisoformat(start),
-                                       date.fromisoformat(end), date.fromisoformat(pay))
-                        break
-            if period_info is None:
-                print("ERROR: Specify --period to set the pay period manually")
-                sys.exit(1)
+            print("ERROR: Could not detect pay period. Use --period to specify.")
+            sys.exit(1)
 
         label, start, end, pay_date = period_info
         print(f"  Pay period: {label} ({start} to {end})")
-
         period = process_transactions(transactions, start, end, label, pay_date)
         write_payroll_json({label: period}, output_path)
         return
@@ -610,52 +739,15 @@ def main():
     print("Connecting to Azure SQL...")
 
     if args.all_periods:
-        periods_dict = {}
-        for label, start, end, pay in PAY_PERIODS:
-            s = date.fromisoformat(start)
-            e = date.fromisoformat(end)
-            # Only query periods that have started
-            if s > date.today():
-                continue
-            print(f"\n  Querying period {label} ({start} to {end})...")
-            transactions = query_azure_income_allocation(conn_str, start, end)
-            if transactions:
-                period = process_transactions(transactions, s, e, label, date.fromisoformat(pay))
-                periods_dict[label] = period
-            else:
-                print(f"    No data for period {label}")
-
-        if periods_dict:
-            write_payroll_json(periods_dict, output_path)
-        else:
-            print("ERROR: No data retrieved for any period")
-            sys.exit(1)
+        target = 'all'
+    elif args.recent:
+        target = 'recent'
+    elif args.period:
+        target = args.period
     else:
-        # Single period (current or specified)
-        if args.period:
-            for label, start, end, pay in PAY_PERIODS:
-                if label == args.period:
-                    period_info = (label, date.fromisoformat(start),
-                                   date.fromisoformat(end), date.fromisoformat(pay))
-                    break
-            else:
-                print(f"ERROR: Unknown period '{args.period}'")
-                sys.exit(1)
-        else:
-            label, start, end, pay_date = find_pay_period()
-            period_info = (label, start, end, pay_date)
+        target = 'recent'  # Default: last 5 periods
 
-        label, start, end, pay_date = period_info
-        print(f"  Querying period {label} ({start} to {end})...")
-        transactions = query_azure_income_allocation(conn_str, str(start), str(end))
-
-        if not transactions:
-            print("ERROR: No transactions returned from Azure SQL")
-            print("  Run with --discover to check available tables")
-            sys.exit(1)
-
-        period = process_transactions(transactions, start, end, label, pay_date)
-        write_payroll_json({label: period}, output_path)
+    run_azure_pipeline(conn_str, target, output_path)
 
 
 if __name__ == '__main__':
