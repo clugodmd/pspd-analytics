@@ -161,7 +161,7 @@
       ]
     }
   },
-  "last_updated": "2026-03-06T17:20:14.033973Z",
+  "last_updated": "2026-03-06T18:48:48.481369Z",
   "generated_by": "payroll_refresh.py",
-  "source": "Denticon Income Allocation Report"
+  "source": "rpt.vw_income_allocation (Azure SQL)"
 }
