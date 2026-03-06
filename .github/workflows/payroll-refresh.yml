@@ -1,233 +1,76 @@
-name: Payroll Data Refresh
+# .github/workflows/payroll-refresh.yml
+# Automated payroll data refresh for PSPD Doctor Payroll Dashboard
+#
+# This workflow:
+#   1. Runs on schedule (6 AM and 6 PM PST daily) or on manual trigger
+#   2. Connects to Azure SQL via AZURE_SQL_CONN_STR secret
+#   3. Runs payroll_refresh.py to generate data/payroll.json
+#   4. Commits and pushes the updated JSON to GitHub Pages
+#
+# Required GitHub Secrets:
+#   AZURE_SQL_CONN_STR - Full ODBC connection string for Denticon Azure SQL
+#
+# Manual trigger: Go to Actions tab > "Refresh Payroll Data" > "Run workflow"
+
+name: Refresh Payroll Data
 
 on:
   schedule:
-    - cron: '0 9 * * *'
+    # Run at 6 AM and 6 PM PST (2 PM and 2 AM UTC)
+    - cron: '0 14 * * *'
+    - cron: '0 2 * * *'
   workflow_dispatch:
+    inputs:
+      period:
+        description: 'Specific pay period (e.g., 3.13.26). Leave blank for auto-detect.'
+        required: false
+        type: string
+      all_periods:
+        description: 'Refresh all periods?'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    permissions:
+      contents: write
 
-      - uses: actions/setup-python@v5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install ODBC Driver 18
+      - name: Install dependencies
         run: |
-          curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
+          pip install pyodbc openpyxl
+          curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
           curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
           sudo apt-get update
-          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc-dev libgssapi-krb5-2
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
 
-      - name: Install Python dependencies
-        run: pip install pyodbc
-
-      - name: Query SQL and generate payroll.json
+      - name: Run payroll refresh
         env:
-          SQL_SERVER: ${{ secrets.SQL_SERVER }}
-          SQL_DATABASE: ${{ secrets.SQL_DATABASE }}
-          SQL_USER: ${{ secrets.SQL_USER }}
-          SQL_PASSWORD: ${{ secrets.SQL_PASSWORD }}
+          AZURE_SQL_CONN_STR: ${{ secrets.AZURE_SQL_CONN_STR }}
         run: |
-          python << 'SCRIPT'
-          import pyodbc, json, os
-          from collections import defaultdict
-          from datetime import datetime, date
+          ARGS="--output data/payroll.json"
+          if [ -n "${{ github.event.inputs.period }}" ]; then
+            ARGS="$ARGS --period ${{ github.event.inputs.period }}"
+          fi
+          if [ "${{ github.event.inputs.all_periods }}" = "true" ]; then
+            ARGS="$ARGS --all-periods"
+          fi
+          python scripts/payroll_refresh.py $ARGS
 
-          PROVIDER_MAP = {
-              100: {"name": "Lugo", "rate": 0.36, "status": "active", "isOwner": True},
-              102: {"name": "Bell", "rate": 0.35, "status": "active"},
-              103: {"name": "Slaven", "rate": 0.36, "status": "active"},
-              104: {"name": "Benton", "rate": 0.32, "status": "active"},
-              106: {"name": "Choong", "rate": 0.35, "status": "active"},
-              108: {"name": "Schrack", "rate": 0.45, "status": "active"},
-              117: {"name": "Menon", "rate": 0.35, "status": "active"},
-              125: {"name": "Welter", "rate": 0.31, "status": "active"},
-              126: {"name": "Patel", "rate": 0.32, "status": "active"},
-              105: {"name": "Term Assoc.", "rate": 0, "status": "termed"},
-              107: {"name": "Ping", "rate": 0, "status": "termed"},
-              109: {"name": "Laws", "rate": 0, "status": "termed"},
-              111: {"name": "Termed 111", "rate": 0, "status": "termed"},
-              112: {"name": "Termed 112", "rate": 0, "status": "termed"},
-              116: {"name": "Termed 116", "rate": 0, "status": "termed"},
-              124: {"name": "Kirk", "rate": 0, "status": "termed"},
-          }
-
-          OFFICE_MAP = {
-              100: {"name": "Marysville", "short": "MV"},
-              101: {"name": "Monroe", "short": "MO"},
-              102: {"name": "Lake Stevens", "short": "LS"},
-              103: {"name": "Stanwood", "short": "SW"},
-              104: {"name": "Everett", "short": "EV"},
-          }
-
-          XRAY_PREFIXES = ("D02", "D03")
-
-          print("Connecting to Azure SQL via ODBC...")
-          conn_str = (
-              f"DRIVER={{ODBC Driver 18 for SQL Server}};"
-              f"SERVER={os.environ['SQL_SERVER']};"
-              f"DATABASE={os.environ['SQL_DATABASE']};"
-              f"UID={os.environ['SQL_USER']};"
-              f"PWD={os.environ['SQL_PASSWORD']};"
-              "Authentication=ActiveDirectoryPassword;"
-              "Encrypt=yes;TrustServerCertificate=no;"
-          )
-          conn = pyodbc.connect(conn_str, timeout=30)
-          cursor = conn.cursor()
-          cursor.execute("""
-              SELECT period_label, period_start, period_end,
-                     alloc_provider_id, OID, alloc_amount, proc_ada_code
-              FROM rpt.vw_income_allocation
-              WHERE period_start >= DATEADD(month, -3, GETDATE())
-              ORDER BY period_start DESC, alloc_provider_id, OID
-          """)
-          columns = [col[0] for col in cursor.description]
-          rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
-          conn.close()
-          print(f"Got {len(rows)} rows")
-
-          period_groups = defaultdict(list)
-          for row in rows:
-              period_groups[row["period_label"]].append(row)
-
-          today = date.today()
-          months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
-          periods = {}
-
-          for label, prows in period_groups.items():
-              start = prows[0]["period_start"]
-              end = prows[0]["period_end"]
-              start_d = start.date() if hasattr(start, 'date') else start
-              end_d = end.date() if hasattr(end, 'date') else end
-
-              is_live = end_d >= today
-              days_total = (end_d - start_d).days + 1
-              days_elapsed = min((today - start_d).days + 1, days_total) if is_live else days_total
-
-              if start_d.month == end_d.month:
-                  date_range = f"{months[start_d.month-1]} {start_d.day} \u2013 {end_d.day}, {end_d.year}"
-              else:
-                  date_range = f"{months[start_d.month-1]} {start_d.day} \u2013 {months[end_d.month-1]} {end_d.day}, {end_d.year}"
-
-              parts = label.split('.')
-              pay_month = int(parts[0])
-              pay_day = int(parts[1])
-              pay_year = 2000 + int(parts[2])
-              pay_date = f"{months[pay_month-1]} {pay_day}, {pay_year}"
-
-              provider_data = defaultdict(lambda: {"coll": 0, "xray_amt": 0, "offices": defaultdict(float), "office_short": defaultdict(float)})
-              for r in prows:
-                  pid = r["alloc_provider_id"]
-                  amount = -float(r["alloc_amount"])
-                  oid = r["OID"]
-                  ada = str(r.get("proc_ada_code", "") or "").strip().upper()
-
-                  provider_data[pid]["coll"] += amount
-                  if oid in OFFICE_MAP:
-                      oinfo = OFFICE_MAP[oid]
-                      provider_data[pid]["offices"][oinfo["name"]] += amount
-                      provider_data[pid]["office_short"][oinfo["short"]] += amount
-                  if ada.startswith(XRAY_PREFIXES):
-                      provider_data[pid]["xray_amt"] += amount
-
-              doctors = []
-              for pid, data in provider_data.items():
-                  if pid not in PROVIDER_MAP:
-                      continue
-                  info = PROVIDER_MAP[pid]
-                  if info["status"] != "active":
-                      continue
-                  coll = round(data["coll"], 2)
-                  rate = info["rate"]
-                  xray_amt = round(data["xray_amt"], 2)
-                  coll_no_xray = coll - xray_amt
-                  is_owner = info.get("isOwner", False)
-
-                  doc = {
-                      "name": f"Dr. {info['name']}",
-                      "pct": rate,
-                      "coll": coll,
-                      "payNo": 0 if is_owner else round(coll_no_xray * rate, 2),
-                      "payWith": round(coll * rate, 2),
-                  }
-                  off = {}
-                  for short, amt in data["office_short"].items():
-                      off[short] = round(amt, 2)
-                  if off:
-                      doc["off"] = off
-                  doctors.append(doc)
-
-              doctors.sort(key=lambda d: d["coll"], reverse=True)
-
-              office_totals = defaultdict(float)
-              for pid, data in provider_data.items():
-                  for oname, amt in data["offices"].items():
-                      office_totals[oname] += amt
-              offices = [{"name": n, "amt": round(a, 2)} for n, a in office_totals.items()]
-              offices.sort(key=lambda o: o["amt"], reverse=True)
-
-              termed = []
-              seen_termed = set()
-              for pid, data in provider_data.items():
-                  if pid not in PROVIDER_MAP:
-                      continue
-                  info = PROVIDER_MAP[pid]
-                  if info["status"] != "termed":
-                      continue
-                  seen_termed.add(pid)
-                  name = info["name"]
-                  display = name if name == "Term Assoc." else f"Dr. {name}"
-                  termed.append({
-                      "name": display,
-                      "coll": round(data["coll"], 2),
-                      "note": "Legacy" if name == "Term Assoc." else "Terminated"
-                  })
-              for pid, info in PROVIDER_MAP.items():
-                  if info["status"] == "termed" and pid not in seen_termed:
-                      name = info["name"]
-                      if name.startswith("Termed "):
-                          continue
-                      display = name if name == "Term Assoc." else f"Dr. {name}"
-                      termed.append({
-                          "name": display,
-                          "coll": 0,
-                          "note": "Legacy" if name == "Term Assoc." else "Terminated"
-                      })
-
-              period_obj = {
-                  "label": label,
-                  "dates": date_range,
-                  "payDate": pay_date,
-                  "status": "live" if is_live else "closed",
-                  "doctors": doctors,
-                  "offices": offices,
-                  "termed": termed,
-              }
-              if is_live:
-                  period_obj["daysElapsed"] = days_elapsed
-                  period_obj["daysTotal"] = days_total
-
-              periods[label] = period_obj
-
-          output = {
-              "periods": periods,
-              "last_updated": datetime.utcnow().isoformat() + "Z",
-          }
-
-          os.makedirs("data", exist_ok=True)
-          with open("data/payroll.json", "w") as f:
-              json.dump(output, f, indent=2, default=str)
-          print(f"Wrote {len(periods)} periods to data/payroll.json")
-          SCRIPT
-
-      - name: Commit and push
+      - name: Commit and push updated data
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/payroll.json
-          git diff --cached --quiet || git commit -m "Auto-update payroll data $(date -u +%Y-%m-%d)"
+          git diff --staged --quiet || git commit -m "Auto-refresh payroll data $(date -u '+%Y-%m-%d %H:%M UTC')"
           git push
