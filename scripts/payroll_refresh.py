@@ -102,7 +102,38 @@ def get_connection(conn_str):
     except ImportError:
         print("ERROR: pyodbc required. Install with: pip install pyodbc")
         sys.exit(1)
-    return pyodbc.connect(conn_str)
+
+    # Show available drivers for debugging
+    drivers = pyodbc.drivers()
+    print(f"  Available ODBC drivers: {drivers}")
+
+    # Validate connection string has required components
+    cs_lower = conn_str.lower()
+    if 'driver' not in cs_lower:
+        print("WARNING: Connection string missing 'Driver=' parameter")
+        print("  Expected format: Driver={ODBC Driver 18 for SQL Server};Server=tcp:YOUR-SERVER.database.windows.net,1433;Database=YOUR-DB;Uid=YOUR-USER;Pwd=YOUR-PASS;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;")
+    if 'your-' in cs_lower or 'your_' in cs_lower:
+        print("ERROR: Connection string contains placeholder values (YOUR-SERVER, YOUR-DATABASE, etc.)")
+        print("  Replace these with your actual Azure SQL credentials")
+        sys.exit(1)
+
+    try:
+        conn = pyodbc.connect(conn_str, timeout=30)
+        print("  Connected to Azure SQL successfully")
+        return conn
+    except pyodbc.Error as e:
+        print(f"ERROR: Failed to connect to Azure SQL")
+        print(f"  Error: {e}")
+        print(f"  Connection string length: {len(conn_str)} chars")
+        # Show masked server name for debugging
+        import re
+        server_match = re.search(r'Server\s*=\s*tcp:([^,;]+)', conn_str, re.IGNORECASE)
+        if server_match:
+            print(f"  Server: {server_match.group(1)}")
+        db_match = re.search(r'Database\s*=\s*([^;]+)', conn_str, re.IGNORECASE)
+        if db_match:
+            print(f"  Database: {db_match.group(1)}")
+        sys.exit(1)
 
 
 def load_id_maps(conn):
