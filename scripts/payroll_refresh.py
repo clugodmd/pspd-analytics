@@ -328,10 +328,8 @@ def run_azure_pipeline(conn_str, target_periods, output_path):
 def cross_check_payroll(period, payroll_check):
     """
     Compare our calculated pay against rpt.vw_doctor_payroll_by_period.
-    Logs warnings if there are discrepancies.
+    Returns accuracy metrics and injects them into the period dict.
     """
-    # Build reverse lookup: provider display name → provider IDs seen
-    # We need to map our names back to IDs for comparison
     name_to_ids = {}
     for pid, pname in PROVIDER_ID_MAP.items():
         name_to_ids.setdefault(pname, []).append(pid)
@@ -345,10 +343,13 @@ def cross_check_payroll(period, payroll_check):
         db_by_provider[pname]['collected_no_xray'] += vals['collected_no_xray']
         db_by_provider[pname]['doctor_pay'] += vals['doctor_pay']
 
-    # Compare
+    # Compare each doctor
+    total_checked = 0
+    matches = 0
     mismatches = 0
+    total_diff = 0.0
+
     for doc in period['doctors']:
-        # Find the matching provider name in DOCTOR_CONFIG
         denticon_name = None
         for dname, cfg in DOCTOR_CONFIG.items():
             if cfg['display'] == doc['name']:
@@ -358,19 +359,38 @@ def cross_check_payroll(period, payroll_check):
         if not denticon_name or denticon_name not in db_by_provider:
             continue
 
+        total_checked += 1
         db_vals = db_by_provider[denticon_name]
         our_pay = doc['payNo']
         db_pay = round(db_vals['doctor_pay'], 2)
+        diff = abs(our_pay - db_pay)
+        total_diff += diff
 
-        # Allow small rounding differences (< $1)
-        if abs(our_pay - db_pay) > 1.0:
+        if diff <= 1.0:
+            matches += 1
+        else:
             mismatches += 1
-            print(f"    ⚠ PAY MISMATCH {doc['name']}: ours=${our_pay:,.2f} vs DB=${db_pay:,.2f} (diff=${our_pay - db_pay:,.2f})")
+            print(f"    ⚠ PAY MISMATCH {doc['name']}: ours=${our_pay:,.2f} vs DB=${db_pay:,.2f} (diff=${diff:,.2f})")
+
+    # Calculate accuracy percentage
+    if total_checked > 0:
+        accuracy_pct = round((matches / total_checked) * 100, 2)
+    else:
+        accuracy_pct = 0.0
+
+    # Inject accuracy into period data (payroll.html can read this)
+    period['accuracy'] = {
+        'pct': accuracy_pct,
+        'matched': matches,
+        'total': total_checked,
+        'total_diff': round(total_diff, 2),
+        'label': f"{matches}/{total_checked} doctors exact",
+    }
 
     if mismatches == 0:
-        print(f"    ✓ Cross-check passed: all doctor pay amounts match database")
+        print(f"    ✓ Cross-check passed: {matches}/{total_checked} doctors match ({accuracy_pct}%)")
     else:
-        print(f"    ⚠ {mismatches} pay mismatches detected — review vw_doctor_payroll_by_period")
+        print(f"    ⚠ {mismatches} mismatches: {matches}/{total_checked} match ({accuracy_pct}%)")
 
 
 # ---------------------------------------------------------------------------
@@ -598,6 +618,9 @@ def process_transactions(transactions, period_start, period_end, label, pay_date
         'label': label,
         'dates': f"{fmt_date_short(period_start)} – {fmt_date_short(period_end)}, {period_end.year}",
         'payDate': fmt_date(pay_date),
+        'period_start': str(period_start),   # ISO date for client-side auto-advance
+        'period_end': str(period_end),        # ISO date for client-side auto-advance
+        'pay_date_iso': str(pay_date),        # ISO date for client-side closed detection
         'status': 'closed' if is_closed else 'live',
         'daysElapsed': days_elapsed,
         'daysTotal': days_total,
