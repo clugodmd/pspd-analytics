@@ -519,7 +519,7 @@
       }
     }
   },
-  "last_updated": "2026-03-07T11:31:02.898277Z",
+  "last_updated": "2026-03-07T14:23:11.073464Z",
   "generated_by": "payroll_refresh.py",
   "source": "rpt.vw_income_allocation (Azure SQL)"
 }
