@@ -301,7 +301,24 @@ let PERIODS = {
     offices: [{name:'Monroe',amt:100459.04},{name:'Marysville',amt:92928.79},{name:'Lake Stevens',amt:74303.05},{name:'Stanwood',amt:69782.27},{name:'Everett',amt:29153.88}],
     termed: [{name:'Dr. Kirk',coll:2756.88,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:1579.13,note:'Legacy'}],
   },
-  // 3.13.26+ — NO fallback. These come exclusively from payroll.json (Tanya-verified).
+  '3.13.26': {
+    label:'3.13.26', dates:'Feb 21 – Mar 6, 2026', payDate:'Mar 13, 2026',
+    period_start:'2026-02-21', period_end:'2026-03-06', pay_date_iso:'2026-03-13',
+    doctors: [
+      {name:'Dr. Slaven', pct:0.36, coll:69230.49, payNo:21597.63, payWith:24922.98, off:{MV:36730.98,MO:6950.96,SW:25548.55}},
+      {name:'Dr. Choong', pct:0.35, coll:59169.20, payNo:17975.72, payWith:20709.22, off:{MV:27216.21,SW:31952.99}},
+      {name:'Dr. Benton', pct:0.32, coll:57960.30, payNo:16573.44, payWith:18547.30, off:{EV:277.00,LS:13735.69,MV:8969.60,MO:34978.01}},
+      {name:'Dr. Welter', pct:0.31, coll:41528.38, payNo:11077.06, payWith:12873.80, off:{EV:7402.89,LS:19030.46,MV:9850.89,MO:5244.14}},
+      {name:'Dr. Menon', pct:0.35, coll:38127.60, payNo:11583.30, payWith:13344.66, off:{EV:5506.94,LS:13031.08,MO:19589.58}},
+      {name:'Dr. Patel', pct:0.32, coll:23302.06, payNo:6447.23, payWith:7456.66, off:{EV:366.00,MV:4616.22,MO:18319.84}},
+      {name:'Dr. Bell', pct:0.35, coll:23144.13, payNo:7139.63, payWith:8100.45, off:{EV:6.00,LS:14737.83,MV:200.00,MO:8200.30}},
+      {name:'Dr. Lugo', pct:0.36, coll:13835.93, payNo:0, payWith:4980.93, off:{EV:1236.00,LS:1.13,MV:12249.88,MO:345.85,SW:3.07}},
+      {name:'Dr. Schrack', pct:0.45, coll:5185.54, payNo:2333.49, payWith:2333.49, off:{EV:814.07,MV:4371.47}},
+    ],
+    offices: [{name:'Marysville',amt:104205.25},{name:'Monroe',amt:93668.68},{name:'Lake Stevens',amt:60567.19},{name:'Stanwood',amt:57554.61},{name:'Everett',amt:16038.90}],
+    termed: [{name:'Dr. Kirk',coll:31.00,note:'Terminated'},{name:'Dr. Ping',coll:520.00,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'}],
+  },
+  // JSON from payroll_refresh.py always overrides all of the above when it loads.
 };
 const officeNames = {MV:'Marysville',MO:'Monroe',LS:'Lake Stevens',SW:'Stanwood',EV:'Everett'};
 let currentPeriod = null;
@@ -317,7 +334,7 @@ const fmtK = n => '$'+(n/1000).toFixed(1)+'K';
 function parsePeriodDates(p) {
   // Parse "dates" field like "Feb 21 – Mar 6, 2026" into start/end Date objects
   // Also checks for machine-readable period_start/period_end ISO strings
-  if (p._parsedStart && p._parsedEnd) return { start: p._parsedStart, end: p._parsedEnd };
+  if (p._parsedStart && p._parsedEnd) return { start: p._parsedStart, end: p._parsedEnd, payDate: p._parsedPayDate };
 
   let start, end;
 
@@ -698,10 +715,8 @@ function buildKPIs() {
   const projPay = isLive && p.daysElapsed > 0 ? t.totalPayNo / p.daysElapsed * p.daysTotal : t.totalPayNo;
   const projSaved = isLive && p.daysElapsed > 0 ? t.totalSaved / p.daysElapsed * p.daysTotal : t.totalSaved;
 
-  // Accuracy: show for ALL periods (live and closed) when data exists
+  // Accuracy: from cross-check in payroll_refresh.py (Azure SQL only)
   const hasAccuracy = p.accuracy && p.accuracy.pct !== undefined;
-  const accuracyPct = hasAccuracy ? p.accuracy.pct + '%' : '\u2014';
-  const accuracyDetail = hasAccuracy ? p.accuracy.label : 'Awaiting cross-check';
 
   let kpis = `
     <div class="kpi">
@@ -721,7 +736,7 @@ function buildKPIs() {
     </div>
   `;
 
-  // Live periods: show BOTH progress AND accuracy
+  // Live periods: show progress bar + accuracy (if available)
   if (isLive) {
     const progressPct = p.daysTotal > 0 ? Math.round(p.daysElapsed / p.daysTotal * 100) : 0;
     kpis += `
@@ -730,21 +745,35 @@ function buildKPIs() {
         <div class="kpi-value blue-val">${progressPct}%</div>
         <div class="kpi-detail">Day ${p.daysElapsed} of ${p.daysTotal}</div>
       </div>
-      <div class="kpi">
-        <div class="kpi-label">Accuracy</div>
-        <div class="kpi-value green-val">${accuracyPct}</div>
-        <div class="kpi-detail">${accuracyDetail}</div>
-      </div>
     `;
+    if (hasAccuracy) {
+      kpis += `
+        <div class="kpi">
+          <div class="kpi-label">Accuracy</div>
+          <div class="kpi-value green-val">${p.accuracy.pct}%</div>
+          <div class="kpi-detail">${p.accuracy.label}</div>
+        </div>
+      `;
+    }
   } else {
-    // Closed periods: accuracy only
-    kpis += `
-      <div class="kpi">
-        <div class="kpi-label">Accuracy</div>
-        <div class="kpi-value green-val">${accuracyPct}</div>
-        <div class="kpi-detail">${accuracyDetail}</div>
-      </div>
-    `;
+    // Closed periods: show accuracy if available, otherwise annualized savings
+    if (hasAccuracy) {
+      kpis += `
+        <div class="kpi">
+          <div class="kpi-label">Accuracy</div>
+          <div class="kpi-value green-val">${p.accuracy.pct}%</div>
+          <div class="kpi-detail">${p.accuracy.label}</div>
+        </div>
+      `;
+    } else {
+      kpis += `
+        <div class="kpi">
+          <div class="kpi-label">Active Doctors</div>
+          <div class="kpi-value accent-val">${p.doctors.length}</div>
+          <div class="kpi-detail">${p.offices.length} offices</div>
+        </div>
+      `;
+    }
   }
 
   $('kpi-row').innerHTML = kpis;
