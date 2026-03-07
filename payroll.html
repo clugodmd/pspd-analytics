@@ -9,86 +9,84 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
---bg: #1E3228; --bg2: #253D32;
---card: #2E483A; --card-hover: #3D5E4C;
---accent: #CD7823; --accent-light: #E8943D; --accent-glow: rgba(205,120,35,0.15); --accent-border: rgba(205,120,35,0.3);
---text: #F5F5F5; --text2: #94A3B8; --text3: #6F8090;
---border: rgba(255,255,255,0.08);
---green: #5DBE6E; --purple: #8B6BB5; --blue: #5BA4D9;
---radius: 12px;
+  --bg: #1B2B24; --bg2: #223428;
+  --card: #204536; --card-hover: #2A5A48;
+  --accent: #6292A0; --accent-light: #7DB0BE; --accent-glow: rgba(98,146,160,0.15); --accent-border: rgba(98,146,160,0.3);
+  --text: #F5F5F5; --text2: #94A3B8; --text3: #6F8090;
+  --border: rgba(255,255,255,0.08);
+  --green: #5DBE6E; --brown: #7D6652; --blue: #6292A0;
+  --burgundy: #52000A;
+  --radius: 12px;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
-
 /* HEADER */
 .header { text-align:center; padding:32px 16px 20px; border-bottom:1px solid var(--border); }
 .header h1 { font-family:'Instrument Serif',Georgia,serif; font-size:clamp(26px,4vw,36px); font-weight:600; margin-bottom:6px; }
 .header h1 span { background:linear-gradient(135deg,var(--accent),var(--accent-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
 .header .sub { color:var(--text3); font-size:14px; margin-bottom:16px; }
-
 /* PERIOD SELECTOR */
 .period-row { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:0; }
 .period-btn { padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text2); transition:all 0.2s; font-family:'DM Sans',sans-serif; }
 .period-btn:hover { border-color:var(--accent-border); color:var(--text); }
 .period-btn.active { background:var(--accent-glow); border-color:var(--accent-border); color:var(--accent); }
-.period-btn.live { border-color:rgba(91,164,217,0.4); }
-.period-btn.live.active { background:rgba(91,164,217,0.15); border-color:rgba(91,164,217,0.5); color:var(--blue); }
+.period-btn.live { border-color:rgba(98,146,160,0.4); }
+.period-btn.live.active { background:rgba(98,146,160,0.15); border-color:rgba(98,146,160,0.5); color:var(--blue); }
 .live-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--blue); margin-right:5px; animation:pulse 2s infinite; }
 @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-
+/* LOADING STATE */
+.loading-overlay { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:400px; gap:16px; }
+.loading-spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading-text { color:var(--text3); font-size:14px; }
+.error-banner { background:rgba(82,0,10,0.15); border:1px solid rgba(82,0,10,0.4); border-radius:var(--radius); padding:24px; text-align:center; max-width:600px; margin:40px auto; }
+.error-banner .error-title { color:#FF6B6B; font-size:18px; font-weight:600; margin-bottom:8px; }
+.error-banner .error-detail { color:var(--text2); font-size:13px; line-height:1.6; }
 /* NAV TABS */
 .nav-tabs { display:flex; justify-content:center; gap:8px; padding:16px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
 .tab-btn { padding:8px 20px; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; border:1px solid transparent; background:transparent; color:var(--text2); transition:all 0.2s; font-family:'DM Sans',sans-serif; }
 .tab-btn:hover { color:var(--text); }
-.tab-btn.active { background:rgba(205,120,35,0.2); color:var(--accent); border-color:var(--accent-border); }
-
+.tab-btn.active { background:rgba(98,146,160,0.2); color:var(--accent); border-color:var(--accent-border); }
 /* MAIN */
 .main { max-width:1200px; margin:0 auto; padding:32px 16px; }
 .view { display:none; }
 .view.active { display:block; }
-
 /* TWO COL */
 .two-col { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
 @media(max-width:900px) { .two-col { grid-template-columns:1fr; } }
-
 /* SECTION TITLES */
 .sec-title { font-family:'Instrument Serif',Georgia,serif; font-size:20px; font-weight:600; margin-bottom:16px; padding-left:14px; border-left:3px solid var(--accent); }
-.sec-title.purple { border-left-color:var(--purple); }
+.sec-title.brown { border-left-color:var(--brown); }
 .sec-title.blue { border-left-color:var(--blue); }
-
 /* CARDS */
 .card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:24px; }
-.card.purple-card { border-color:rgba(139,107,181,0.2); }
-.card.live-card { border-color:rgba(91,164,217,0.25); }
-
+.card.brown-card { border-color:rgba(125,102,82,0.2); }
+.card.live-card { border-color:rgba(98,146,160,0.25); }
 /* TABLE */
 table { width:100%; border-collapse:collapse; font-size:13px; }
 th { text-align:left; padding:10px 12px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3); border-bottom:2px solid rgba(255,255,255,0.06); font-weight:600; }
 th.r, td.r { text-align:right; }
 td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); }
 tr.clickable { cursor:pointer; }
-tr.clickable:hover td { background:rgba(205,120,35,0.05); }
+tr.clickable:hover td { background:rgba(98,146,160,0.05); }
 tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; padding-top:14px; }
 .mono { font-family:'DM Sans',monospace; }
 .dim { color:var(--text2); }
 .bold { font-weight:600; }
-
 /* BADGES */
 .badge { display:inline-block; padding:3px 10px; border-radius:10px; font-size:11px; font-weight:600; }
 .badge-green { background:rgba(93,190,110,0.15); color:var(--green); }
-.badge-purple { background:rgba(139,107,181,0.15); color:var(--purple); }
-.badge-orange { background:rgba(205,120,35,0.15); color:var(--accent); }
-.badge-blue { background:rgba(91,164,217,0.15); color:var(--blue); }
-
+.badge-brown { background:rgba(125,102,82,0.15); color:var(--brown); }
+.badge-accent { background:rgba(98,146,160,0.15); color:var(--accent); }
+.badge-blue { background:rgba(98,146,160,0.15); color:var(--blue); }
 /* DOTS */
 .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle; }
 .dot-green { background:var(--green); }
-.dot-purple { background:var(--purple); }
-
+.dot-brown { background:var(--brown); }
 /* EXPAND ROW */
 .expand-row { display:none; }
 .expand-row.open { display:table-row; }
-.expand-inner { background:rgba(37,61,50,0.6); padding:16px 24px; }
+.expand-inner { background:rgba(27,43,36,0.6); padding:16px 24px; }
 .expand-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; font-size:12px; }
 .expand-label { color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; font-weight:600; margin-bottom:8px; font-size:11px; }
 .expand-line { display:flex; justify-content:space-between; padding:2px 0; }
@@ -96,7 +94,6 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
 .expand-divider { border-top:1px solid rgba(255,255,255,0.06); margin-top:6px; padding-top:6px; }
 .chevron { display:inline-block; width:14px; height:14px; margin-left:6px; vertical-align:middle; transition:transform 0.2s; color:var(--text3); }
 .chevron.open { transform:rotate(180deg); }
-
 /* OFFICE BARS */
 .office-bar { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
 .office-bar .name { width:100px; font-size:13px; color:var(--text2); flex-shrink:0; }
@@ -104,9 +101,8 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
 .office-bar .bar-fill { height:100%; background:linear-gradient(135deg,var(--accent),var(--accent-light)); opacity:0.75; border-radius:4px; }
 .office-bar .amt { width:80px; text-align:right; font-size:13px; color:var(--text2); }
 .office-total { display:flex; justify-content:space-between; margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.06); font-size:14px; font-weight:600; }
-
 /* SAVINGS HERO */
-.savings-hero { background:linear-gradient(135deg,rgba(205,120,35,0.1),rgba(205,120,35,0.02)); border:1px solid var(--accent-border); border-radius:var(--radius); padding:24px; text-align:center; margin-bottom:20px; }
+.savings-hero { background:linear-gradient(135deg,rgba(98,146,160,0.1),rgba(98,146,160,0.02)); border:1px solid var(--accent-border); border-radius:var(--radius); padding:24px; text-align:center; margin-bottom:20px; }
 .savings-hero .big { font-size:clamp(28px,4vw,36px); font-weight:700; background:linear-gradient(135deg,var(--accent),var(--accent-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
 .savings-hero .small { font-size:12px; color:var(--text3); margin-top:4px; }
 .savings-split { display:grid; grid-template-columns:1fr 1fr; gap:16px; text-align:center; margin-top:16px; }
@@ -116,35 +112,27 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
 .savings-split .lbl { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
 .link-btn { display:block; width:100%; margin-top:16px; padding:10px; text-align:center; color:var(--accent); font-weight:600; font-size:14px; cursor:pointer; border:none; background:none; font-family:'DM Sans',sans-serif; transition:color 0.2s; }
 .link-btn:hover { color:var(--accent-light); }
-
 /* KPI ROW */
-.kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-top:32px; }
+.kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:16px; margin-top:32px; }
 .kpi { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; text-align:center; transition:all 0.2s; }
 .kpi:hover { border-color:var(--accent-border); box-shadow:0 0 20px var(--accent-glow); }
 .kpi .kpi-label { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text3); font-weight:600; margin-bottom:8px; }
-.kpi .kpi-value { font-size:clamp(24px,3vw,30px); font-weight:700; }
+.kpi .kpi-value { font-size:clamp(22px,3vw,28px); font-weight:700; }
 .kpi .kpi-value.accent-val { background:linear-gradient(135deg,var(--accent),var(--accent-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
 .kpi .kpi-value.green-val { color:var(--green); }
 .kpi .kpi-value.blue-val { color:var(--blue); }
 .kpi .kpi-detail { font-size:12px; color:var(--text3); margin-top:4px; }
-
 /* PROGRESS BAR (for live period) */
 .period-progress { margin:20px 0; }
 .period-progress .bar-outer { height:10px; background:var(--bg2); border-radius:5px; overflow:hidden; }
-.period-progress .bar-inner { height:100%; border-radius:5px; background:linear-gradient(90deg,var(--blue),#7EC4F0); transition:width 1s ease; }
+.period-progress .bar-inner { height:100%; border-radius:5px; background:linear-gradient(90deg,var(--blue),#7DB0BE); transition:width 1s ease; }
 .period-progress .progress-labels { display:flex; justify-content:space-between; margin-top:6px; font-size:11px; color:var(--text3); }
-.projection-hero { background:linear-gradient(135deg,rgba(91,164,217,0.1),rgba(91,164,217,0.02)); border:1px solid rgba(91,164,217,0.3); border-radius:var(--radius); padding:24px; text-align:center; margin-bottom:20px; }
-.projection-hero .big { font-size:clamp(28px,4vw,36px); font-weight:700; color:var(--blue); }
-.projection-hero .small { font-size:12px; color:var(--text3); margin-top:4px; }
-
 /* FOOTER */
 .footer { text-align:center; padding:24px 16px; border-top:1px solid var(--border); margin-top:40px; font-size:12px; color:var(--text3); line-height:1.6; }
 .footer strong { color:var(--accent); font-weight:600; }
-
 /* NOTE */
 .note { font-size:12px; color:var(--text3); line-height:1.5; margin-top:16px; }
 .note .hl { color:var(--accent); font-weight:600; }
-
 /* SCROLLBAR */
 ::-webkit-scrollbar { width:8px; }
 ::-webkit-scrollbar-track { background:var(--bg); }
@@ -155,449 +143,623 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
 
 <!-- HEADER -->
 <div class="header">
-<h1>Puget Sound <span>Pediatric Dentistry</span></h1>
-<div class="sub">Dentrepreneur Control Tower &mdash; Doctor Payroll</div>
-<div class="period-row" id="period-row"></div>
+  <h1>Puget Sound <span>Pediatric Dentistry</span></h1>
+  <div class="sub">Dentrepreneur Control Tower &mdash; Doctor Payroll</div>
+  <div class="period-row" id="period-row"></div>
 </div>
 
 <!-- NAV -->
 <div class="nav-tabs">
-<button class="tab-btn active" onclick="showView('overview',this)">Overview</button>
-<button class="tab-btn" onclick="showView('xray',this)">X-Ray Savings</button>
-<button class="tab-btn" onclick="showView('termed',this)">Terminated</button>
+  <button class="tab-btn active" onclick="showView('overview',this)">Overview</button>
+  <button class="tab-btn" onclick="showView('xray',this)">X-Ray Savings</button>
+  <button class="tab-btn" onclick="showView('termed',this)">Terminated</button>
 </div>
 
 <div class="main">
+  <!-- LOADING STATE -->
+  <div id="loading-state" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading payroll data from Azure SQL...</div>
+  </div>
 
-<!-- OVERVIEW -->
-<div class="view active" id="view-overview">
-<div id="live-banner" style="display:none"></div>
-<div class="two-col">
-<div>
-<div class="sec-title" id="doc-title">Doctor Collections &amp; Pay</div>
-<div class="card" style="overflow-x:auto">
-<table>
-<thead><tr>
-<th>Doctor</th>
-<th class="r">Rate</th>
-<th class="r">Collections</th>
-<th class="r">Pay (No X-Rays)</th>
-</tr></thead>
-<tbody id="doc-table"></tbody>
-</table>
-</div>
-</div>
-<div>
-<div class="sec-title">Office Collections</div>
-<div class="card" id="office-card"></div>
-<div class="sec-title" style="margin-top:24px">X-Ray Savings</div>
-<div class="card" id="savings-preview"></div>
-</div>
-</div>
-</div>
+  <!-- ERROR STATE (hidden by default) -->
+  <div id="error-state" style="display:none"></div>
 
-<!-- X-RAY SAVINGS -->
-<div class="view" id="view-xray">
-<div style="max-width:700px;margin:0 auto">
-<div class="sec-title">X-Ray Savings Impact</div>
-<div class="card" id="xray-full"></div>
-</div>
-</div>
+  <!-- DASHBOARD CONTENT (hidden until data loads) -->
+  <div id="dashboard-content" style="display:none">
+    <!-- OVERVIEW -->
+    <div class="view active" id="view-overview">
+      <div id="live-banner" style="display:none"></div>
+      <div class="two-col">
+        <div>
+          <div class="sec-title" id="doc-title">Doctor Collections &amp; Pay</div>
+          <div class="card" style="overflow-x:auto">
+            <table>
+              <thead><tr>
+                <th>Doctor</th>
+                <th class="r">Rate</th>
+                <th class="r">Collections</th>
+                <th class="r">Pay (No X-Rays)</th>
+              </tr></thead>
+              <tbody id="doc-table"></tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="sec-title">Office Collections</div>
+          <div class="card" id="office-card"></div>
+          <div class="sec-title" style="margin-top:24px">X-Ray Savings</div>
+          <div class="card" id="savings-preview"></div>
+        </div>
+      </div>
+    </div>
 
-<!-- TERMINATED -->
-<div class="view" id="view-termed">
-<div style="max-width:600px;margin:0 auto">
-<div class="sec-title purple">Terminated / Inactive Doctors</div>
-<div class="card purple-card" id="termed-card"></div>
-</div>
-</div>
+    <!-- X-RAY SAVINGS -->
+    <div class="view" id="view-xray">
+      <div style="max-width:700px;margin:0 auto">
+        <div class="sec-title">X-Ray Savings Impact</div>
+        <div class="card" id="xray-full"></div>
+      </div>
+    </div>
 
-<div class="kpi-row" id="kpi-row"></div>
+    <!-- TERMINATED -->
+    <div class="view" id="view-termed">
+      <div style="max-width:600px;margin:0 auto">
+        <div class="sec-title brown">Terminated / Inactive Doctors</div>
+        <div class="card brown-card" id="termed-card"></div>
+      </div>
+    </div>
+
+    <div class="kpi-row" id="kpi-row"></div>
+  </div>
 </div>
 
 <div class="footer">
-<strong>Dentrepreneur Control Tower</strong> &bull; Puget Sound Pediatric Dentistry &bull; Automated from Azure SQL
-<br>Built by Chris Lugo + Claude AI
-<br><span id="last-updated" style="font-size:11px;color:var(--text3)"></span>
+  <strong>Dentrepreneur Control Tower</strong> &bull; Puget Sound Pediatric Dentistry &bull; Automated from Azure SQL
+  <br>Built by Chris Lugo + Claude AI
+  <br><span id="last-updated" style="font-size:11px;color:var(--text3)"></span>
 </div>
 
 <script>
-const PERIODS = {
-'1.16.26': {
-label:'1.16.26', dates:'Dec 27, 2025 – Jan 9, 2026', payDate:'Jan 16, 2026', status:'closed',
-doctors: [
-{name:'Dr. Slaven', pct:0.36, coll:61203.44, payNo:19033.07, payWith:22033.24},
-{name:'Dr. Menon', pct:0.35, coll:46512.10, payNo:14228.71, payWith:16279.24},
-{name:'Dr. Choong', pct:0.35, coll:41254.87, payNo:12634.74, payWith:14439.20},
-{name:'Dr. Benton', pct:0.32, coll:40209.18, payNo:11266.57, payWith:12866.94},
-{name:'Dr. Welter', pct:0.31, coll:35628.91, payNo:9645.03, payWith:11044.96},
-{name:'Dr. Patel', pct:0.32, coll:30245.60, payNo:8468.77, payWith:9678.59},
-{name:'Dr. Bell', pct:0.35, coll:24102.35, payNo:7371.32, payWith:8435.82},
-{name:'Dr. Schrack', pct:0.45, coll:6488.22, payNo:2919.70, payWith:2919.70},
-{name:'Dr. Lugo', pct:0.36, coll:5597.40, payNo:0, payWith:2015.06},
-],
-offices: [{name:'Monroe',amt:82545.87},{name:'Marysville',amt:58154.50},{name:'Stanwood',amt:47737.69},{name:'Everett',amt:30446.41},{name:'Lake Stevens',amt:356.06}],
-termed: [{name:'Dr. Kirk',coll:1853.44,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:671.12,note:'Legacy'}],
-},
-'1.30.26': {
-label:'1.30.26', dates:'Jan 10 – Jan 23, 2026', payDate:'Jan 30, 2026', status:'closed',
-doctors: [
-{name:'Dr. Slaven', pct:0.36, coll:72584.21, payNo:22565.63, payWith:26130.32},
-{name:'Dr. Menon', pct:0.35, coll:51293.44, payNo:15695.60, payWith:17952.70},
-{name:'Dr. Choong', pct:0.35, coll:49217.38, payNo:15060.32, payWith:17226.08},
-{name:'Dr. Benton', pct:0.32, coll:46124.95, payNo:12915.00, payWith:14759.98},
-{name:'Dr. Welter', pct:0.31, coll:41589.44, payNo:11260.74, payWith:12892.73},
-{name:'Dr. Patel', pct:0.32, coll:33875.13, payNo:9485.04, payWith:10840.04},
-{name:'Dr. Bell', pct:0.35, coll:26741.89, payNo:8182.92, payWith:9359.66},
-{name:'Dr. Schrack', pct:0.45, coll:7012.51, payNo:3155.63, payWith:3155.63},
-{name:'Dr. Lugo', pct:0.36, coll:6290.88, payNo:0, payWith:2264.72},
-],
-offices: [{name:'Monroe',amt:84035.16},{name:'Marysville',amt:100800.74},{name:'Stanwood',amt:48842.88},{name:'Everett',amt:26515.45},{name:'Lake Stevens',amt:10345.60}],
-termed: [{name:'Dr. Kirk',coll:2154.55,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:998.00,note:'Legacy'}],
-},
-'2.13.26': {
-label:'2.13.26', dates:'Jan 24 – Feb 6, 2026', payDate:'Feb 13, 2026', status:'closed',
-doctors: [
-{name:'Dr. Slaven', pct:0.36, coll:76422.98, payNo:23763.37, payWith:27512.27},
-{name:'Dr. Menon', pct:0.35, coll:52834.61, payNo:16165.59, payWith:18492.11},
-{name:'Dr. Choong', pct:0.35, coll:51807.52, payNo:15853.30, payWith:18132.63},
-{name:'Dr. Benton', pct:0.32, coll:47611.28, payNo:13331.16, payWith:15235.61},
-{name:'Dr. Welter', pct:0.31, coll:43245.18, payNo:11712.52, payWith:13406.01},
-{name:'Dr. Patel', pct:0.32, coll:35102.67, payNo:9828.75, payWith:11232.85},
-{name:'Dr. Bell', pct:0.35, coll:27654.31, payNo:8460.07, payWith:9679.01},
-{name:'Dr. Schrack', pct:0.45, coll:7245.88, payNo:3260.65, payWith:3260.65},
-{name:'Dr. Lugo', pct:0.36, coll:6502.12, payNo:0, payWith:2340.76},
-],
-offices: [{name:'Monroe',amt:77629.78},{name:'Marysville',amt:78477.67},{name:'Lake Stevens',amt:53245.25},{name:'Stanwood',amt:59796.15},{name:'Everett',amt:23858.82}],
-termed: [{name:'Dr. Kirk',coll:2510.94,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:1206.00,note:'Legacy'}],
-},
-'2.27.26': {
-label:'2.27.26', dates:'Feb 7 – Feb 20, 2026', payDate:'Feb 27, 2026', status:'closed',
-doctors: [
-{name:'Dr. Slaven', pct:0.36, coll:79367.09, payNo:24664.54, payWith:28572.15, off:{MV:31955.29,MO:12059.51,LS:0,SW:35352.29,EV:0}},
-{name:'Dr. Menon', pct:0.35, coll:55076.25, payNo:17389.04, payWith:19276.69, off:{MV:157,MO:22720.80,LS:16970.31,SW:0,EV:15228.14}},
-{name:'Dr. Choong', pct:0.35, coll:54029.92, payNo:16574.20, payWith:18910.47, off:{MV:22574.42,MO:2139,LS:0,SW:29316.50,EV:0}},
-{name:'Dr. Benton', pct:0.32, coll:49512.72, payNo:13990.57, payWith:15844.07, off:{MV:12960.60,MO:21474.17,LS:15077.95,SW:0,EV:0}},
-{name:'Dr. Welter', pct:0.31, coll:44314.70, payNo:11980.34, payWith:13737.56, off:{MV:6744.71,MO:168.96,LS:23962.13,SW:4999.46,EV:8439.44}},
-{name:'Dr. Patel', pct:0.32, coll:36621.82, payNo:10118.71, payWith:11718.98, off:{MV:8376.51,MO:28245.31,LS:0,SW:0,EV:0}},
-{name:'Dr. Bell', pct:0.35, coll:28898.18, payNo:8937.44, payWith:10114.36, off:{MV:41.80,MO:11677.42,LS:17178.96,SW:0,EV:0}},
-{name:'Dr. Schrack', pct:0.45, coll:7528.70, payNo:3387.92, payWith:3387.92, off:{MV:4113,MO:0,LS:0,SW:0,EV:3415.70}},
-{name:'Dr. Lugo', pct:0.36, coll:6941.64, payNo:0, payWith:2498.99, off:{MV:5541.45,MO:386.90,LS:1.07,SW:18.02,EV:994.20}},
-],
-offices: [{name:'Monroe',amt:100459.04},{name:'Marysville',amt:92928.79},{name:'Lake Stevens',amt:74303.05},{name:'Stanwood',amt:69782.27},{name:'Everett',amt:29153.88}],
-termed: [{name:'Dr. Kirk',coll:2756.88,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:1579.13,note:'Legacy'}],
-},
-'3.13.26': {
-label:'3.13.26', dates:'Feb 21 – Mar 6, 2026', payDate:'Mar 13, 2026', status:'live',
-daysElapsed: 9,
-daysTotal: 14,
-doctors: [
-{name:'Dr. Slaven', pct:0.36, coll:52911.39, payNo:16442.96, payWith:19047.70},
-{name:'Dr. Menon', pct:0.35, coll:35050.18, payNo:11062.03, payWith:12267.76},
-{name:'Dr. Choong', pct:0.35, coll:36019.95, payNo:11049.47, payWith:12626.98},
-{name:'Dr. Benton', pct:0.32, coll:33008.48, payNo:9330.37, payWith:10562.71},
-{name:'Dr. Welter', pct:0.31, coll:29209.80, payNo:7986.89, payWith:9058.04},
-{name:'Dr. Patel', pct:0.32, coll:24414.55, payNo:6745.81, payWith:7812.66},
-{name:'Dr. Bell', pct:0.35, coll:19265.45, payNo:5958.29, payWith:6742.91},
-{name:'Dr. Schrack', pct:0.45, coll:5019.13, payNo:2258.61, payWith:2258.61},
-{name:'Dr. Lugo', pct:0.36, coll:4627.76, payNo:0, payWith:1665.99},
-],
-offices: [{name:'Monroe',amt:66972.69},{name:'Marysville',amt:61952.53},{name:'Lake Stevens',amt:49535.37},{name:'Stanwood',amt:46521.51},{name:'Everett',amt:19435.92}],
-termed: [{name:'Dr. Kirk',coll:1837.92,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:1052.75,note:'Legacy'}],
-},
+// ═══════════════════════════════════════════════════════════════
+// DATA ARCHITECTURE:
+// 1. Historical periods (1.16.26–2.27.26) are fallback data below
+// 2. payroll.json from payroll_refresh.py ALWAYS overrides fallback
+// 3. Live/current periods have NO fallback — JSON is sole source
+// 4. Status (live/closed) auto-detected from dates, not hardcoded
+// ═══════════════════════════════════════════════════════════════
+
+// Historical periods — fallback data until Azure SQL automation replaces them.
+// JSON from payroll_refresh.py ALWAYS overrides these when available.
+// 3.13.26+ have NO fallback — they come from JSON only (Tanya-verified).
+let PERIODS = {
+  '1.16.26': {
+    label:'1.16.26', dates:'Dec 27, 2025 – Jan 9, 2026', payDate:'Jan 16, 2026',
+    period_start:'2025-12-27', period_end:'2026-01-09', pay_date_iso:'2026-01-16',
+    doctors: [
+      {name:'Dr. Slaven', pct:0.36, coll:61203.44, payNo:19033.07, payWith:22033.24},
+      {name:'Dr. Menon', pct:0.35, coll:46512.10, payNo:14228.71, payWith:16279.24},
+      {name:'Dr. Choong', pct:0.35, coll:41254.87, payNo:12634.74, payWith:14439.20},
+      {name:'Dr. Benton', pct:0.32, coll:40209.18, payNo:11266.57, payWith:12866.94},
+      {name:'Dr. Welter', pct:0.31, coll:35628.91, payNo:9645.03, payWith:11044.96},
+      {name:'Dr. Patel', pct:0.32, coll:30245.60, payNo:8468.77, payWith:9678.59},
+      {name:'Dr. Bell', pct:0.35, coll:24102.35, payNo:7371.32, payWith:8435.82},
+      {name:'Dr. Schrack', pct:0.45, coll:6488.22, payNo:2919.70, payWith:2919.70},
+      {name:'Dr. Lugo', pct:0.36, coll:5597.40, payNo:0, payWith:2015.06},
+    ],
+    offices: [{name:'Monroe',amt:82545.87},{name:'Marysville',amt:58154.50},{name:'Stanwood',amt:47737.69},{name:'Everett',amt:30446.41},{name:'Lake Stevens',amt:356.06}],
+    termed: [{name:'Dr. Kirk',coll:1853.44,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:671.12,note:'Legacy'}],
+  },
+  '1.30.26': {
+    label:'1.30.26', dates:'Jan 10 – Jan 23, 2026', payDate:'Jan 30, 2026',
+    period_start:'2026-01-10', period_end:'2026-01-23', pay_date_iso:'2026-01-30',
+    doctors: [
+      {name:'Dr. Slaven', pct:0.36, coll:72584.21, payNo:22565.63, payWith:26130.32},
+      {name:'Dr. Menon', pct:0.35, coll:51293.44, payNo:15695.60, payWith:17952.70},
+      {name:'Dr. Choong', pct:0.35, coll:49217.38, payNo:15060.32, payWith:17226.08},
+      {name:'Dr. Benton', pct:0.32, coll:46124.95, payNo:12915.00, payWith:14759.98},
+      {name:'Dr. Welter', pct:0.31, coll:41589.44, payNo:11260.74, payWith:12892.73},
+      {name:'Dr. Patel', pct:0.32, coll:33875.13, payNo:9485.04, payWith:10840.04},
+      {name:'Dr. Bell', pct:0.35, coll:26741.89, payNo:8182.92, payWith:9359.66},
+      {name:'Dr. Schrack', pct:0.45, coll:7012.51, payNo:3155.63, payWith:3155.63},
+      {name:'Dr. Lugo', pct:0.36, coll:6290.88, payNo:0, payWith:2264.72},
+    ],
+    offices: [{name:'Monroe',amt:84035.16},{name:'Marysville',amt:100800.74},{name:'Stanwood',amt:48842.88},{name:'Everett',amt:26515.45},{name:'Lake Stevens',amt:10345.60}],
+    termed: [{name:'Dr. Kirk',coll:2154.55,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:998.00,note:'Legacy'}],
+  },
+  '2.13.26': {
+    label:'2.13.26', dates:'Jan 24 – Feb 6, 2026', payDate:'Feb 13, 2026',
+    period_start:'2026-01-24', period_end:'2026-02-06', pay_date_iso:'2026-02-13',
+    doctors: [
+      {name:'Dr. Slaven', pct:0.36, coll:76422.98, payNo:23763.37, payWith:27512.27},
+      {name:'Dr. Menon', pct:0.35, coll:52834.61, payNo:16165.59, payWith:18492.11},
+      {name:'Dr. Choong', pct:0.35, coll:51807.52, payNo:15853.30, payWith:18132.63},
+      {name:'Dr. Benton', pct:0.32, coll:47611.28, payNo:13331.16, payWith:15235.61},
+      {name:'Dr. Welter', pct:0.31, coll:43245.18, payNo:11712.52, payWith:13406.01},
+      {name:'Dr. Patel', pct:0.32, coll:35102.67, payNo:9828.75, payWith:11232.85},
+      {name:'Dr. Bell', pct:0.35, coll:27654.31, payNo:8460.07, payWith:9679.01},
+      {name:'Dr. Schrack', pct:0.45, coll:7245.88, payNo:3260.65, payWith:3260.65},
+      {name:'Dr. Lugo', pct:0.36, coll:6502.12, payNo:0, payWith:2340.76},
+    ],
+    offices: [{name:'Monroe',amt:77629.78},{name:'Marysville',amt:78477.67},{name:'Lake Stevens',amt:53245.25},{name:'Stanwood',amt:59796.15},{name:'Everett',amt:23858.82}],
+    termed: [{name:'Dr. Kirk',coll:2510.94,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:1206.00,note:'Legacy'}],
+  },
+  '2.27.26': {
+    label:'2.27.26', dates:'Feb 7 – Feb 20, 2026', payDate:'Feb 27, 2026',
+    period_start:'2026-02-07', period_end:'2026-02-20', pay_date_iso:'2026-02-27',
+    doctors: [
+      {name:'Dr. Slaven', pct:0.36, coll:79367.09, payNo:24664.54, payWith:28572.15, off:{MV:31955.29,MO:12059.51,LS:0,SW:35352.29,EV:0}},
+      {name:'Dr. Menon', pct:0.35, coll:55076.25, payNo:17389.04, payWith:19276.69, off:{MV:157,MO:22720.80,LS:16970.31,SW:0,EV:15228.14}},
+      {name:'Dr. Choong', pct:0.35, coll:54029.92, payNo:16574.20, payWith:18910.47, off:{MV:22574.42,MO:2139,LS:0,SW:29316.50,EV:0}},
+      {name:'Dr. Benton', pct:0.32, coll:49512.72, payNo:13990.57, payWith:15844.07, off:{MV:12960.60,MO:21474.17,LS:15077.95,SW:0,EV:0}},
+      {name:'Dr. Welter', pct:0.31, coll:44314.70, payNo:11980.34, payWith:13737.56, off:{MV:6744.71,MO:168.96,LS:23962.13,SW:4999.46,EV:8439.44}},
+      {name:'Dr. Patel', pct:0.32, coll:36621.82, payNo:10118.71, payWith:11718.98, off:{MV:8376.51,MO:28245.31,LS:0,SW:0,EV:0}},
+      {name:'Dr. Bell', pct:0.35, coll:28898.18, payNo:8937.44, payWith:10114.36, off:{MV:41.80,MO:11677.42,LS:17178.96,SW:0,EV:0}},
+      {name:'Dr. Schrack', pct:0.45, coll:7528.70, payNo:3387.92, payWith:3387.92, off:{MV:4113,MO:0,LS:0,SW:0,EV:3415.70}},
+      {name:'Dr. Lugo', pct:0.36, coll:6941.64, payNo:0, payWith:2498.99, off:{MV:5541.45,MO:386.90,LS:1.07,SW:18.02,EV:994.20}},
+    ],
+    offices: [{name:'Monroe',amt:100459.04},{name:'Marysville',amt:92928.79},{name:'Lake Stevens',amt:74303.05},{name:'Stanwood',amt:69782.27},{name:'Everett',amt:29153.88}],
+    termed: [{name:'Dr. Kirk',coll:2756.88,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:1579.13,note:'Legacy'}],
+  },
+  // 3.13.26+ — NO fallback. These come exclusively from payroll.json (Tanya-verified).
 };
-
 const officeNames = {MV:'Marysville',MO:'Monroe',LS:'Lake Stevens',SW:'Stanwood',EV:'Everett'};
-
-let currentPeriod = '2.27.26';
+let currentPeriod = null;
 let expandedIdx = -1;
-
 const $ = s => document.getElementById(s);
 const fmt = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const fmtK = n => '$'+(n/1000).toFixed(1)+'K';
-function getPeriodData() { return PERIODS[currentPeriod]; }
-function getTotals(p) {
-const tc = p.doctors.reduce((s,d)=>s+d.coll,0);
-const tpn = p.doctors.reduce((s,d)=>s+d.payNo,0);
-const tpw = p.doctors.reduce((s,d)=>s+d.payWith,0);
-const termedColl = p.termed ? p.termed.reduce((s,t)=>s+(t.coll||0),0) : 0;
-return { totalColl:tc+termedColl, activeColl:tc, totalPayNo:tpn, totalPayWith:tpw, totalSaved:tpw-tpn, termedColl:termedColl };
+
+// ═══════════════════════════════════════════════════════════════
+// DATE-BASED STATUS DETECTION — auto-advance live/closed
+// ═══════════════════════════════════════════════════════════════
+
+function parsePeriodDates(p) {
+  // Parse "dates" field like "Feb 21 – Mar 6, 2026" into start/end Date objects
+  // Also checks for machine-readable period_start/period_end ISO strings
+  if (p._parsedStart && p._parsedEnd) return { start: p._parsedStart, end: p._parsedEnd };
+
+  let start, end;
+
+  // Prefer ISO date fields from payroll_refresh.py
+  if (p.period_start && p.period_end) {
+    start = new Date(p.period_start + 'T00:00:00');
+    end = new Date(p.period_end + 'T00:00:00');
+  } else if (p.dates) {
+    // Parse human-readable: "Feb 21 – Mar 6, 2026"
+    const ds = p.dates.replace(/\u2013/g, '-');
+    const m = ds.match(/([A-Za-z]+ \d+)\s*-\s*([A-Za-z]+ \d+),?\s*(\d{4})/);
+    if (m) {
+      start = new Date(m[1] + ', ' + m[3]);
+      end = new Date(m[2] + ', ' + m[3]);
+      // Handle year wrap (e.g., "Dec 27 – Jan 9, 2026" means Dec is 2025)
+      if (start > end) start.setFullYear(start.getFullYear() - 1);
+    }
+  }
+
+  // Parse payDate for closed detection
+  // Prefer ISO: "2026-03-13", fallback to human: "Mar 13, 2026"
+  let payDate = null;
+  if (p.pay_date_iso) {
+    payDate = new Date(p.pay_date_iso + 'T00:00:00');
+  } else if (p.payDate) {
+    payDate = new Date(p.payDate);
+  }
+  if (payDate && isNaN(payDate.getTime())) payDate = null;
+
+  if (start && end) {
+    p._parsedStart = start;
+    p._parsedEnd = end;
+    p._parsedPayDate = payDate;
+  }
+
+  return { start, end, payDate };
 }
 
-function buildPeriodSelector() {
-const row = $('period-row');
-row.innerHTML = '';
-Object.entries(PERIODS).forEach(([key, p]) => {
-const btn = document.createElement('button');
-const isLive = p.status === 'live';
-const lbl = p.label || key;
-btn.className = 'period-btn' + (lbl === currentPeriod ? ' active' : '') + (isLive ? ' live' : '');
-btn.innerHTML = (isLive ? '<span class="live-dot"></span>' : '') + lbl + (isLive ? ' LIVE' : '');
-btn.onclick = () => switchPeriod(lbl);
-row.appendChild(btn);
-});
+function updateAllStatuses() {
+  // Auto-detect live/closed status from dates
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  Object.values(PERIODS).forEach(p => {
+    const { start, end, payDate } = parsePeriodDates(p);
+    if (!start || !end) return;
+
+    // Compute days
+    const daysTotal = Math.round((end - start) / 86400000) + 1;
+    const daysElapsed = Math.max(1, Math.min(daysTotal, Math.round((now - start) / 86400000) + 1));
+    p.daysTotal = daysTotal;
+    p.daysElapsed = daysElapsed;
+
+    // Determine status from dates (overrides whatever was in JSON)
+    if (payDate && now > payDate) {
+      p.status = 'closed';
+    } else if (now >= start && now <= end) {
+      p.status = 'live';
+    } else if (now > end) {
+      // Between period end and pay date — still "live" (finalizing)
+      p.status = 'live';
+    } else {
+      p.status = 'upcoming';
+    }
+  });
 }
 
-function switchPeriod(label) {
-currentPeriod = label;
-expandedIdx = -1;
-buildPeriodSelector();
-buildAll();
+// ═══════════════════════════════════════════════════════════════
+// DATA LOADING — JSON is the ONLY source of truth
+// ═══════════════════════════════════════════════════════════════
+
+// Render fallback data immediately (historical periods show while JSON loads)
+updateAllStatuses();
+const fallbackKeys = Object.keys(PERIODS);
+if (fallbackKeys.length > 0) {
+  // Show last closed period from fallback
+  currentPeriod = fallbackKeys[fallbackKeys.length - 1];
+  $('loading-state').style.display = 'none';
+  $('dashboard-content').style.display = 'block';
+  buildPeriodSelector();
+  buildAll();
 }
 
-function showView(id, btn) {
-document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-$('view-'+id).classList.add('active');
-btn.classList.add('active');
-}
-
-function buildLiveBanner() {
-const p = getPeriodData();
-const banner = $('live-banner');
-if (p.status !== 'live') { banner.style.display = 'none'; return; }
-banner.style.display = 'block';
-const pct = ((p.daysElapsed / p.daysTotal) * 100).toFixed(0);
-const t = getTotals(p);
-const projected = t.totalColl / p.daysElapsed * p.daysTotal;
-const projPay = t.totalPayNo / p.daysElapsed * p.daysTotal;
-banner.innerHTML = `
-<div class="card live-card" style="margin-bottom:24px">
-<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-<span class="live-dot"></span>
-<span class="sec-title blue" style="margin-bottom:0;font-size:18px">Period In Progress — ${p.dates}</span>
-</div>
-<div class="period-progress">
-<div class="bar-outer"><div class="bar-inner" style="width:${pct}%"></div></div>
-<div class="progress-labels">
-<span>Day ${p.daysElapsed} of ${p.daysTotal}</span>
-<span>${pct}% complete</span>
-</div>
-</div>
-<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:20px;text-align:center">
-<div>
-<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Posted So Far</div>
-<div style="font-size:22px;font-weight:700;color:var(--blue)">$${(t.totalColl/1000).toFixed(0)}K</div>
-</div>
-<div>
-<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Projected Total</div>
-<div style="font-size:22px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">~$${(projected/1000).toFixed(0)}K</div>
-</div>
-<div>
-<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Projected Pay</div>
-<div style="font-size:22px;font-weight:700;color:var(--green)">~$${(projPay/1000).toFixed(0)}K</div>
-</div>
-</div>
-<div class="note" style="margin-top:12px;text-align:center">
-Projections based on daily run rate. Final totals will change as more payments post.
-</div>
-</div>
-`;
-}
-
-function buildDocTable() {
-const p = getPeriodData();
-const t = getTotals(p);
-const tb = $('doc-table');
-tb.innerHTML = '';
-p.doctors.forEach((d,i) => {
-const tr = document.createElement('tr');
-tr.className = 'clickable';
-tr.onclick = () => toggleDoc(i);
-tr.innerHTML = `
-<td><span class="dot dot-green"></span>${d.name} <svg class="chevron ${expandedIdx===i?'open':''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
-</td>
-<td class="r dim">${(d.pct*100).toFixed(0)}%</td>
-<td class="r mono">$${fmt(d.coll)}</td>
-<td class="r mono bold">$${fmt(d.payNo)}</td>
-`;
-tb.appendChild(tr);
-
-const xr = document.createElement('tr');
-xr.className = 'expand-row' + (expandedIdx===i?' open':'');
-const saved = d.payWith - d.payNo;
-const offEntries = d.off ? Object.entries(d.off).filter(([,v])=>v>0) : [];
-xr.innerHTML = `<td colspan="4" class="expand-inner"><div class="expand-grid">
-<div>
-<div class="expand-label">Office Breakdown</div>
-${offEntries.length > 0 ? offEntries.map(([k,v])=>'<div class="expand-line"><span>'+( officeNames[k]||k)+'</span><span class="mono">$'+fmt(v)+'</span></div>').join('') : '<div style="color:var(--text3);font-style:italic">Available when connected to Azure</div>'}
-</div>
-<div>
-<div class="expand-label">X-Ray Impact</div>
-<div class="expand-line"><span>Pay w/ X-Rays</span><span class="mono dim">$${fmt(d.payWith)}</span></div>
-<div class="expand-line"><span>Pay w/o X-Rays</span><span class="mono">$${fmt(d.payNo)}</span></div>
-${saved > 0.01 ? '<div class="expand-line expand-divider"><span style="color:var(--accent);font-weight:600">Saved</span><span class="mono" style="color:var(--accent);font-weight:600">-$'+fmt(saved)+'</span></div>' : ''}
-</div>
-</div></td>`;
-tb.appendChild(xr);
-});
-
-const tot = document.createElement('tr');
-tot.className = 'total-row';
-tot.innerHTML = '<td>Total '+(p.status==='live'?'<span class="badge badge-blue">IN PROGRESS</span>':'')+'</td><td></td><td class="r mono">$'+fmt(t.activeColl)+'</td><td class="r mono">$'+fmt(t.totalPayNo)+'</td>';
-tb.appendChild(tot);
-}
-
-function toggleDoc(i) {
-expandedIdx = expandedIdx === i ? -1 : i;
-buildDocTable();
-}
-
-function buildOffices() {
-const p = getPeriodData();
-const max = Math.max(...p.offices.map(o=>o.amt));
-const total = p.offices.reduce((s,o)=>s+o.amt,0);
-let html = '';
-const sorted = [...p.offices].sort((a,b)=>b.amt-a.amt);
-sorted.forEach(o => {
-const pct = (o.amt/max*100).toFixed(1);
-html += '<div class="office-bar"><div class="name">'+o.name+'</div><div class="bar-wrap"><div class="bar-fill" style="width:'+pct+'%"></div></div><div class="amt">'+fmtK(o.amt)+'</div></div>';
-});
-html += '<div class="office-total"><span>Total</span><span class="mono">$'+fmt(total)+'</span></div>';
-$('office-card').innerHTML = html;
-}
-
-function buildSavingsPreview() {
-const t = getTotals(getPeriodData());
-$('savings-preview').innerHTML = `
-<div class="savings-hero" style="margin-bottom:16px">
-<div class="big">$${fmt(t.totalSaved)}</div>
-<div class="small">Saved this period</div>
-</div>
-<div class="savings-split">
-<div><div class="val dim-val">$${fmt(t.totalPayWith)}</div><div class="lbl">With X-Rays</div></div>
-<div><div class="val green-val">$${fmt(t.totalPayNo)}</div><div class="lbl">Without X-Rays</div></div>
-</div>
-<button class="link-btn" onclick="document.querySelectorAll('.tab-btn')[1].click()">View Full Breakdown â</button>
-`;
-}
-
-function buildXrayFull() {
-const p = getPeriodData();
-const t = getTotals(p);
-const xDocs = p.doctors.filter(d => d.payWith - d.payNo > 0.01)
-.sort((a,b) => (b.payWith-b.payNo) - (a.payWith-a.payNo));
-const annualized = t.totalSaved * 26;
-let rows = '';
-xDocs.forEach(d => {
-const s = d.payWith - d.payNo;
-rows += '<tr><td>'+d.name+'</td><td class="r mono dim">$'+fmt(d.payWith)+'</td><td class="r mono">$'+fmt(d.payNo)+'</td><td class="r"><span class="badge badge-orange">-$'+fmt(s)+'</span></td></tr>';
-});
-$('xray-full').innerHTML = `
-<div class="savings-hero">
-<div class="big">$${fmt(t.totalSaved)}</div>
-<div class="small">Saved ${p.status==='live'?'so far ':''}by removing x-rays from pay</div>
-</div>
-<table>
-<thead><tr><th>Doctor</th><th class="r">With X-Rays</th><th class="r">Without</th><th class="r">Saved</th></tr></thead>
-<tbody>${rows}</tbody>
-</table>
-<div class="note" style="margin-top:20px">
-Removing x-rays from collections before calculating pay saves <span class="hl">$${fmt(t.totalSaved)}</span> per period &mdash; approximately <span class="hl">$${(annualized/1000).toFixed(0)}K/year</span> in profitability improvement.
-</div>
-`;
-}
-
-function buildTermed() {
-const p = getPeriodData();
-let rows = '';
-p.termed.forEach(d => {
-rows += '<tr><td><span class="dot dot-purple"></span>'+d.name+'</td><td class="r mono dim">'+(d.coll > 0 ? '$'+fmt(d.coll) : '—')+'</td><td class="r"><span class="badge badge-purple">'+d.note+'</span></td></tr>';
-});
-$('termed-card').innerHTML = `
-<table>
-<thead><tr><th>Doctor</th><th class="r">Remaining Collections</th><th class="r">Status</th></tr></thead>
-<tbody>${rows}</tbody>
-</table>
-<div class="note">Terminated doctors may still show residual collections. These are tracked but not included in active payroll.</div>
-`;
-}
-
-function buildKPIs() {
-const p = getPeriodData();
-const t = getTotals(p);
-const isLive = p.status === 'live';
-const projected = isLive ? t.totalColl / p.daysElapsed * p.daysTotal : t.totalColl;
-const projPay = isLive ? t.totalPayNo / p.daysElapsed * p.daysTotal : t.totalPayNo;
-const projSaved = isLive ? t.totalSaved / p.daysElapsed * p.daysTotal : t.totalSaved;
-$('kpi-row').innerHTML = `
-<div class="kpi">
-<div class="kpi-label">${isLive ? 'Posted So Far' : 'Total Collections'}</div>
-<div class="kpi-value ${isLive?'blue-val':'accent-val'}">$${(t.totalColl/1000).toFixed(0)}K</div>
-<div class="kpi-detail">${isLive ? 'Projected: ~$'+(projected/1000).toFixed(0)+'K' : 'All offices combined'}</div>
-</div>
-<div class="kpi">
-<div class="kpi-label">${isLive ? 'Pay So Far' : 'Total Pay'}</div>
-<div class="kpi-value green-val">$${(t.totalPayNo/1000).toFixed(0)}K</div>
-<div class="kpi-detail">${isLive ? 'Projected: ~$'+(projPay/1000).toFixed(0)+'K' : '9 active doctors (no x-rays)'}</div>
-</div>
-<div class="kpi">
-<div class="kpi-label">X-Ray Savings</div>
-<div class="kpi-value accent-val">$${(t.totalSaved/1000).toFixed(1)}K</div>
-<div class="kpi-detail">${isLive ? 'Projected: ~$'+(projSaved/1000).toFixed(1)+'K' : '~$'+((t.totalSaved*26)/1000).toFixed(0)+'K/year'}</div>
-</div>
-<div class="kpi">
-<div class="kpi-label">${isLive ? 'Period Progress' : 'Accuracy'}</div>
-<div class="kpi-value ${isLive?'blue-val':'green-val'}">${isLive ? Math.round(p.daysElapsed/p.daysTotal*100)+'%' : '99.98%'}</div>
-<div class="kpi-detail">${isLive ? 'Day '+p.daysElapsed+' of '+p.daysTotal : '17/20 pay codes exact'}</div>
-</div>
-`;
-}
-
-function updateLiveDays() {
-Object.values(PERIODS).forEach(p => {
-if (p.status !== 'live') return;
-const ds = (p.dates||p.dateRange||'').replace(/\u2013/g,'-');
-const m = ds.match(/([A-Za-z]+ \d+)\s*-\s*([A-Za-z]+ \d+),?\s*(\d{4})/);
-if (!m) return;
-const s = new Date(m[1]+', '+m[3]), e = new Date(m[2]+', '+m[3]);
-const now = new Date(); now.setHours(0,0,0,0);
-p.daysTotal = Math.round((e - s)/(86400000)) + 1;
-p.daysElapsed = Math.max(1, Math.min(p.daysTotal, Math.round((now - s)/(86400000)) + 1));
-});
-}
-function buildAll() {
-updateLiveDays();
-buildLiveBanner();
-buildDocTable();
-buildOffices();
-buildSavingsPreview();
-buildXrayFull();
-buildTermed();
-buildKPIs();
-}
-
-buildPeriodSelector();
-buildAll();
-
-// âââââââââââ LIVE DATA OVERLAY âââââââââââ
-// Fetches real-time data from Azure SQL (via GitHub Actions)
-// Merges into PERIODS, preserving all hardcoded data as fallback
+// Then overlay live JSON data (Tanya-verified, from payroll_refresh.py)
 (async function loadLiveData() {
   try {
     const resp = await fetch('data/payroll.json?t=' + Date.now());
-    if (!resp.ok) return;
+    if (!resp.ok) { console.log('payroll.json not available (' + resp.status + ')'); return; }
     const json = await resp.json();
     if (!json.periods) return;
+
+    // MERGE: JSON periods override fallback. JSON is always authoritative.
     for (const [key, val] of Object.entries(json.periods)) {
       PERIODS[key] = val;
     }
-    // Auto-select live period if one exists, otherwise keep current
+
+    // Auto-detect statuses from dates
+    updateAllStatuses();
+
+    // Select the best period to show:
+    // 1. Live period (if any)
+    // 2. Most recent by date
     const keys = Object.keys(PERIODS);
     const liveKey = keys.find(k => PERIODS[k].status === 'live');
-    if (liveKey) currentPeriod = liveKey;
+    if (liveKey) {
+      currentPeriod = liveKey;
+    } else {
+      // Sort by parsed start date, pick last
+      const sorted = keys.sort((a, b) => {
+        const pa = parsePeriodDates(PERIODS[a]), pb = parsePeriodDates(PERIODS[b]);
+        return (pa.start || 0) - (pb.start || 0);
+      });
+      currentPeriod = sorted[sorted.length - 1];
+    }
+
+    // Show dashboard (in case fallback was empty)
+    $('loading-state').style.display = 'none';
+    $('dashboard-content').style.display = 'block';
+
     buildPeriodSelector();
     buildAll();
-if (json.last_updated) {
-const d = new Date(json.last_updated);
-const el = document.getElementById('last-updated');
-if (el) el.textContent = 'Data refreshed: ' + d.toLocaleString('en-US', {month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});
-}
-  } catch(e) {
-    // Live data not available — dashboard works fine with hardcoded data
+
+    // Update footer timestamp
+    if (json.last_updated) {
+      const d = new Date(json.last_updated);
+      const el = $('last-updated');
+      if (el) el.textContent = 'Data refreshed: ' + d.toLocaleString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric',
+        hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
+      });
+    }
+
+  } catch (e) {
+    // JSON not available — dashboard still works with fallback data
     console.log('Live data not loaded:', e.message);
+    // If no fallback data either, show error
+    if (Object.keys(PERIODS).length === 0) {
+      $('loading-state').style.display = 'none';
+      $('error-state').style.display = 'block';
+      $('error-state').innerHTML = `
+        <div class="error-banner">
+          <div class="error-title">Data Not Available</div>
+          <div class="error-detail">
+            Could not load payroll data from <code>data/payroll.json</code>.<br>
+            ${e.message}<br><br>
+            This file is generated by <code>payroll_refresh.py</code> via GitHub Actions.<br>
+            Check that the workflow has run and the Azure SQL connection is active.
+          </div>
+        </div>
+      `;
+    }
   }
 })();
+
+// ═══════════════════════════════════════════════════════════════
+// UI BUILDERS
+// ═══════════════════════════════════════════════════════════════
+
+function getPeriodData() { return PERIODS[currentPeriod]; }
+
+function getTotals(p) {
+  const tc = p.doctors.reduce((s, d) => s + d.coll, 0);
+  const tpn = p.doctors.reduce((s, d) => s + d.payNo, 0);
+  const tpw = p.doctors.reduce((s, d) => s + d.payWith, 0);
+  const termedColl = p.termed ? p.termed.reduce((s, t) => s + (t.coll || 0), 0) : 0;
+  return { totalColl: tc + termedColl, activeColl: tc, totalPayNo: tpn, totalPayWith: tpw, totalSaved: tpw - tpn, termedColl };
+}
+
+function buildPeriodSelector() {
+  const row = $('period-row');
+  row.innerHTML = '';
+  // Sort periods chronologically by parsing label as M.DD.YY
+  const sorted = Object.entries(PERIODS).sort((a, b) => {
+    const pa = parsePeriodDates(a[1]), pb = parsePeriodDates(b[1]);
+    if (pa.start && pb.start) return pa.start - pb.start;
+    return 0;
+  });
+  sorted.forEach(([key, p]) => {
+    const btn = document.createElement('button');
+    const isLive = p.status === 'live';
+    const lbl = p.label || key;
+    btn.className = 'period-btn' + (key === currentPeriod ? ' active' : '') + (isLive ? ' live' : '');
+    btn.innerHTML = (isLive ? '<span class="live-dot"></span>' : '') + lbl + (isLive ? ' LIVE' : '');
+    btn.onclick = () => switchPeriod(key);
+    row.appendChild(btn);
+  });
+}
+
+function switchPeriod(key) {
+  currentPeriod = key;
+  expandedIdx = -1;
+  buildPeriodSelector();
+  buildAll();
+}
+
+function showView(id, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  $('view-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function buildLiveBanner() {
+  const p = getPeriodData();
+  const banner = $('live-banner');
+  if (p.status !== 'live') { banner.style.display = 'none'; return; }
+  banner.style.display = 'block';
+  const pct = ((p.daysElapsed / p.daysTotal) * 100).toFixed(0);
+  const t = getTotals(p);
+  const projected = p.daysElapsed > 0 ? t.totalColl / p.daysElapsed * p.daysTotal : t.totalColl;
+  const projPay = p.daysElapsed > 0 ? t.totalPayNo / p.daysElapsed * p.daysTotal : t.totalPayNo;
+  banner.innerHTML = `
+    <div class="card live-card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span class="live-dot"></span>
+        <span class="sec-title blue" style="margin-bottom:0;font-size:18px">Period In Progress — ${p.dates}</span>
+      </div>
+      <div class="period-progress">
+        <div class="bar-outer"><div class="bar-inner" style="width:${pct}%"></div></div>
+        <div class="progress-labels">
+          <span>Day ${p.daysElapsed} of ${p.daysTotal}</span>
+          <span>${pct}% complete</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:20px;text-align:center">
+        <div>
+          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Posted So Far</div>
+          <div style="font-size:22px;font-weight:700;color:var(--blue)">$${(t.totalColl/1000).toFixed(0)}K</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Projected Total</div>
+          <div style="font-size:22px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">~$${(projected/1000).toFixed(0)}K</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Projected Pay</div>
+          <div style="font-size:22px;font-weight:700;color:var(--green)">~$${(projPay/1000).toFixed(0)}K</div>
+        </div>
+      </div>
+      <div class="note" style="margin-top:12px;text-align:center">
+        Projections based on daily run rate. Final totals change as payments post.
+      </div>
+    </div>
+  `;
+}
+
+function buildDocTable() {
+  const p = getPeriodData();
+  const t = getTotals(p);
+  const tb = $('doc-table');
+  tb.innerHTML = '';
+  p.doctors.forEach((d, i) => {
+    const tr = document.createElement('tr');
+    tr.className = 'clickable';
+    tr.onclick = () => toggleDoc(i);
+    tr.innerHTML = `
+      <td><span class="dot dot-green"></span>${d.name}
+        <svg class="chevron ${expandedIdx === i ? 'open' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
+      </td>
+      <td class="r dim">${(d.pct * 100).toFixed(0)}%</td>
+      <td class="r mono">$${fmt(d.coll)}</td>
+      <td class="r mono bold">$${fmt(d.payNo)}</td>
+    `;
+    tb.appendChild(tr);
+
+    const xr = document.createElement('tr');
+    xr.className = 'expand-row' + (expandedIdx === i ? ' open' : '');
+    const saved = d.payWith - d.payNo;
+    const offEntries = d.off ? Object.entries(d.off).filter(([, v]) => v > 0) : [];
+    xr.innerHTML = `<td colspan="4" class="expand-inner"><div class="expand-grid">
+      <div>
+        <div class="expand-label">Office Breakdown</div>
+        ${offEntries.length > 0
+          ? offEntries.map(([k, v]) => '<div class="expand-line"><span>' + (officeNames[k] || k) + '</span><span class="mono">$' + fmt(v) + '</span></div>').join('')
+          : '<div style="color:var(--text3);font-style:italic">Run with --recent for office detail</div>'}
+      </div>
+      <div>
+        <div class="expand-label">X-Ray Impact</div>
+        <div class="expand-line"><span>Pay w/ X-Rays</span><span class="mono dim">$${fmt(d.payWith)}</span></div>
+        <div class="expand-line"><span>Pay w/o X-Rays</span><span class="mono">$${fmt(d.payNo)}</span></div>
+        ${saved > 0.01
+          ? '<div class="expand-line expand-divider"><span style="color:var(--accent);font-weight:600">Saved</span><span class="mono" style="color:var(--accent);font-weight:600">-$' + fmt(saved) + '</span></div>'
+          : ''}
+      </div>
+    </div></td>`;
+    tb.appendChild(xr);
+  });
+
+  const tot = document.createElement('tr');
+  tot.className = 'total-row';
+  tot.innerHTML = '<td>Total ' + (p.status === 'live' ? '<span class="badge badge-blue">IN PROGRESS</span>' : '') + '</td><td></td><td class="r mono">$' + fmt(t.activeColl) + '</td><td class="r mono">$' + fmt(t.totalPayNo) + '</td>';
+  tb.appendChild(tot);
+}
+
+function toggleDoc(i) {
+  expandedIdx = expandedIdx === i ? -1 : i;
+  buildDocTable();
+}
+
+function buildOffices() {
+  const p = getPeriodData();
+  const max = Math.max(...p.offices.map(o => o.amt));
+  const total = p.offices.reduce((s, o) => s + o.amt, 0);
+  let html = '';
+  const sorted = [...p.offices].sort((a, b) => b.amt - a.amt);
+  sorted.forEach(o => {
+    const pct = (o.amt / max * 100).toFixed(1);
+    html += '<div class="office-bar"><div class="name">' + o.name + '</div><div class="bar-wrap"><div class="bar-fill" style="width:' + pct + '%"></div></div><div class="amt">' + fmtK(o.amt) + '</div></div>';
+  });
+  html += '<div class="office-total"><span>Total</span><span class="mono">$' + fmt(total) + '</span></div>';
+  $('office-card').innerHTML = html;
+}
+
+function buildSavingsPreview() {
+  const t = getTotals(getPeriodData());
+  $('savings-preview').innerHTML = `
+    <div class="savings-hero" style="margin-bottom:16px">
+      <div class="big">$${fmt(t.totalSaved)}</div>
+      <div class="small">Saved this period</div>
+    </div>
+    <div class="savings-split">
+      <div><div class="val dim-val">$${fmt(t.totalPayWith)}</div><div class="lbl">With X-Rays</div></div>
+      <div><div class="val green-val">$${fmt(t.totalPayNo)}</div><div class="lbl">Without X-Rays</div></div>
+    </div>
+    <button class="link-btn" onclick="document.querySelectorAll('.tab-btn')[1].click()">View Full Breakdown &rarr;</button>
+  `;
+}
+
+function buildXrayFull() {
+  const p = getPeriodData();
+  const t = getTotals(p);
+  const xDocs = p.doctors.filter(d => d.payWith - d.payNo > 0.01)
+    .sort((a, b) => (b.payWith - b.payNo) - (a.payWith - a.payNo));
+  const annualized = t.totalSaved * 26;
+  let rows = '';
+  xDocs.forEach(d => {
+    const s = d.payWith - d.payNo;
+    rows += '<tr><td>' + d.name + '</td><td class="r mono dim">$' + fmt(d.payWith) + '</td><td class="r mono">$' + fmt(d.payNo) + '</td><td class="r"><span class="badge badge-accent">-$' + fmt(s) + '</span></td></tr>';
+  });
+  $('xray-full').innerHTML = `
+    <div class="savings-hero">
+      <div class="big">$${fmt(t.totalSaved)}</div>
+      <div class="small">Saved ${p.status === 'live' ? 'so far ' : ''}by removing x-rays from pay</div>
+    </div>
+    <table>
+      <thead><tr><th>Doctor</th><th class="r">With X-Rays</th><th class="r">Without</th><th class="r">Saved</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="note" style="margin-top:20px">
+      Removing x-rays from collections before calculating pay saves <span class="hl">$${fmt(t.totalSaved)}</span> per period &mdash; approximately <span class="hl">$${(annualized / 1000).toFixed(0)}K/year</span> in profitability improvement.
+    </div>
+  `;
+}
+
+function buildTermed() {
+  const p = getPeriodData();
+  if (!p.termed || p.termed.length === 0) {
+    $('termed-card').innerHTML = '<div class="note">No terminated doctors with residual collections this period.</div>';
+    return;
+  }
+  let rows = '';
+  p.termed.forEach(d => {
+    rows += '<tr><td><span class="dot dot-brown"></span>' + d.name + '</td><td class="r mono dim">' + (d.coll > 0 ? '$' + fmt(d.coll) : '\u2014') + '</td><td class="r"><span class="badge badge-brown">' + d.note + '</span></td></tr>';
+  });
+  $('termed-card').innerHTML = `
+    <table>
+      <thead><tr><th>Doctor</th><th class="r">Remaining Collections</th><th class="r">Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="note">Terminated doctors may still show residual collections. These are tracked but not included in active payroll.</div>
+  `;
+}
+
+function buildKPIs() {
+  const p = getPeriodData();
+  const t = getTotals(p);
+  const isLive = p.status === 'live';
+  const projected = isLive && p.daysElapsed > 0 ? t.totalColl / p.daysElapsed * p.daysTotal : t.totalColl;
+  const projPay = isLive && p.daysElapsed > 0 ? t.totalPayNo / p.daysElapsed * p.daysTotal : t.totalPayNo;
+  const projSaved = isLive && p.daysElapsed > 0 ? t.totalSaved / p.daysElapsed * p.daysTotal : t.totalSaved;
+
+  // Accuracy: show for ALL periods (live and closed) when data exists
+  const hasAccuracy = p.accuracy && p.accuracy.pct !== undefined;
+  const accuracyPct = hasAccuracy ? p.accuracy.pct + '%' : '\u2014';
+  const accuracyDetail = hasAccuracy ? p.accuracy.label : 'Awaiting cross-check';
+
+  let kpis = `
+    <div class="kpi">
+      <div class="kpi-label">${isLive ? 'Posted So Far' : 'Total Collections'}</div>
+      <div class="kpi-value ${isLive ? 'blue-val' : 'accent-val'}">$${(t.totalColl / 1000).toFixed(0)}K</div>
+      <div class="kpi-detail">${isLive ? 'Projected: ~$' + (projected / 1000).toFixed(0) + 'K' : 'All offices combined'}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">${isLive ? 'Pay So Far' : 'Total Pay'}</div>
+      <div class="kpi-value green-val">$${(t.totalPayNo / 1000).toFixed(0)}K</div>
+      <div class="kpi-detail">${isLive ? 'Projected: ~$' + (projPay / 1000).toFixed(0) + 'K' : p.doctors.length + ' active doctors (no x-rays)'}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">X-Ray Savings</div>
+      <div class="kpi-value accent-val">$${(t.totalSaved / 1000).toFixed(1)}K</div>
+      <div class="kpi-detail">${isLive ? 'Projected: ~$' + (projSaved / 1000).toFixed(1) + 'K' : '~$' + ((t.totalSaved * 26) / 1000).toFixed(0) + 'K/year'}</div>
+    </div>
+  `;
+
+  // Live periods: show BOTH progress AND accuracy
+  if (isLive) {
+    const progressPct = p.daysTotal > 0 ? Math.round(p.daysElapsed / p.daysTotal * 100) : 0;
+    kpis += `
+      <div class="kpi">
+        <div class="kpi-label">Period Progress</div>
+        <div class="kpi-value blue-val">${progressPct}%</div>
+        <div class="kpi-detail">Day ${p.daysElapsed} of ${p.daysTotal}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Accuracy</div>
+        <div class="kpi-value green-val">${accuracyPct}</div>
+        <div class="kpi-detail">${accuracyDetail}</div>
+      </div>
+    `;
+  } else {
+    // Closed periods: accuracy only
+    kpis += `
+      <div class="kpi">
+        <div class="kpi-label">Accuracy</div>
+        <div class="kpi-value green-val">${accuracyPct}</div>
+        <div class="kpi-detail">${accuracyDetail}</div>
+      </div>
+    `;
+  }
+
+  $('kpi-row').innerHTML = kpis;
+}
+
+function buildAll() {
+  updateAllStatuses();
+  buildLiveBanner();
+  buildDocTable();
+  buildOffices();
+  buildSavingsPreview();
+  buildXrayFull();
+  buildTermed();
+  buildKPIs();
+}
 </script>
 </body>
 </html>
