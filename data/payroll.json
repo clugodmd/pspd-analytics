@@ -1,156 +1,160 @@
 {
   "periods": {
-    "3.13.26": {
-      "label": "3.13.26",
-      "dates": "Feb 21 \u2013 Mar 6, 2026",
-      "payDate": "Mar 13, 2026",
-      "status": "live",
+    "1.30.26": {
+      "label": "1.30.26",
+      "dates": "Jan 10 \u2013 Jan 23, 2026",
+      "payDate": "Jan 30, 2026",
+      "period_start": "2026-01-10",
+      "period_end": "2026-01-23",
+      "pay_date_iso": "2026-01-30",
+      "status": "closed",
       "daysElapsed": 14,
       "daysTotal": 14,
       "doctors": [
         {
           "name": "Dr. Slaven",
           "pct": 0.36,
-          "coll": 69230.49,
-          "payNo": 21597.63,
-          "payWith": 24922.98,
+          "coll": 65246.48,
+          "payNo": 20568.98,
+          "payWith": 23488.73,
           "off": {
-            "MV": 36730.98,
-            "MO": 6950.96,
-            "SW": 25548.55
-          }
-        },
-        {
-          "name": "Dr. Choong",
-          "pct": 0.35,
-          "coll": 59169.2,
-          "payNo": 17975.72,
-          "payWith": 20709.22,
-          "off": {
-            "MV": 27216.21,
-            "SW": 31952.99
-          }
-        },
-        {
-          "name": "Dr. Benton",
-          "pct": 0.32,
-          "coll": 57960.3,
-          "payNo": 16573.44,
-          "payWith": 18547.3,
-          "off": {
-            "EV": 277.0,
-            "LS": 13735.69,
-            "MV": 8969.6,
-            "MO": 34978.01
-          }
-        },
-        {
-          "name": "Dr. Welter",
-          "pct": 0.31,
-          "coll": 41528.38,
-          "payNo": 11077.06,
-          "payWith": 12873.8,
-          "off": {
-            "EV": 7402.89,
-            "LS": 19030.46,
-            "MV": 9850.89,
-            "MO": 5244.14
+            "SW": 30874.82,
+            "MV": 26599.03,
+            "MO": 7772.63
           }
         },
         {
           "name": "Dr. Menon",
           "pct": 0.35,
-          "coll": 38127.6,
-          "payNo": 11583.3,
-          "payWith": 13344.66,
+          "coll": 59188.11,
+          "payNo": 17853.81,
+          "payWith": 20715.84,
           "off": {
-            "EV": 5506.94,
-            "LS": 13031.08,
-            "MO": 19589.58
+            "MV": 10954.74,
+            "MO": 36120.13,
+            "EV": 7413.99,
+            "LS": 4699.25
           }
         },
         {
-          "name": "Dr. Patel",
+          "name": "Dr. Benton",
           "pct": 0.32,
-          "coll": 23302.06,
-          "payNo": 6447.23,
-          "payWith": 7456.66,
+          "coll": 54270.1,
+          "payNo": 14654.16,
+          "payWith": 17366.43,
           "off": {
-            "EV": 366.0,
-            "MV": 4616.22,
-            "MO": 18319.84
+            "MO": 26281.6,
+            "LS": 508.71,
+            "EV": 2455.67,
+            "MV": 25024.12
+          }
+        },
+        {
+          "name": "Dr. Choong",
+          "pct": 0.35,
+          "coll": 49623.25,
+          "payNo": 14772.27,
+          "payWith": 17368.14,
+          "off": {
+            "SW": 24468.51,
+            "EV": 333.87,
+            "MV": 24820.87
+          }
+        },
+        {
+          "name": "Dr. Welter",
+          "pct": 0.31,
+          "coll": 35197.21,
+          "payNo": 9174.04,
+          "payWith": 10911.14,
+          "off": {
+            "MO": 4912.04,
+            "SW": 80.11,
+            "EV": 7624.75,
+            "MV": 19546.69,
+            "LS": 3033.62
           }
         },
         {
           "name": "Dr. Bell",
           "pct": 0.35,
-          "coll": 23144.13,
-          "payNo": 7139.63,
-          "payWith": 8100.45,
+          "coll": 25485.73,
+          "payNo": 7655.5,
+          "payWith": 8920.01,
           "off": {
-            "EV": 6.0,
-            "LS": 14737.83,
-            "MV": 200.0,
-            "MO": 8200.3
+            "LS": 1956.58,
+            "MO": 19633.63,
+            "EV": 3495.72,
+            "MV": 399.8
           }
         },
         {
           "name": "Dr. Lugo",
           "pct": 0.36,
-          "coll": 13835.93,
+          "coll": 1918.33,
           "payNo": 0.0,
-          "payWith": 4980.93,
+          "payWith": 690.6,
           "off": {
-            "EV": 1236.0,
-            "LS": 1.13,
-            "MV": 12249.88,
-            "MO": 345.85,
-            "SW": 3.07
+            "MO": 980.72,
+            "SW": 2.6,
+            "MV": 1035.2,
+            "LS": 102.27,
+            "EV": 2.08
           }
         },
         {
           "name": "Dr. Schrack",
           "pct": 0.45,
-          "coll": 5185.54,
-          "payNo": 2333.49,
-          "payWith": 2333.49,
+          "coll": 660.76,
+          "payNo": 297.34,
+          "payWith": 297.34,
           "off": {
-            "EV": 814.07,
-            "MV": 4371.47
+            "MV": 509.16,
+            "EV": 151.6
+          }
+        },
+        {
+          "name": "Dr. Patel",
+          "pct": 0.32,
+          "coll": 442.5,
+          "payNo": 136.86,
+          "payWith": 141.6,
+          "off": {
+            "MO": 442.5
           }
         }
       ],
       "offices": [
         {
           "name": "Marysville",
-          "amt": 104205.25
+          "amt": 117299.56
         },
         {
           "name": "Monroe",
-          "amt": 93668.68
-        },
-        {
-          "name": "Lake Stevens",
-          "amt": 60567.19
+          "amt": 97895.85
         },
         {
           "name": "Stanwood",
-          "amt": 57554.61
+          "amt": 56182.59
         },
         {
           "name": "Everett",
-          "amt": 16038.9
+          "amt": 30714.29
+        },
+        {
+          "name": "Lake Stevens",
+          "amt": 11474.02
         }
       ],
       "termed": [
         {
           "name": "Dr. Kirk",
-          "coll": 31.0,
+          "coll": 21053.25,
           "note": "Terminated"
         },
         {
           "name": "Dr. Ping",
-          "coll": 520.0,
+          "coll": 85.19,
           "note": "Terminated"
         },
         {
@@ -158,10 +162,364 @@
           "coll": 0.0,
           "note": "Terminated"
         }
-      ]
+      ],
+      "accuracy": {
+        "pct": 0.0,
+        "matched": 0,
+        "total": 8,
+        "total_diff": 7085.87,
+        "label": "0/8 doctors exact"
+      }
+    },
+    "2.13.26": {
+      "label": "2.13.26",
+      "dates": "Jan 24 \u2013 Feb 6, 2026",
+      "payDate": "Feb 13, 2026",
+      "period_start": "2026-01-24",
+      "period_end": "2026-02-06",
+      "pay_date_iso": "2026-02-13",
+      "status": "closed",
+      "daysElapsed": 14,
+      "daysTotal": 14,
+      "doctors": [
+        {
+          "name": "Dr. Slaven",
+          "pct": 0.36,
+          "coll": 79960.52,
+          "payNo": 24813.81,
+          "payWith": 28785.79,
+          "off": {
+            "SW": 38406.28,
+            "MO": 1931.4,
+            "MV": 39622.84
+          }
+        },
+        {
+          "name": "Dr. Choong",
+          "pct": 0.35,
+          "coll": 60024.17,
+          "payNo": 18247.42,
+          "payWith": 21008.46,
+          "off": {
+            "MV": 27667.81,
+            "SW": 28099.09,
+            "MO": 4127.7,
+            "EV": 122.79,
+            "LS": 6.78
+          }
+        },
+        {
+          "name": "Dr. Welter",
+          "pct": 0.31,
+          "coll": 58319.48,
+          "payNo": 16433.49,
+          "payWith": 18079.04,
+          "off": {
+            "MV": 11091.64,
+            "SW": 953.98,
+            "MO": 5705.26,
+            "EV": 15428.11,
+            "LS": 25140.49
+          }
+        },
+        {
+          "name": "Dr. Menon",
+          "pct": 0.35,
+          "coll": 49656.64,
+          "payNo": 15091.99,
+          "payWith": 17379.82,
+          "off": {
+            "MO": 28677.95,
+            "EV": 6877.98,
+            "MV": 268.32,
+            "LS": 13832.39
+          }
+        },
+        {
+          "name": "Dr. Benton",
+          "pct": 0.32,
+          "coll": 43507.59,
+          "payNo": 12139.21,
+          "payWith": 13922.43,
+          "off": {
+            "MO": 28184.7,
+            "MV": 7453.91,
+            "LS": 7515.98,
+            "EV": 353.0
+          }
+        },
+        {
+          "name": "Dr. Bell",
+          "pct": 0.35,
+          "coll": 27479.96,
+          "payNo": 8605.64,
+          "payWith": 9617.99,
+          "off": {
+            "LS": 13353.85,
+            "MO": 13356.54,
+            "MV": 469.4,
+            "EV": 300.17
+          }
+        },
+        {
+          "name": "Dr. Lugo",
+          "pct": 0.36,
+          "coll": 24792.25,
+          "payNo": 0.0,
+          "payWith": 8925.21,
+          "off": {
+            "EV": 300.55,
+            "MO": 12939.1,
+            "LS": 238.52,
+            "MV": 11313.33,
+            "SW": 0.75
+          }
+        },
+        {
+          "name": "Dr. Patel",
+          "pct": 0.32,
+          "coll": 6688.91,
+          "payNo": 1741.07,
+          "payWith": 2140.45,
+          "off": {
+            "MO": 5241.77,
+            "MV": 1447.14
+          }
+        },
+        {
+          "name": "Dr. Schrack",
+          "pct": 0.45,
+          "coll": 2023.41,
+          "payNo": 910.53,
+          "payWith": 910.53,
+          "off": {
+            "MV": 1544.01,
+            "EV": 479.4
+          }
+        }
+      ],
+      "offices": [
+        {
+          "name": "Monroe",
+          "amt": 101519.47
+        },
+        {
+          "name": "Marysville",
+          "amt": 101111.4
+        },
+        {
+          "name": "Stanwood",
+          "amt": 67504.1
+        },
+        {
+          "name": "Lake Stevens",
+          "amt": 60088.01
+        },
+        {
+          "name": "Everett",
+          "amt": 24701.25
+        }
+      ],
+      "termed": [
+        {
+          "name": "Dr. Kirk",
+          "coll": 1187.52,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Ping",
+          "coll": 984.9,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Laws",
+          "coll": 0.0,
+          "note": "Terminated"
+        }
+      ],
+      "accuracy": {
+        "pct": 0.0,
+        "matched": 0,
+        "total": 8,
+        "total_diff": 10084.58,
+        "label": "0/8 doctors exact"
+      }
+    },
+    "2.27.26": {
+      "label": "2.27.26",
+      "dates": "Feb 7 \u2013 Feb 20, 2026",
+      "payDate": "Feb 27, 2026",
+      "period_start": "2026-02-07",
+      "period_end": "2026-02-20",
+      "pay_date_iso": "2026-02-27",
+      "status": "closed",
+      "daysElapsed": 14,
+      "daysTotal": 14,
+      "doctors": [
+        {
+          "name": "Dr. Slaven",
+          "pct": 0.36,
+          "coll": 79366.43,
+          "payNo": 24668.3,
+          "payWith": 28571.91,
+          "off": {
+            "MV": 31996.79,
+            "SW": 35386.13,
+            "MO": 11983.51
+          }
+        },
+        {
+          "name": "Dr. Menon",
+          "pct": 0.35,
+          "coll": 55384.01,
+          "payNo": 17504.11,
+          "payWith": 19384.4,
+          "off": {
+            "EV": 15228.14,
+            "MO": 22993.8,
+            "MV": 191.76,
+            "LS": 16970.31
+          }
+        },
+        {
+          "name": "Dr. Choong",
+          "pct": 0.35,
+          "coll": 53775.62,
+          "payNo": 16485.19,
+          "payWith": 18821.47,
+          "off": {
+            "SW": 28930.5,
+            "MV": 22553.32,
+            "MO": 2276.0,
+            "LS": 15.8
+          }
+        },
+        {
+          "name": "Dr. Benton",
+          "pct": 0.32,
+          "coll": 50405.12,
+          "payNo": 14276.14,
+          "payWith": 16129.64,
+          "off": {
+            "MV": 12919.5,
+            "LS": 15032.95,
+            "MO": 21593.47,
+            "EV": 859.2
+          }
+        },
+        {
+          "name": "Dr. Welter",
+          "pct": 0.31,
+          "coll": 44130.7,
+          "payNo": 11923.3,
+          "payWith": 13680.52,
+          "off": {
+            "MV": 6744.71,
+            "MO": 168.96,
+            "LS": 23778.13,
+            "EV": 8439.44,
+            "SW": 4999.46
+          }
+        },
+        {
+          "name": "Dr. Patel",
+          "pct": 0.32,
+          "coll": 36499.82,
+          "payNo": 10086.39,
+          "payWith": 11679.94,
+          "off": {
+            "MO": 28230.31,
+            "MV": 8269.51
+          }
+        },
+        {
+          "name": "Dr. Bell",
+          "pct": 0.35,
+          "coll": 29665.03,
+          "payNo": 9205.83,
+          "payWith": 10382.76,
+          "off": {
+            "MO": 11663.14,
+            "LS": 17059.96,
+            "MV": 668.13,
+            "EV": 273.8
+          }
+        },
+        {
+          "name": "Dr. Schrack",
+          "pct": 0.45,
+          "coll": 7278.7,
+          "payNo": 3085.97,
+          "payWith": 3275.41,
+          "off": {
+            "EV": 3415.7,
+            "MV": 3863.0
+          }
+        },
+        {
+          "name": "Dr. Lugo",
+          "pct": 0.36,
+          "coll": 5869.74,
+          "payNo": 0.0,
+          "payWith": 2113.11,
+          "off": {
+            "MV": 4736.85,
+            "SW": 58.22,
+            "MO": 547.4,
+            "LS": 73.07,
+            "EV": 454.2
+          }
+        }
+      ],
+      "offices": [
+        {
+          "name": "Monroe",
+          "amt": 101112.86
+        },
+        {
+          "name": "Marysville",
+          "amt": 92092.58
+        },
+        {
+          "name": "Lake Stevens",
+          "amt": 73788.85
+        },
+        {
+          "name": "Stanwood",
+          "amt": 69470.31
+        },
+        {
+          "name": "Everett",
+          "amt": 29823.22
+        }
+      ],
+      "termed": [
+        {
+          "name": "Dr. Kirk",
+          "coll": 2124.88,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Ping",
+          "coll": 353.0,
+          "note": "Terminated"
+        },
+        {
+          "name": "Dr. Laws",
+          "coll": 0.0,
+          "note": "Terminated"
+        }
+      ],
+      "accuracy": {
+        "pct": 0.0,
+        "matched": 0,
+        "total": 8,
+        "total_diff": 8878.59,
+        "label": "0/8 doctors exact"
+      }
     }
   },
-  "last_updated": "2026-03-06T18:48:48.481369Z",
+  "last_updated": "2026-03-07T11:31:02.898277Z",
   "generated_by": "payroll_refresh.py",
   "source": "rpt.vw_income_allocation (Azure SQL)"
 }
