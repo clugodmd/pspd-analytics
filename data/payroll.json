@@ -162,14 +162,7 @@
           "coll": 0.0,
           "note": "Terminated"
         }
-      ],
-      "accuracy": {
-        "pct": 92.25,
-        "matched": 3,
-        "total": 8,
-        "total_diff": 6627.93,
-        "label": "$6,628 variance across 8 doctors"
-      }
+      ]
     },
     "2.13.26": {
       "label": "2.13.26",
@@ -336,14 +329,7 @@
           "coll": 0.0,
           "note": "Terminated"
         }
-      ],
-      "accuracy": {
-        "pct": 90.13,
-        "matched": 1,
-        "total": 8,
-        "total_diff": 9705.23,
-        "label": "$9,705 variance across 8 doctors"
-      }
+      ]
     },
     "2.27.26": {
       "label": "2.27.26",
@@ -509,17 +495,10 @@
           "coll": 0.0,
           "note": "Terminated"
         }
-      ],
-      "accuracy": {
-        "pct": 92.17,
-        "matched": 3,
-        "total": 8,
-        "total_diff": 8432.46,
-        "label": "$8,432 variance across 8 doctors"
-      }
+      ]
     }
   },
-  "last_updated": "2026-03-08T12:08:55.490977Z",
+  "last_updated": "2026-03-08T12:35:25.591190Z",
   "generated_by": "payroll_refresh.py",
   "source": "rpt.vw_income_allocation (Azure SQL)"
 }
