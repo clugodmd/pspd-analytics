@@ -35,7 +35,13 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text)
 .period-btn.active { background:var(--accent-glow); border-color:var(--accent-border); color:var(--accent); }
 .period-btn.live { border-color:rgba(98,146,160,0.4); }
 .period-btn.live.active { background:rgba(98,146,160,0.15); border-color:rgba(98,146,160,0.5); color:var(--blue); }
+.period-btn.processing { border-color:rgba(230,160,50,0.4); }
+.period-btn.processing.active { background:rgba(230,160,50,0.12); border-color:rgba(230,160,50,0.5); color:#e6a032; }
 .live-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--blue); margin-right:5px; animation:pulse 2s infinite; }
+.status-tag { font-size:9px; font-weight:700; letter-spacing:0.5px; padding:1px 5px; border-radius:4px; margin-left:4px; vertical-align:middle; }
+.status-tag.live { background:rgba(98,146,160,0.2); color:var(--blue); }
+.status-tag.processing { background:rgba(230,160,50,0.18); color:#e6a032; }
+.status-tag.hardcoded { background:rgba(150,150,150,0.15); color:var(--text3); font-size:11px; }
 @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
 /* LOADING STATE */
 .loading-overlay { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:400px; gap:16px; }
@@ -218,6 +224,10 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
 </div>
 
 <div class="footer">
+  <div id="hardcoded-footnote" style="display:none;margin-bottom:12px;padding:8px 16px;background:rgba(150,150,150,0.08);border-radius:8px;font-size:11px;color:var(--text3)">
+    * Periods marked with an asterisk contain verified historical data from Tanya's records.
+    These amounts match exactly what was paid and are locked permanently.
+  </div>
   <strong>Dentrepreneur Control Tower</strong> &bull; Puget Sound Pediatric Dentistry &bull; Automated from Azure SQL
   <br>Built by Chris Lugo + Claude AI
   <br><span id="last-updated" style="font-size:11px;color:var(--text3)"></span>
@@ -384,7 +394,7 @@ function parsePeriodDates(p) {
 }
 
 function updateAllStatuses() {
-  // Auto-detect live/closed status from dates
+  // Three-phase period lifecycle: live → processing → complete
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
@@ -398,15 +408,19 @@ function updateAllStatuses() {
     p.daysTotal = daysTotal;
     p.daysElapsed = daysElapsed;
 
-    // Determine status from dates (overrides whatever was in JSON)
-    // Once the collection window closes (now > end), the period is CLOSED.
-    // "Live" only means the period is actively collecting payments.
-    if (now > end) {
-      p.status = 'closed';
-    } else if (now >= start && now <= end) {
+    // If JSON already has a status from the pipeline, trust it for locked periods
+    if (p.locked) return;
+
+    // Three-phase status from dates:
+    //   live       = inside the pay period (data recalculates)
+    //   processing = period ended, Tanya prepping payroll (data locked)
+    //   complete   = payroll paid (frozen forever)
+    if (now <= end) {
       p.status = 'live';
+    } else if (payDate && now < payDate) {
+      p.status = 'processing';
     } else {
-      p.status = 'upcoming';
+      p.status = 'complete';
     }
   });
 }
@@ -466,6 +480,11 @@ if (fallbackKeys.length > 0) {
     buildPeriodSelector();
     buildAll();
 
+    // Show hardcoded footnote if any period has hardcoded data
+    const hasHC = Object.values(PERIODS).some(p => p.hardcoded);
+    const hcNote = $('hardcoded-footnote');
+    if (hasHC && hcNote) hcNote.style.display = 'block';
+
     // Update footer timestamp
     if (json.last_updated) {
       const d = new Date(json.last_updated);
@@ -524,9 +543,18 @@ function buildPeriodSelector() {
   sorted.forEach(([key, p]) => {
     const btn = document.createElement('button');
     const isLive = p.status === 'live';
+    const isProcessing = p.status === 'processing';
+    const isHardcoded = p.hardcoded === true;
     const lbl = p.label || key;
-    btn.className = 'period-btn' + (key === currentPeriod ? ' active' : '') + (isLive ? ' live' : '');
-    btn.innerHTML = (isLive ? '<span class="live-dot"></span>' : '') + lbl + (isLive ? ' LIVE' : '');
+    let statusClass = isLive ? ' live' : (isProcessing ? ' processing' : '');
+    btn.className = 'period-btn' + (key === currentPeriod ? ' active' : '') + statusClass;
+
+    let statusTag = '';
+    if (isLive) statusTag = ' <span class="status-tag live">LIVE</span>';
+    else if (isProcessing) statusTag = ' <span class="status-tag processing">PROCESSING</span>';
+    else if (isHardcoded) statusTag = ' <span class="status-tag hardcoded">*</span>';
+
+    btn.innerHTML = (isLive ? '<span class="live-dot"></span>' : '') + lbl + statusTag;
     btn.onclick = () => switchPeriod(key);
     row.appendChild(btn);
   });
@@ -546,9 +574,56 @@ function showView(id, btn) {
   btn.classList.add('active');
 }
 
-function buildLiveBanner() {
+function buildStatusBanner() {
   const p = getPeriodData();
   const banner = $('live-banner');
+
+  // Processing banner — data locked, Tanya prepping payroll
+  if (p.status === 'processing') {
+    banner.style.display = 'block';
+    const t = getTotals(p);
+    banner.innerHTML = `
+      <div class="card" style="margin-bottom:24px;border-left:4px solid #e6a032">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:18px">&#128274;</span>
+          <span class="sec-title" style="margin-bottom:0;font-size:18px;color:#e6a032">Processing Payroll — ${p.dates}</span>
+        </div>
+        <div class="note">Data locked. Tanya reviewing for ${p.payDate} payroll.${p.hardcoded ? ' <span style="color:var(--text3)">* Verified historical data</span>' : ''}</div>
+      </div>
+    `;
+    return;
+  }
+
+  // Complete banner for hardcoded periods
+  if (p.status === 'complete' && p.hardcoded) {
+    banner.style.display = 'block';
+    banner.innerHTML = `
+      <div class="card" style="margin-bottom:24px;border-left:4px solid var(--green)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:18px">&#9989;</span>
+          <span class="sec-title" style="margin-bottom:0;font-size:18px;color:var(--green)">Complete — Paid ${p.payDate}</span>
+        </div>
+        <div class="note">* Verified historical data from Tanya's records. Locked permanently.</div>
+      </div>
+    `;
+    return;
+  }
+
+  // Complete (non-hardcoded, pipeline-locked)
+  if (p.status === 'complete' && p.locked) {
+    banner.style.display = 'block';
+    banner.innerHTML = `
+      <div class="card" style="margin-bottom:24px;border-left:4px solid var(--green)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:18px">&#9989;</span>
+          <span class="sec-title" style="margin-bottom:0;font-size:18px;color:var(--green)">Complete — Paid ${p.payDate}</span>
+        </div>
+        <div class="note">Data locked${p.locked_date ? ' on ' + p.locked_date : ''}. Final payroll numbers.</div>
+      </div>
+    `;
+    return;
+  }
+
   if (p.status !== 'live') { banner.style.display = 'none'; return; }
   banner.style.display = 'block';
   const pct = ((p.daysElapsed / p.daysTotal) * 100).toFixed(0);
@@ -644,7 +719,11 @@ function buildDocTable() {
 
   const tot = document.createElement('tr');
   tot.className = 'total-row';
-  tot.innerHTML = '<td>Total ' + (p.status === 'live' ? '<span class="badge badge-blue">IN PROGRESS</span>' : '') + '</td><td></td><td class="r mono">$' + fmt(t.activeColl) + '</td><td class="r mono">$' + fmt(t.totalPayNo) + '</td>';
+  let statusBadge = '';
+  if (p.status === 'live') statusBadge = '<span class="badge badge-blue">LIVE</span>';
+  else if (p.status === 'processing') statusBadge = '<span class="badge" style="background:rgba(230,160,50,0.15);color:#e6a032">PROCESSING</span>';
+  else if (p.locked) statusBadge = '<span class="badge badge-green">COMPLETE</span>';
+  tot.innerHTML = '<td>Total ' + statusBadge + '</td><td></td><td class="r mono">$' + fmt(t.activeColl) + '</td><td class="r mono">$' + fmt(t.totalPayNo) + '</td>';
   tb.appendChild(tot);
 }
 
@@ -762,7 +841,7 @@ function buildKPIs() {
     </div>
   `;
 
-  // Live periods: show progress bar + accuracy (if available)
+  // Fourth KPI: Status-aware
   if (isLive) {
     const progressPct = p.daysTotal > 0 ? Math.round(p.daysElapsed / p.daysTotal * 100) : 0;
     kpis += `
@@ -772,34 +851,30 @@ function buildKPIs() {
         <div class="kpi-detail">Day ${p.daysElapsed} of ${p.daysTotal}</div>
       </div>
     `;
-    if (hasAccuracy) {
-      kpis += `
-        <div class="kpi">
-          <div class="kpi-label">Accuracy</div>
-          <div class="kpi-value green-val">${p.accuracy.pct}%</div>
-          <div class="kpi-detail">${p.accuracy.label}</div>
-        </div>
-      `;
-    }
+  } else if (p.status === 'processing') {
+    kpis += `
+      <div class="kpi">
+        <div class="kpi-label">Status</div>
+        <div class="kpi-value" style="color:#e6a032;font-size:20px">&#128274; Processing</div>
+        <div class="kpi-detail">Data locked — payroll ${p.payDate}</div>
+      </div>
+    `;
+  } else if (p.locked) {
+    kpis += `
+      <div class="kpi">
+        <div class="kpi-label">Status</div>
+        <div class="kpi-value green-val" style="font-size:20px">&#9989; Complete</div>
+        <div class="kpi-detail">${p.hardcoded ? '* Verified historical data' : 'Paid ' + p.payDate}</div>
+      </div>
+    `;
   } else {
-    // Closed periods: show accuracy if available (and meaningful), otherwise active doctors
-    if (hasAccuracy && p.accuracy.pct > 0) {
-      kpis += `
-        <div class="kpi">
-          <div class="kpi-label">Accuracy</div>
-          <div class="kpi-value green-val">${p.accuracy.pct}%</div>
-          <div class="kpi-detail">${p.accuracy.label}</div>
-        </div>
-      `;
-    } else {
-      kpis += `
-        <div class="kpi">
-          <div class="kpi-label">Active Doctors</div>
-          <div class="kpi-value accent-val">${hasDoctors ? p.doctors.length : '—'}</div>
-          <div class="kpi-detail">${hasDoctors ? (p.offices ? p.offices.length : 0) + ' offices' : 'Awaiting data'}</div>
-        </div>
-      `;
-    }
+    kpis += `
+      <div class="kpi">
+        <div class="kpi-label">Active Doctors</div>
+        <div class="kpi-value accent-val">${hasDoctors ? p.doctors.length : '—'}</div>
+        <div class="kpi-detail">${hasDoctors ? (p.offices ? p.offices.length : 0) + ' offices' : 'Awaiting data'}</div>
+      </div>
+    `;
   }
 
   $('kpi-row').innerHTML = kpis;
@@ -807,7 +882,7 @@ function buildKPIs() {
 
 function buildAll() {
   updateAllStatuses();
-  buildLiveBanner();
+  buildStatusBanner();
   buildDocTable();
   buildOffices();
   buildSavingsPreview();
