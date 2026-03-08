@@ -1,0 +1,94 @@
+name: Doctor Admin
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - terminate
+          - change_rate
+          - reactivate
+      doctor_name:
+        description: 'Doctor name (Last, First format)'
+        required: true
+        type: string
+      new_rate:
+        description: 'New rate (decimal, e.g. 0.35) — for change_rate and reactivate'
+        required: false
+        type: string
+      effective_date:
+        description: 'Effective date (YYYY-MM-DD) — for change_rate'
+        required: false
+        type: string
+      last_day:
+        description: 'Last working day (YYYY-MM-DD) — for terminate'
+        required: false
+        type: string
+      note:
+        description: 'Note (optional) — for terminate'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  admin-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run doctor admin action
+        run: |
+          ACTION="${{ github.event.inputs.action }}"
+          DOCTOR="${{ github.event.inputs.doctor_name }}"
+
+          if [ "$ACTION" = "terminate" ]; then
+            python scripts/doctor_admin.py --terminate \
+              --doctor "$DOCTOR" \
+              --last-day "${{ github.event.inputs.last_day }}" \
+              --note "${{ github.event.inputs.note }}"
+
+          elif [ "$ACTION" = "change_rate" ]; then
+            python scripts/doctor_admin.py --change-rate \
+              --doctor "$DOCTOR" \
+              --new-rate "${{ github.event.inputs.new_rate }}" \
+              --effective "${{ github.event.inputs.effective_date }}"
+
+          elif [ "$ACTION" = "reactivate" ]; then
+            python scripts/doctor_admin.py --reactivate \
+              --doctor "$DOCTOR" \
+              --rate "${{ github.event.inputs.new_rate }}"
+          fi
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/doctors.json
+          git commit -m "Admin: ${{ github.event.inputs.action }} — ${{ github.event.inputs.doctor_name }}" || echo "No changes to commit"
+          git push
+
+      - name: Trigger payroll refresh
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'payroll-refresh.yml',
+              ref: 'main',
+              inputs: {
+                all_periods: 'false'
+              }
+            });
+            console.log('Triggered payroll refresh');
