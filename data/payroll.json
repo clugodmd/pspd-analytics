@@ -38,10 +38,10 @@
         },
         {
           "name": "Dr. Benton",
-          "pct": 0.32,
+          "pct": 0.33,
           "coll": 54270.1,
-          "payNo": 14654.16,
-          "payWith": 17366.43,
+          "payNo": 15112.1,
+          "payWith": 17909.13,
           "off": {
             "LS": 508.71,
             "EV": 2455.67,
@@ -164,11 +164,11 @@
         }
       ],
       "accuracy": {
-        "pct": 91.67,
+        "pct": 92.25,
         "matched": 3,
         "total": 8,
-        "total_diff": 7085.87,
-        "label": "$7,086 variance across 8 doctors"
+        "total_diff": 6627.93,
+        "label": "$6,628 variance across 8 doctors"
       }
     },
     "2.13.26": {
@@ -237,10 +237,10 @@
         },
         {
           "name": "Dr. Benton",
-          "pct": 0.32,
+          "pct": 0.33,
           "coll": 43507.59,
-          "payNo": 12139.21,
-          "payWith": 13922.43,
+          "payNo": 12518.56,
+          "payWith": 14357.5,
           "off": {
             "LS": 7515.98,
             "MO": 28184.7,
@@ -338,11 +338,11 @@
         }
       ],
       "accuracy": {
-        "pct": 89.71,
+        "pct": 90.13,
         "matched": 1,
         "total": 8,
-        "total_diff": 10084.58,
-        "label": "$10,085 variance across 8 doctors"
+        "total_diff": 9705.23,
+        "label": "$9,705 variance across 8 doctors"
       }
     },
     "2.27.26": {
@@ -396,10 +396,10 @@
         },
         {
           "name": "Dr. Benton",
-          "pct": 0.32,
+          "pct": 0.33,
           "coll": 50405.12,
-          "payNo": 14276.14,
-          "payWith": 16129.64,
+          "payNo": 14722.27,
+          "payWith": 16633.69,
           "off": {
             "MV": 12919.5,
             "LS": 15032.95,
@@ -511,15 +511,15 @@
         }
       ],
       "accuracy": {
-        "pct": 91.72,
+        "pct": 92.17,
         "matched": 3,
         "total": 8,
-        "total_diff": 8878.59,
-        "label": "$8,879 variance across 8 doctors"
+        "total_diff": 8432.46,
+        "label": "$8,432 variance across 8 doctors"
       }
     }
   },
-  "last_updated": "2026-03-08T10:55:41.444224Z",
+  "last_updated": "2026-03-08T12:08:55.490977Z",
   "generated_by": "payroll_refresh.py",
   "source": "rpt.vw_income_allocation (Azure SQL)"
 }
