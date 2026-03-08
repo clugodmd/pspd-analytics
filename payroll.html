@@ -961,48 +961,49 @@ function buildXrayFull() {
 }
 
 function buildTermed() {
-  const p = getPeriodData();
-  if (!p.termed || p.termed.length === 0) {
-    $('termed-card').innerHTML = '<div class="note">No terminated doctors with residual collections this period.</div>';
-    return;
-  }
+  try {
+    var p = getPeriodData();
+    if (!p.termed || p.termed.length === 0) {
+      $('termed-card').innerHTML = '<div class="note">No terminated doctors with residual collections this period.</div>';
+      return;
+    }
 
-  // 90-day auto-hide: filter out doctors terminated more than 90 days ago
-  // unless they still have residual collections > 0
-  const now = new Date();
-  const HIDE_AFTER_DAYS = 90;
-  const visible = p.termed.filter(d => {
-    // Always show if they have residual collections
-    if (d.coll && d.coll > 0) return true;
-    // Check termination date from adminDoctors
-    if (adminDoctors && adminDoctors.terminated) {
-      for (const [key, term] of Object.entries(adminDoctors.terminated)) {
-        if (term.display === d.name && term.last_day) {
-          const lastDay = new Date(term.last_day + 'T00:00:00');
-          const daysSince = Math.floor((now - lastDay) / 86400000);
-          if (daysSince > HIDE_AFTER_DAYS) return false;
+    // 90-day auto-hide: hide doctors terminated > 90 days ago with $0 collections
+    var now = new Date();
+    var visible = [];
+    for (var i = 0; i < p.termed.length; i++) {
+      var d = p.termed[i];
+      // Always show if they have money
+      if (d.coll > 0) { visible.push(d); continue; }
+      // Check if terminated > 90 days — look up in adminDoctors
+      var hidden = false;
+      if (adminDoctors && adminDoctors.terminated) {
+        var termKeys = Object.keys(adminDoctors.terminated);
+        for (var j = 0; j < termKeys.length; j++) {
+          var term = adminDoctors.terminated[termKeys[j]];
+          if (term.display === d.name && term.last_day) {
+            var daysSince = Math.floor((now - new Date(term.last_day)) / 86400000);
+            if (daysSince > 90) { hidden = true; }
+          }
         }
       }
+      if (!hidden) visible.push(d);
     }
-    return true;
-  });
 
-  if (visible.length === 0) {
-    $('termed-card').innerHTML = '<div class="note">No terminated doctors with recent activity this period.</div>';
-    return;
+    if (visible.length === 0) {
+      $('termed-card').innerHTML = '<div class="note">No terminated doctors with recent activity this period.</div>';
+      return;
+    }
+
+    var rows = '';
+    for (var k = 0; k < visible.length; k++) {
+      var dd = visible[k];
+      rows += '<tr><td><span class="dot dot-brown"></span>' + dd.name + '</td><td class="r mono dim">' + (dd.coll > 0 ? '$' + fmt(dd.coll) : '\u2014') + '</td><td class="r"><span class="badge badge-brown">' + dd.note + '</span></td></tr>';
+    }
+    $('termed-card').innerHTML = '<table><thead><tr><th>Doctor</th><th class="r">Remaining Collections</th><th class="r">Status</th></tr></thead><tbody>' + rows + '</tbody></table><div class="note">Terminated doctors are hidden after 90 days unless they have residual collections. See Admin tab for full list.</div>';
+  } catch(e) {
+    $('termed-card').innerHTML = '<div class="note" style="color:#FF6B6B">Error building terminated table: ' + e.message + '</div>';
   }
-
-  let rows = '';
-  visible.forEach(d => {
-    rows += '<tr><td><span class="dot dot-brown"></span>' + d.name + '</td><td class="r mono dim">' + (d.coll > 0 ? '$' + fmt(d.coll) : '\u2014') + '</td><td class="r"><span class="badge badge-brown">' + d.note + '</span></td></tr>';
-  });
-  $('termed-card').innerHTML = `
-    <table>
-      <thead><tr><th>Doctor</th><th class="r">Remaining Collections</th><th class="r">Status</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-    <div class="note">Terminated doctors are hidden after 90 days unless they have residual collections. See Admin tab for full list.</div>
-  `;
 }
 
 function buildKPIs() {
@@ -1126,49 +1127,67 @@ function loadAdminDoctors() {
 }
 
 function buildAdminTables() {
-  if (!adminDoctors) return;
+  try {
+    if (!adminDoctors) {
+      var el = $('admin-active-table');
+      if (el) el.innerHTML = '<tr><td colspan="6" style="color:#FF6B6B;text-align:center;padding:20px">adminDoctors is null</td></tr>';
+      return;
+    }
 
-  // Active doctors table
-  const tbody = $('admin-active-table');
-  if (!tbody) return;
-  let rows = '';
-  for (const [name, doc] of Object.entries(adminDoctors.doctors || {})) {
-    const type = doc.owner ? '<span class="badge badge-accent">Owner</span>' : '<span class="badge badge-green">Associate</span>';
-    rows += `<tr>
-      <td class="bold">${doc.display}</td>
-      <td class="dim" style="font-size:12px">${name}</td>
-      <td class="r mono bold">${(doc.pct * 100).toFixed(0)}%</td>
-      <td style="text-transform:capitalize">${doc.pay_basis}</td>
-      <td>${type}</td>
-      <td style="text-align:center;white-space:nowrap">
-        <button class="btn-sm btn-rate" onclick="openRateModal('${name}',${doc.pct})">Change Rate</button>
-        ${!doc.owner ? `<button class="btn-sm btn-term" style="margin-left:6px" onclick="openTermModal('${name}')">Terminate</button>` : ''}
-      </td>
-    </tr>`;
-  }
-  tbody.innerHTML = rows || '<tr><td colspan="6" class="dim" style="text-align:center">No active doctors found</td></tr>';
+    // Active doctors table
+    var tbody = $('admin-active-table');
+    if (!tbody) return;
+    var rows = '';
+    var docKeys = Object.keys(adminDoctors.doctors || {});
+    for (var i = 0; i < docKeys.length; i++) {
+      var name = docKeys[i];
+      var doc = adminDoctors.doctors[name];
+      var safeName = name.replace(/'/g, "\\'");
+      var typeLabel = doc.owner ? '<span class="badge badge-accent">Owner</span>' : '<span class="badge badge-green">Associate</span>';
+      var termBtn = doc.owner ? '' : ' <button class="btn-sm btn-term" onclick="openTermModal(\'' + safeName + '\')">Terminate</button>';
+      rows += '<tr>'
+        + '<td class="bold">' + doc.display + '</td>'
+        + '<td class="dim" style="font-size:12px">' + name + '</td>'
+        + '<td class="r mono bold">' + (doc.pct * 100).toFixed(0) + '%</td>'
+        + '<td style="text-transform:capitalize">' + doc.pay_basis + '</td>'
+        + '<td>' + typeLabel + '</td>'
+        + '<td style="text-align:center;white-space:nowrap">'
+        + '<button class="btn-sm btn-rate" onclick="openRateModal(\'' + safeName + '\',' + doc.pct + ')">Change Rate</button>'
+        + termBtn
+        + '</td></tr>';
+    }
+    tbody.innerHTML = rows || '<tr><td colspan="6" class="dim" style="text-align:center">No active doctors found</td></tr>';
 
-  // Terminated doctors table
-  const termBody = $('admin-termed-table');
-  if (!termBody) return;
-  let termRows = '';
-  const today = new Date();
-  for (const [name, doc] of Object.entries(adminDoctors.terminated || {})) {
-    const lastDay = doc.last_day ? new Date(doc.last_day + 'T00:00:00') : null;
-    const daysSince = lastDay ? Math.floor((today - lastDay) / 86400000) : '?';
-    const rateStr = doc.final_rate ? (doc.final_rate * 100).toFixed(0) + '%' : '—';
-    termRows += `<tr>
-      <td class="bold">${doc.display}</td>
-      <td class="mono">${doc.last_day || '—'}</td>
-      <td><span class="days-since">${daysSince}d ago</span></td>
-      <td class="r mono">${rateStr}</td>
-      <td class="dim">${doc.note || ''}</td>
-      <td style="text-align:center">
-        <button class="btn-sm btn-react" onclick="openReactModal('${name}',${doc.final_rate || 0.35})">Reactivate</button>
-      </td>
-    </tr>`;
+    // Terminated doctors table
+    var termBody = $('admin-termed-table');
+    if (!termBody) return;
+    var termRows = '';
+    var today = new Date();
+    var termKeys = Object.keys(adminDoctors.terminated || {});
+    for (var j = 0; j < termKeys.length; j++) {
+      var tname = termKeys[j];
+      var tdoc = adminDoctors.terminated[tname];
+      var safeTname = tname.replace(/'/g, "\\'");
+      var lastDay = tdoc.last_day ? new Date(tdoc.last_day) : null;
+      var daysSince = lastDay ? Math.floor((today - lastDay) / 86400000) : '?';
+      var rateStr = tdoc.final_rate ? (tdoc.final_rate * 100).toFixed(0) + '%' : '\u2014';
+      var fRate = tdoc.final_rate || 0.35;
+      termRows += '<tr>'
+        + '<td class="bold">' + tdoc.display + '</td>'
+        + '<td class="mono">' + (tdoc.last_day || '\u2014') + '</td>'
+        + '<td><span class="days-since">' + daysSince + 'd ago</span></td>'
+        + '<td class="r mono">' + rateStr + '</td>'
+        + '<td class="dim">' + (tdoc.note || '') + '</td>'
+        + '<td style="text-align:center">'
+        + '<button class="btn-sm btn-react" onclick="openReactModal(\'' + safeTname + '\',' + fRate + ')">Reactivate</button>'
+        + '</td></tr>';
+    }
+    termBody.innerHTML = termRows || '<tr><td colspan="6" class="dim" style="text-align:center">No terminated doctors</td></tr>';
+
+  } catch(e) {
+    var errEl = $('admin-active-table');
+    if (errEl) errEl.innerHTML = '<tr><td colspan="6" style="color:#FF6B6B;text-align:center;padding:20px">Error: ' + e.message + '</td></tr>';
   }
-  termBody.innerHTML = termRows || '<tr><td colspan="6" class="dim" style="text-align:center">No terminated doctors</td></tr>';
 }
 
 // --- PAT Management ---
