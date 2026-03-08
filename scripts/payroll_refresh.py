@@ -47,17 +47,19 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 
 DOCTOR_CONFIG = {
-    # Denticon provider name → display name, pay rate, owner flag
+    # Denticon provider name → display name, pay rate, pay basis, owner flag
     # Provider names must match "Last, First" format from PGID4951_PROVIDER
-    'Slaven, Chad':       {'display': 'Dr. Slaven',  'pct': 0.36, 'owner': False},
-    'Menon, Leena':       {'display': 'Dr. Menon',   'pct': 0.35, 'owner': False},
-    'Choong, Carissa':    {'display': 'Dr. Choong',  'pct': 0.35, 'owner': False},
-    'Benton, Patricia':   {'display': 'Dr. Benton',  'pct': 0.32, 'owner': False},
-    'Welter, Erin':       {'display': 'Dr. Welter',  'pct': 0.31, 'owner': False},
-    'Patel, Dusayant':    {'display': 'Dr. Patel',   'pct': 0.32, 'owner': False},
-    'Bell, Kendra':       {'display': 'Dr. Bell',    'pct': 0.35, 'owner': False},
-    'Schrack, Donald':    {'display': 'Dr. Schrack', 'pct': 0.45, 'owner': False},
-    'Lugo, Christopher':  {'display': 'Dr. Lugo',    'pct': 0.36, 'owner': True},
+    # pay_basis: 'collections' (all associates), 'salary' (owner)
+    # Schrack is 1099 contract but paid on collections same as W-2 associates
+    'Slaven, Chad':       {'display': 'Dr. Slaven',  'pct': 0.36, 'owner': False, 'pay_basis': 'collections'},
+    'Menon, Leena':       {'display': 'Dr. Menon',   'pct': 0.35, 'owner': False, 'pay_basis': 'collections'},
+    'Choong, Carissa':    {'display': 'Dr. Choong',  'pct': 0.35, 'owner': False, 'pay_basis': 'collections'},
+    'Benton, Patricia':   {'display': 'Dr. Benton',  'pct': 0.33, 'owner': False, 'pay_basis': 'collections'},
+    'Welter, Erin':       {'display': 'Dr. Welter',  'pct': 0.31, 'owner': False, 'pay_basis': 'collections'},
+    'Patel, Dusayant':    {'display': 'Dr. Patel',   'pct': 0.32, 'owner': False, 'pay_basis': 'collections'},
+    'Bell, Kendra':       {'display': 'Dr. Bell',    'pct': 0.35, 'owner': False, 'pay_basis': 'collections'},
+    'Schrack, Donald':    {'display': 'Dr. Schrack', 'pct': 0.45, 'owner': False, 'pay_basis': 'collections'},
+    'Lugo, Christopher':  {'display': 'Dr. Lugo',    'pct': 0.36, 'owner': True,  'pay_basis': 'salary'},
 }
 
 # Provider ID → name mapping (from PGID4951_PROVIDER)
@@ -737,6 +739,8 @@ def main():
         help='Generate last 5 periods (default for automated runs)')
     parser.add_argument('--list-periods', action='store_true',
         help='List available pay periods from database')
+    parser.add_argument('--discover-views', action='store_true',
+        help='List all views/tables in the database (find production views for Schrack)')
 
     args = parser.parse_args()
 
@@ -767,6 +771,69 @@ def main():
             print(f"  {p['label']:10s}  {p['start']} to {p['end']}  (pay: {p['pay_date']}){marker}")
         if len(periods) > 30:
             print(f"  ... and {len(periods) - 30} more")
+        return
+
+    # --- Discover views mode ---
+    if args.discover_views:
+        if not conn_str:
+            print("ERROR: Set AZURE_SQL_CONN_STR")
+            sys.exit(1)
+        conn = get_connection(conn_str)
+        cursor = conn.cursor()
+
+        print("\n=== ALL VIEWS (rpt.* schema) ===")
+        cursor.execute("""
+            SELECT TABLE_SCHEMA, TABLE_NAME
+            FROM INFORMATION_SCHEMA.VIEWS
+            WHERE TABLE_SCHEMA = 'rpt'
+            ORDER BY TABLE_NAME
+        """)
+        for row in cursor.fetchall():
+            print(f"  {row.TABLE_SCHEMA}.{row.TABLE_NAME}")
+
+        print("\n=== ALL VIEWS (all schemas) ===")
+        cursor.execute("""
+            SELECT TABLE_SCHEMA, TABLE_NAME
+            FROM INFORMATION_SCHEMA.VIEWS
+            ORDER BY TABLE_SCHEMA, TABLE_NAME
+        """)
+        for row in cursor.fetchall():
+            print(f"  {row.TABLE_SCHEMA}.{row.TABLE_NAME}")
+
+        # Search specifically for production-related views
+        print("\n=== VIEWS/TABLES containing 'produc' ===")
+        cursor.execute("""
+            SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE
+            FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_NAME LIKE '%produc%'
+            ORDER BY TABLE_SCHEMA, TABLE_NAME
+        """)
+        results = cursor.fetchall()
+        if results:
+            for row in results:
+                print(f"  {row.TABLE_SCHEMA}.{row.TABLE_NAME} ({row.TABLE_TYPE})")
+        else:
+            print("  (none found)")
+
+        # Also check for anything with 'sched' or 'appt' that might track production
+        print("\n=== VIEWS/TABLES containing 'sched', 'appt', 'proc', 'charge' ===")
+        cursor.execute("""
+            SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE
+            FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_NAME LIKE '%sched%'
+               OR TABLE_NAME LIKE '%appt%'
+               OR TABLE_NAME LIKE '%proc%'
+               OR TABLE_NAME LIKE '%charge%'
+            ORDER BY TABLE_SCHEMA, TABLE_NAME
+        """)
+        results = cursor.fetchall()
+        if results:
+            for row in results:
+                print(f"  {row.TABLE_SCHEMA}.{row.TABLE_NAME} ({row.TABLE_TYPE})")
+        else:
+            print("  (none found)")
+
+        conn.close()
         return
 
     # --- Excel mode ---
