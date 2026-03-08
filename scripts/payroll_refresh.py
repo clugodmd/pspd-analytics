@@ -96,6 +96,67 @@ XRAY_PREFIXES = ('D02', 'D03')
 
 
 # ---------------------------------------------------------------------------
+# LOAD DOCTOR CONFIG FROM doctors.json (with hardcoded fallback)
+# ---------------------------------------------------------------------------
+
+def load_doctor_config():
+    """
+    Load doctor configuration from data/doctors.json.
+    Falls back to the hardcoded DOCTOR_CONFIG dict if the file is missing.
+    Returns (active_doctors_dict, termed_doctors_dict).
+    """
+    global DOCTOR_CONFIG, TERMED_DOCTORS
+
+    # Try multiple paths (repo root or same dir as script)
+    candidates = [
+        Path(__file__).resolve().parent.parent / "data" / "doctors.json",
+        Path(__file__).resolve().parent / "data" / "doctors.json",
+        Path("data/doctors.json"),
+    ]
+
+    doctors_json = None
+    for p in candidates:
+        if p.exists():
+            doctors_json = p
+            break
+
+    if doctors_json is None:
+        print("INFO: data/doctors.json not found — using hardcoded DOCTOR_CONFIG")
+        return DOCTOR_CONFIG, TERMED_DOCTORS
+
+    try:
+        with open(doctors_json, 'r') as f:
+            data = json.load(f)
+
+        # Convert JSON format to DOCTOR_CONFIG format
+        active = {}
+        for name, doc in data.get("doctors", {}).items():
+            active[name] = {
+                'display': doc['display'],
+                'pct': doc['pct'],
+                'owner': doc.get('owner', False),
+                'pay_basis': doc.get('pay_basis', 'collections'),
+            }
+
+        # Convert terminated
+        termed = {}
+        for name, doc in data.get("terminated", {}).items():
+            termed[name] = {
+                'display': doc['display'],
+                'note': doc.get('note', 'Terminated'),
+            }
+
+        DOCTOR_CONFIG = active
+        TERMED_DOCTORS = termed
+        print(f"Loaded {len(active)} active + {len(termed)} terminated doctors from {doctors_json}")
+        return active, termed
+
+    except Exception as e:
+        print(f"WARNING: Failed to load {doctors_json}: {e} — using hardcoded DOCTOR_CONFIG")
+        return DOCTOR_CONFIG, TERMED_DOCTORS
+
+
+# ---------------------------------------------------------------------------
 # HARDCODED HISTORICAL DATA — Tanya's verified paid amounts
 # ---------------------------------------------------------------------------
 # These are the EXACT amounts Tanya paid, extracted from her Master Pay
@@ -843,6 +904,9 @@ def main():
         help='List all views/tables in the database (find production views for Schrack)')
 
     args = parser.parse_args()
+
+    # Load doctor config from doctors.json (falls back to hardcoded)
+    load_doctor_config()
 
     # Resolve output path relative to repo root
     output_path = args.output
