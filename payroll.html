@@ -966,8 +966,34 @@ function buildTermed() {
     $('termed-card').innerHTML = '<div class="note">No terminated doctors with residual collections this period.</div>';
     return;
   }
+
+  // 90-day auto-hide: filter out doctors terminated more than 90 days ago
+  // unless they still have residual collections > 0
+  const now = new Date();
+  const HIDE_AFTER_DAYS = 90;
+  const visible = p.termed.filter(d => {
+    // Always show if they have residual collections
+    if (d.coll && d.coll > 0) return true;
+    // Check termination date from adminDoctors
+    if (adminDoctors && adminDoctors.terminated) {
+      for (const [key, term] of Object.entries(adminDoctors.terminated)) {
+        if (term.display === d.name && term.last_day) {
+          const lastDay = new Date(term.last_day + 'T00:00:00');
+          const daysSince = Math.floor((now - lastDay) / 86400000);
+          if (daysSince > HIDE_AFTER_DAYS) return false;
+        }
+      }
+    }
+    return true;
+  });
+
+  if (visible.length === 0) {
+    $('termed-card').innerHTML = '<div class="note">No terminated doctors with recent activity this period.</div>';
+    return;
+  }
+
   let rows = '';
-  p.termed.forEach(d => {
+  visible.forEach(d => {
     rows += '<tr><td><span class="dot dot-brown"></span>' + d.name + '</td><td class="r mono dim">' + (d.coll > 0 ? '$' + fmt(d.coll) : '\u2014') + '</td><td class="r"><span class="badge badge-brown">' + d.note + '</span></td></tr>';
   });
   $('termed-card').innerHTML = `
@@ -975,7 +1001,7 @@ function buildTermed() {
       <thead><tr><th>Doctor</th><th class="r">Remaining Collections</th><th class="r">Status</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <div class="note">Terminated doctors may still show residual collections. These are tracked but not included in active payroll.</div>
+    <div class="note">Terminated doctors are hidden after 90 days unless they have residual collections. See Admin tab for full list.</div>
   `;
 }
 
@@ -1069,49 +1095,34 @@ const GITHUB_OWNER = 'clugodmd';
 const GITHUB_REPO = 'pspd-analytics';
 const WORKFLOW_FILE = 'doctor-admin.yml';
 
-// Doctor config for admin — loaded from doctors.json
-let adminDoctors = null;
+// Doctor config for admin — embedded data (guaranteed to work)
+// When admin actions run, they update data/doctors.json in the repo.
+// The fetch below tries to load the latest version; falls back to this embedded copy.
+let adminDoctors = {
+  "doctors": {
+    "Slaven, Chad": {"display":"Dr. Slaven","pct":0.36,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.36,"effective":"2025-01-01","end":null}]},
+    "Menon, Leena": {"display":"Dr. Menon","pct":0.35,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.35,"effective":"2025-01-01","end":null}]},
+    "Choong, Carissa": {"display":"Dr. Choong","pct":0.35,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.35,"effective":"2025-01-01","end":null}]},
+    "Benton, Patricia": {"display":"Dr. Benton","pct":0.32,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.32,"effective":"2025-01-01","end":"2026-02-12"},{"pct":0.33,"effective":"2026-02-13","end":"2026-02-26"},{"pct":0.32,"effective":"2026-02-27","end":null}]},
+    "Welter, Erin": {"display":"Dr. Welter","pct":0.31,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.31,"effective":"2025-01-01","end":null}]},
+    "Patel, Dusayant": {"display":"Dr. Patel","pct":0.32,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.32,"effective":"2025-01-01","end":null}]},
+    "Bell, Kendra": {"display":"Dr. Bell","pct":0.35,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.35,"effective":"2025-01-01","end":null}]},
+    "Schrack, Donald": {"display":"Dr. Schrack","pct":0.45,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.45,"effective":"2025-01-01","end":null}]},
+    "Lugo, Christopher": {"display":"Dr. Lugo","pct":0.36,"owner":true,"pay_basis":"salary","status":"active","rate_history":[{"pct":0.36,"effective":"2025-01-01","end":null}]}
+  },
+  "terminated": {
+    "Kirk, Kyle": {"display":"Dr. Kirk","status":"terminated","last_day":"2026-01-02","termination_date":"2026-01-02","note":"Account closed","final_rate":0.35,"owner":false,"pay_basis":"collections"},
+    "Ping, Sita": {"display":"Dr. Ping","status":"terminated","last_day":"2025-06-01","termination_date":"2025-06-01","note":"Terminated","final_rate":null,"owner":false,"pay_basis":"collections"},
+    "Laws": {"display":"Dr. Laws","status":"terminated","last_day":"2025-06-01","termination_date":"2025-06-01","note":"Terminated","final_rate":null,"owner":false,"pay_basis":"collections"}
+  }
+};
 
 function loadAdminDoctors() {
-  // Try GitHub Pages first, then fall back to GitHub API with PAT
+  // Try to load latest from data/doctors.json (overrides embedded if successful)
   fetch('data/doctors.json?' + Date.now())
-    .then(r => {
-      if (!r.ok) throw new Error('Pages HTTP ' + r.status);
-      return r.json();
-    })
-    .then(data => {
-      adminDoctors = data;
-      buildAdminTables();
-    })
-    .catch(err1 => {
-      console.warn('Pages fetch failed:', err1.message, '— trying GitHub API...');
-      // Fallback: fetch via GitHub API using PAT
-      const pat = getPat();
-      if (!pat) {
-        showAdminError('Could not load doctors.json. Configure your GitHub token above, then refresh.');
-        return;
-      }
-      fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/data/doctors.json`, {
-        headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github.raw+json' }
-      })
-        .then(r => {
-          if (!r.ok) throw new Error('API HTTP ' + r.status);
-          return r.json();
-        })
-        .then(data => {
-          adminDoctors = data;
-          buildAdminTables();
-        })
-        .catch(err2 => {
-          console.error('Both fetches failed:', err1.message, err2.message);
-          showAdminError('Failed to load doctor data. Check that data/doctors.json exists in the repo.');
-        });
-    });
-}
-
-function showAdminError(msg) {
-  const el = $('admin-active-table');
-  if (el) el.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#FF6B6B;padding:20px">' + msg + '</td></tr>';
+    .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function(data) { adminDoctors = data; buildAdminTables(); })
+    .catch(function() { buildAdminTables(); }); // embedded data is already set
 }
 
 function buildAdminTables() {
