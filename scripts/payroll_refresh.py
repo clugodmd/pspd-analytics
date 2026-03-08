@@ -5,14 +5,16 @@ payroll_refresh.py — PSPD Doctor Payroll Data Pipeline
 Generates data/payroll.json consumed by payroll.html's loadLiveData() function.
 
 TWO DATA PATHS (automatic failover):
-  1. Azure SQL  — queries rpt.vw_income_allocation + rpt.vw_doctor_payroll_by_period
+  1. Azure SQL  — queries rpt.vw_income_allocation (primary)
   2. Excel file — reads Tanya's "Income Allocation Report - Detail" export
 
 Azure SQL Views Used:
-  rpt.vw_income_allocation        — transaction-level income allocations (Tanya's report)
-  rpt.vw_doctor_payroll_by_period — pre-calculated payroll per doctor/office/period
-  rpt.vw_pay_periods              — pay period definitions (auto-generated through 2037)
-  rpt.vw_doctor_collections_no_xray — collections excluding x-ray procedures
+  rpt.vw_income_allocation           — transaction-level income allocations (Tanya's report)
+  rpt.vw_pay_periods                 — pay period definitions (auto-generated through 2037)
+  rpt.vw_doctor_collections_no_xray  — collections excluding x-ray procedures
+
+Note: Accuracy is verified manually at payroll time against Tanya's actual
+paid amounts, then locked permanently. It is NOT auto-calculated.
 
 Usage:
   # From Azure SQL (automated via GitHub Actions):
@@ -245,40 +247,6 @@ def query_income_allocation_azure(conn, period_start, period_end):
     return transactions
 
 
-def query_payroll_by_period_azure(conn, period_start, period_end):
-    """
-    Query rpt.vw_doctor_payroll_by_period for pre-calculated payroll data.
-    This view already has collected_no_xray, comp_pct, and doctor_pay.
-
-    Returns a dict keyed by (provider_id, office_id) with payroll metrics.
-    Used as a CROSS-CHECK against our own calculations from vw_income_allocation.
-    """
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT
-            provider_id,
-            office_id,
-            collected_no_xray,
-            comp_pct,
-            doctor_pay
-        FROM rpt.vw_doctor_payroll_by_period
-        WHERE period_start = ? AND period_end = ?
-    """, (str(period_start), str(period_end)))
-
-    payroll = {}
-    for r in cursor.fetchall():
-        key = (r.provider_id, r.office_id)
-        payroll[key] = {
-            'collected_no_xray': float(r.collected_no_xray) if r.collected_no_xray else 0.0,
-            'comp_pct': float(r.comp_pct) if r.comp_pct else 0.0,
-            'doctor_pay': float(r.doctor_pay) if r.doctor_pay else 0.0,
-        }
-
-    print(f"    vw_doctor_payroll_by_period: {len(payroll)} entries")
-    return payroll
-
-
 def run_azure_pipeline(conn_str, target_periods, output_path):
     """
     Full Azure SQL pipeline:
@@ -337,15 +305,12 @@ def run_azure_pipeline(conn_str, target_periods, output_path):
             print(f"    No data for period {label} — skipping")
             continue
 
-        # Cross-check: get pre-calculated payroll
-        payroll_check = query_payroll_by_period_azure(conn, start, end)
-
         # Process transactions into dashboard format
         period = process_transactions(transactions, start, end, label, pay_date)
 
-        # Cross-check our calculations against the database's pre-calculated values
-        if payroll_check:
-            cross_check_payroll(period, payroll_check)
+        # NOTE: Accuracy is NOT auto-calculated. It will be set manually
+        # at payroll time by comparing against Tanya's actual paid amounts.
+        # Once set, it locks permanently for that period.
 
         periods_dict[label] = period
 
@@ -356,92 +321,6 @@ def run_azure_pipeline(conn_str, target_periods, output_path):
         sys.exit(1)
 
     write_payroll_json(periods_dict, output_path)
-
-
-def cross_check_payroll(period, payroll_check):
-    """
-    Compare our calculated pay against rpt.vw_doctor_payroll_by_period.
-    Returns accuracy metrics and injects them into the period dict.
-    """
-    name_to_ids = {}
-    for pid, pname in PROVIDER_ID_MAP.items():
-        name_to_ids.setdefault(pname, []).append(pid)
-
-    # Sum the database's pre-calculated values by provider
-    db_by_provider = {}
-    for (pid, oid), vals in payroll_check.items():
-        pname = PROVIDER_ID_MAP.get(pid, f"Provider {pid}")
-        if pname not in db_by_provider:
-            db_by_provider[pname] = {'collected_no_xray': 0.0, 'doctor_pay': 0.0}
-        db_by_provider[pname]['collected_no_xray'] += vals['collected_no_xray']
-        db_by_provider[pname]['doctor_pay'] += vals['doctor_pay']
-
-    # Compare each doctor — two accuracy metrics:
-    # 1. Percentage accuracy: 1 - (total_diff / total_pay) — how close overall
-    # 2. Doctor matches: count of doctors within tolerance (5% of their pay or $50)
-    total_checked = 0
-    matches = 0
-    mismatches = 0
-    total_diff = 0.0
-    total_our_pay = 0.0
-
-    for doc in period['doctors']:
-        denticon_name = None
-        for dname, cfg in DOCTOR_CONFIG.items():
-            if cfg['display'] == doc['name']:
-                denticon_name = dname
-                break
-
-        if not denticon_name or denticon_name not in db_by_provider:
-            continue
-
-        total_checked += 1
-        db_vals = db_by_provider[denticon_name]
-        our_pay = doc['payNo']
-        db_pay = round(db_vals['doctor_pay'], 2)
-        diff = abs(our_pay - db_pay)
-        total_diff += diff
-        total_our_pay += abs(our_pay)
-
-        # Tolerance: within 5% of pay OR within $50, whichever is larger
-        tolerance = max(abs(our_pay) * 0.05, 50.0)
-        if diff <= tolerance:
-            matches += 1
-        else:
-            mismatches += 1
-            pct_off = (diff / abs(our_pay) * 100) if our_pay != 0 else 0
-            print(f"    ⚠ PAY MISMATCH {doc['name']}: ours=${our_pay:,.2f} vs DB=${db_pay:,.2f} (diff=${diff:,.2f}, {pct_off:.1f}% off)")
-
-    # Calculate percentage-based accuracy: how close are the totals?
-    if total_our_pay > 0:
-        accuracy_pct = round((1 - total_diff / total_our_pay) * 100, 2)
-        accuracy_pct = max(0.0, accuracy_pct)  # Floor at 0%
-    elif total_checked > 0:
-        accuracy_pct = round((matches / total_checked) * 100, 2)
-    else:
-        accuracy_pct = 0.0
-
-    # Build label
-    if accuracy_pct >= 99.5:
-        label = f"Verified — {matches}/{total_checked} doctors match"
-    elif accuracy_pct >= 95:
-        label = f"{matches}/{total_checked} within tolerance"
-    else:
-        label = f"${total_diff:,.0f} variance across {total_checked} doctors"
-
-    # Inject accuracy into period data (payroll.html can read this)
-    period['accuracy'] = {
-        'pct': accuracy_pct,
-        'matched': matches,
-        'total': total_checked,
-        'total_diff': round(total_diff, 2),
-        'label': label,
-    }
-
-    if mismatches == 0:
-        print(f"    ✓ Cross-check passed: {matches}/{total_checked} doctors match ({accuracy_pct}%)")
-    else:
-        print(f"    ⚠ {mismatches} outside tolerance: {matches}/{total_checked} match ({accuracy_pct}%)")
 
 
 # ---------------------------------------------------------------------------
