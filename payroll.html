@@ -146,6 +146,43 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
 ::-webkit-scrollbar { width:8px; }
 ::-webkit-scrollbar-track { background:var(--bg); }
 ::-webkit-scrollbar-thumb { background:var(--bg2); border-radius:4px; }
+/* ADMIN TAB */
+.admin-section { max-width:900px; margin:0 auto; }
+.admin-table { width:100%; border-collapse:collapse; font-size:13px; }
+.admin-table th { text-align:left; padding:10px 12px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3); border-bottom:2px solid rgba(255,255,255,0.06); font-weight:600; }
+.admin-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); }
+.admin-table tr:hover td { background:rgba(98,146,160,0.05); }
+.btn-sm { padding:5px 12px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid; transition:all 0.2s; font-family:'DM Sans',sans-serif; }
+.btn-rate { background:rgba(98,146,160,0.12); border-color:var(--accent-border); color:var(--accent); }
+.btn-rate:hover { background:rgba(98,146,160,0.25); }
+.btn-term { background:rgba(82,0,10,0.12); border-color:rgba(82,0,10,0.3); color:#FF6B6B; }
+.btn-term:hover { background:rgba(82,0,10,0.25); }
+.btn-react { background:rgba(93,190,110,0.12); border-color:rgba(93,190,110,0.3); color:var(--green); }
+.btn-react:hover { background:rgba(93,190,110,0.25); }
+.btn-primary { padding:10px 24px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; border:none; background:var(--accent); color:#fff; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+.btn-primary:hover { background:var(--accent-light); }
+.btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-secondary { padding:10px 24px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text2); font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+.btn-secondary:hover { border-color:var(--accent-border); color:var(--text); }
+/* MODAL */
+.modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center; }
+.modal-overlay.show { display:flex; }
+.modal { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:32px; max-width:480px; width:90%; max-height:90vh; overflow-y:auto; }
+.modal h3 { font-family:'Instrument Serif',Georgia,serif; font-size:22px; margin-bottom:20px; }
+.modal-field { margin-bottom:16px; }
+.modal-field label { display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3); font-weight:600; margin-bottom:6px; }
+.modal-field input, .modal-field textarea, .modal-field select { width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg2); color:var(--text); font-size:14px; font-family:'DM Sans',sans-serif; }
+.modal-field input:focus, .modal-field textarea:focus { outline:none; border-color:var(--accent-border); box-shadow:0 0 0 3px var(--accent-glow); }
+.modal-field input[readonly] { opacity:0.6; cursor:not-allowed; }
+.modal-actions { display:flex; gap:12px; margin-top:24px; justify-content:flex-end; }
+.admin-alert { padding:12px 16px; border-radius:8px; font-size:13px; margin-bottom:16px; display:none; }
+.admin-alert.success { display:block; background:rgba(93,190,110,0.12); border:1px solid rgba(93,190,110,0.3); color:var(--green); }
+.admin-alert.error { display:block; background:rgba(82,0,10,0.12); border:1px solid rgba(82,0,10,0.3); color:#FF6B6B; }
+.admin-alert.info { display:block; background:rgba(98,146,160,0.12); border:1px solid var(--accent-border); color:var(--accent); }
+.pat-config { padding:16px; background:var(--bg2); border-radius:var(--radius); border:1px solid var(--border); margin-bottom:24px; }
+.pat-config input { width:100%; padding:8px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:13px; font-family:'DM Sans',monospace; margin-top:8px; }
+.pat-config .pat-status { font-size:12px; margin-top:6px; }
+.days-since { font-size:11px; color:var(--text3); }
 </style>
 </head>
 <body>
@@ -162,6 +199,7 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
   <button class="tab-btn active" onclick="showView('overview',this)">Overview</button>
   <button class="tab-btn" onclick="showView('xray',this)">X-Ray Savings</button>
   <button class="tab-btn" onclick="showView('termed',this)">Terminated</button>
+  <button class="tab-btn" onclick="showView('admin',this)">Admin</button>
 </div>
 
 <div class="main">
@@ -216,6 +254,137 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
       <div style="max-width:600px;margin:0 auto">
         <div class="sec-title brown">Terminated / Inactive Doctors</div>
         <div class="card brown-card" id="termed-card"></div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="view" id="view-admin">
+      <div class="admin-section">
+        <!-- PAT Config -->
+        <div class="pat-config">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <span style="font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);font-weight:600">GitHub Token</span>
+              <span class="pat-status" id="pat-status"></span>
+            </div>
+            <button class="btn-sm btn-rate" onclick="togglePatInput()" id="pat-toggle-btn">Configure</button>
+          </div>
+          <div id="pat-input-wrap" style="display:none">
+            <input type="password" id="pat-input" placeholder="ghp_xxxxxxxxxxxx or github_pat_xxxxxxxxxxxx" oninput="savePat()">
+            <div style="font-size:11px;color:var(--text3);margin-top:6px">Fine-grained PAT with Actions (write) permission for pspd-analytics repo. Stored locally in your browser only.</div>
+          </div>
+        </div>
+
+        <!-- Admin Alert -->
+        <div id="admin-alert"></div>
+
+        <!-- Active Doctors -->
+        <div class="sec-title">Active Doctors</div>
+        <div class="card" style="overflow-x:auto">
+          <table class="admin-table">
+            <thead><tr>
+              <th>Doctor</th>
+              <th>Denticon Name</th>
+              <th class="r">Rate</th>
+              <th>Pay Basis</th>
+              <th>Type</th>
+              <th style="text-align:center">Actions</th>
+            </tr></thead>
+            <tbody id="admin-active-table"></tbody>
+          </table>
+        </div>
+
+        <!-- Terminated Doctors -->
+        <div class="sec-title brown" style="margin-top:32px">Terminated Doctors</div>
+        <div class="card brown-card" style="overflow-x:auto">
+          <table class="admin-table">
+            <thead><tr>
+              <th>Doctor</th>
+              <th>Last Day</th>
+              <th>Days Since</th>
+              <th>Final Rate</th>
+              <th>Note</th>
+              <th style="text-align:center">Actions</th>
+            </tr></thead>
+            <tbody id="admin-termed-table"></tbody>
+          </table>
+        </div>
+
+        <div class="note" style="margin-top:24px">
+          Changes trigger a GitHub Actions workflow that updates <code>data/doctors.json</code> and regenerates payroll data.
+          Terminated doctors are automatically hidden from the main payroll view after 90 days.
+        </div>
+      </div>
+    </div>
+
+    <!-- MODALS -->
+
+    <!-- Change Rate Modal -->
+    <div class="modal-overlay" id="modal-rate">
+      <div class="modal">
+        <h3>Change Pay Rate</h3>
+        <div class="modal-field">
+          <label>Doctor</label>
+          <input type="text" id="rate-doctor-name" readonly>
+        </div>
+        <div class="modal-field">
+          <label>Current Rate</label>
+          <input type="text" id="rate-current" readonly>
+        </div>
+        <div class="modal-field">
+          <label>New Rate (e.g. 0.35 = 35%)</label>
+          <input type="number" id="rate-new" step="0.01" min="0.01" max="0.99" placeholder="0.35">
+        </div>
+        <div class="modal-field">
+          <label>Effective Date</label>
+          <input type="date" id="rate-effective">
+        </div>
+        <div class="modal-actions">
+          <button class="btn-secondary" onclick="closeModal('modal-rate')">Cancel</button>
+          <button class="btn-primary" onclick="submitRateChange()">Update Rate</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terminate Modal -->
+    <div class="modal-overlay" id="modal-term">
+      <div class="modal">
+        <h3>Terminate Doctor</h3>
+        <div class="modal-field">
+          <label>Doctor</label>
+          <input type="text" id="term-doctor-name" readonly>
+        </div>
+        <div class="modal-field">
+          <label>Last Working Day</label>
+          <input type="date" id="term-last-day">
+        </div>
+        <div class="modal-field">
+          <label>Notes (optional)</label>
+          <textarea id="term-note" rows="3" placeholder="Reason for termination..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-secondary" onclick="closeModal('modal-term')">Cancel</button>
+          <button class="btn-primary" style="background:#FF6B6B" onclick="submitTerminate()">Terminate</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reactivate Modal -->
+    <div class="modal-overlay" id="modal-react">
+      <div class="modal">
+        <h3>Reactivate Doctor</h3>
+        <div class="modal-field">
+          <label>Doctor</label>
+          <input type="text" id="react-doctor-name" readonly>
+        </div>
+        <div class="modal-field">
+          <label>Pay Rate (e.g. 0.35 = 35%)</label>
+          <input type="number" id="react-rate" step="0.01" min="0.01" max="0.99" placeholder="0.35">
+        </div>
+        <div class="modal-actions">
+          <button class="btn-secondary" onclick="closeModal('modal-react')">Cancel</button>
+          <button class="btn-primary" style="background:var(--green)" onclick="submitReactivate()">Reactivate</button>
+        </div>
       </div>
     </div>
 
@@ -889,7 +1058,226 @@ function buildAll() {
   buildXrayFull();
   buildTermed();
   buildKPIs();
+  buildAdminTables();
 }
+
+// ---------------------------------------------------------------------------
+// ADMIN TAB — Doctor Management
+// ---------------------------------------------------------------------------
+
+const GITHUB_OWNER = 'clugodmd';
+const GITHUB_REPO = 'pspd-analytics';
+const WORKFLOW_FILE = 'doctor-admin.yml';
+
+// Doctor config for admin — loaded from doctors.json
+let adminDoctors = null;
+
+function loadAdminDoctors() {
+  fetch('data/doctors.json?' + Date.now())
+    .then(r => r.json())
+    .then(data => { adminDoctors = data; buildAdminTables(); })
+    .catch(() => { adminDoctors = null; });
+}
+
+function buildAdminTables() {
+  if (!adminDoctors) return;
+
+  // Active doctors table
+  const tbody = $('admin-active-table');
+  if (!tbody) return;
+  let rows = '';
+  for (const [name, doc] of Object.entries(adminDoctors.doctors || {})) {
+    const type = doc.owner ? '<span class="badge badge-accent">Owner</span>' : '<span class="badge badge-green">Associate</span>';
+    rows += `<tr>
+      <td class="bold">${doc.display}</td>
+      <td class="dim" style="font-size:12px">${name}</td>
+      <td class="r mono bold">${(doc.pct * 100).toFixed(0)}%</td>
+      <td style="text-transform:capitalize">${doc.pay_basis}</td>
+      <td>${type}</td>
+      <td style="text-align:center;white-space:nowrap">
+        <button class="btn-sm btn-rate" onclick="openRateModal('${name}',${doc.pct})">Change Rate</button>
+        ${!doc.owner ? `<button class="btn-sm btn-term" style="margin-left:6px" onclick="openTermModal('${name}')">Terminate</button>` : ''}
+      </td>
+    </tr>`;
+  }
+  tbody.innerHTML = rows || '<tr><td colspan="6" class="dim" style="text-align:center">No active doctors found</td></tr>';
+
+  // Terminated doctors table
+  const termBody = $('admin-termed-table');
+  if (!termBody) return;
+  let termRows = '';
+  const today = new Date();
+  for (const [name, doc] of Object.entries(adminDoctors.terminated || {})) {
+    const lastDay = doc.last_day ? new Date(doc.last_day + 'T00:00:00') : null;
+    const daysSince = lastDay ? Math.floor((today - lastDay) / 86400000) : '?';
+    const rateStr = doc.final_rate ? (doc.final_rate * 100).toFixed(0) + '%' : '—';
+    termRows += `<tr>
+      <td class="bold">${doc.display}</td>
+      <td class="mono">${doc.last_day || '—'}</td>
+      <td><span class="days-since">${daysSince}d ago</span></td>
+      <td class="r mono">${rateStr}</td>
+      <td class="dim">${doc.note || ''}</td>
+      <td style="text-align:center">
+        <button class="btn-sm btn-react" onclick="openReactModal('${name}',${doc.final_rate || 0.35})">Reactivate</button>
+      </td>
+    </tr>`;
+  }
+  termBody.innerHTML = termRows || '<tr><td colspan="6" class="dim" style="text-align:center">No terminated doctors</td></tr>';
+}
+
+// --- PAT Management ---
+function getPat() { try { return localStorage.getItem('pspd_admin_pat') || ''; } catch(e) { return ''; } }
+function savePat() {
+  const v = $('pat-input').value.trim();
+  try { localStorage.setItem('pspd_admin_pat', v); } catch(e) {}
+  updatePatStatus();
+}
+function updatePatStatus() {
+  const pat = getPat();
+  const el = $('pat-status');
+  if (pat) {
+    el.innerHTML = ' <span style="color:var(--green);font-size:11px">Connected</span>';
+  } else {
+    el.innerHTML = ' <span style="color:#FF6B6B;font-size:11px">Not configured</span>';
+  }
+}
+function togglePatInput() {
+  const wrap = $('pat-input-wrap');
+  const isHidden = wrap.style.display === 'none';
+  wrap.style.display = isHidden ? 'block' : 'none';
+  if (isHidden) { $('pat-input').value = getPat(); $('pat-input').focus(); }
+  $('pat-toggle-btn').textContent = isHidden ? 'Hide' : 'Configure';
+}
+
+// --- Modals ---
+function openRateModal(name, currentRate) {
+  $('rate-doctor-name').value = name;
+  $('rate-current').value = (currentRate * 100).toFixed(0) + '%  (' + currentRate + ')';
+  $('rate-new').value = '';
+  $('rate-effective').value = '';
+  $('modal-rate').classList.add('show');
+}
+function openTermModal(name) {
+  $('term-doctor-name').value = name;
+  $('term-last-day').value = '';
+  $('term-note').value = '';
+  $('modal-term').classList.add('show');
+}
+function openReactModal(name, lastRate) {
+  $('react-doctor-name').value = name;
+  $('react-rate').value = lastRate || '';
+  $('modal-react').classList.add('show');
+}
+function closeModal(id) { $(id).classList.remove('show'); }
+
+// --- GitHub API ---
+function showAdminAlert(type, msg) {
+  const el = $('admin-alert');
+  el.className = 'admin-alert ' + type;
+  el.innerHTML = msg;
+  setTimeout(() => { if (type === 'success') el.className = 'admin-alert'; }, 8000);
+}
+
+async function triggerWorkflow(inputs) {
+  const pat = getPat();
+  if (!pat) {
+    showAdminAlert('error', 'GitHub token not configured. Click "Configure" above to add your token.');
+    return false;
+  }
+  try {
+    const resp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/workflows/${WORKFLOW_FILE}/dispatches`, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + pat,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ ref: 'main', inputs })
+    });
+    if (resp.status === 204) {
+      showAdminAlert('success', 'Action triggered successfully! The workflow is running now. Changes will appear after the pipeline completes (~1-2 min). <a href="https://github.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/actions" target="_blank" style="color:var(--accent)">View on GitHub &rarr;</a>');
+      return true;
+    } else {
+      const err = await resp.json().catch(() => ({}));
+      showAdminAlert('error', 'GitHub API error (' + resp.status + '): ' + (err.message || 'Unknown error. Check your token permissions.'));
+      return false;
+    }
+  } catch(e) {
+    showAdminAlert('error', 'Network error: ' + e.message);
+    return false;
+  }
+}
+
+async function submitRateChange() {
+  const doctor = $('rate-doctor-name').value;
+  const newRate = parseFloat($('rate-new').value);
+  const effective = $('rate-effective').value;
+
+  if (!newRate || newRate <= 0 || newRate >= 1) { showAdminAlert('error', 'Enter a valid rate between 0 and 1 (e.g. 0.35)'); return; }
+  if (!effective) { showAdminAlert('error', 'Select an effective date'); return; }
+
+  closeModal('modal-rate');
+  showAdminAlert('info', 'Submitting rate change for ' + doctor + '...');
+
+  const ok = await triggerWorkflow({
+    action: 'change_rate',
+    doctor_name: doctor,
+    new_rate: String(newRate),
+    effective_date: effective,
+    last_day: '',
+    note: ''
+  });
+}
+
+async function submitTerminate() {
+  const doctor = $('term-doctor-name').value;
+  const lastDay = $('term-last-day').value;
+  const note = $('term-note').value;
+
+  if (!lastDay) { showAdminAlert('error', 'Select the last working day'); return; }
+
+  closeModal('modal-term');
+  showAdminAlert('info', 'Submitting termination for ' + doctor + '...');
+
+  const ok = await triggerWorkflow({
+    action: 'terminate',
+    doctor_name: doctor,
+    new_rate: '',
+    effective_date: '',
+    last_day: lastDay,
+    note: note
+  });
+}
+
+async function submitReactivate() {
+  const doctor = $('react-doctor-name').value;
+  const rate = parseFloat($('react-rate').value);
+
+  if (!rate || rate <= 0 || rate >= 1) { showAdminAlert('error', 'Enter a valid rate between 0 and 1'); return; }
+
+  closeModal('modal-react');
+  showAdminAlert('info', 'Submitting reactivation for ' + doctor + '...');
+
+  const ok = await triggerWorkflow({
+    action: 'reactivate',
+    doctor_name: doctor,
+    new_rate: String(rate),
+    effective_date: '',
+    last_day: '',
+    note: ''
+  });
+}
+
+// Close modals on overlay click
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) {
+    e.target.classList.remove('show');
+  }
+});
+
+// Init admin on load
+loadAdminDoctors();
+updatePatStatus();
 </script>
 </body>
 </html>
