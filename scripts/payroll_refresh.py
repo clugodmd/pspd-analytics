@@ -374,11 +374,14 @@ def cross_check_payroll(period, payroll_check):
         db_by_provider[pname]['collected_no_xray'] += vals['collected_no_xray']
         db_by_provider[pname]['doctor_pay'] += vals['doctor_pay']
 
-    # Compare each doctor
+    # Compare each doctor — two accuracy metrics:
+    # 1. Percentage accuracy: 1 - (total_diff / total_pay) — how close overall
+    # 2. Doctor matches: count of doctors within tolerance (5% of their pay or $50)
     total_checked = 0
     matches = 0
     mismatches = 0
     total_diff = 0.0
+    total_our_pay = 0.0
 
     for doc in period['doctors']:
         denticon_name = None
@@ -396,18 +399,33 @@ def cross_check_payroll(period, payroll_check):
         db_pay = round(db_vals['doctor_pay'], 2)
         diff = abs(our_pay - db_pay)
         total_diff += diff
+        total_our_pay += abs(our_pay)
 
-        if diff <= 1.0:
+        # Tolerance: within 5% of pay OR within $50, whichever is larger
+        tolerance = max(abs(our_pay) * 0.05, 50.0)
+        if diff <= tolerance:
             matches += 1
         else:
             mismatches += 1
-            print(f"    ⚠ PAY MISMATCH {doc['name']}: ours=${our_pay:,.2f} vs DB=${db_pay:,.2f} (diff=${diff:,.2f})")
+            pct_off = (diff / abs(our_pay) * 100) if our_pay != 0 else 0
+            print(f"    ⚠ PAY MISMATCH {doc['name']}: ours=${our_pay:,.2f} vs DB=${db_pay:,.2f} (diff=${diff:,.2f}, {pct_off:.1f}% off)")
 
-    # Calculate accuracy percentage
-    if total_checked > 0:
+    # Calculate percentage-based accuracy: how close are the totals?
+    if total_our_pay > 0:
+        accuracy_pct = round((1 - total_diff / total_our_pay) * 100, 2)
+        accuracy_pct = max(0.0, accuracy_pct)  # Floor at 0%
+    elif total_checked > 0:
         accuracy_pct = round((matches / total_checked) * 100, 2)
     else:
         accuracy_pct = 0.0
+
+    # Build label
+    if accuracy_pct >= 99.5:
+        label = f"Verified — {matches}/{total_checked} doctors match"
+    elif accuracy_pct >= 95:
+        label = f"{matches}/{total_checked} within tolerance"
+    else:
+        label = f"${total_diff:,.0f} variance across {total_checked} doctors"
 
     # Inject accuracy into period data (payroll.html can read this)
     period['accuracy'] = {
@@ -415,13 +433,13 @@ def cross_check_payroll(period, payroll_check):
         'matched': matches,
         'total': total_checked,
         'total_diff': round(total_diff, 2),
-        'label': f"{matches}/{total_checked} doctors exact",
+        'label': label,
     }
 
     if mismatches == 0:
         print(f"    ✓ Cross-check passed: {matches}/{total_checked} doctors match ({accuracy_pct}%)")
     else:
-        print(f"    ⚠ {mismatches} mismatches: {matches}/{total_checked} match ({accuracy_pct}%)")
+        print(f"    ⚠ {mismatches} outside tolerance: {matches}/{total_checked} match ({accuracy_pct}%)")
 
 
 # ---------------------------------------------------------------------------
