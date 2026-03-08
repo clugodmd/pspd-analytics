@@ -30,6 +30,11 @@ on:
         required: false
         type: boolean
         default: false
+      discover_views:
+        description: 'List all available SQL views (diagnostic mode)'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   refresh:
@@ -89,6 +94,9 @@ jobs:
             ARGS="$ARGS --all-periods"
           else
             ARGS="$ARGS --recent"
+          fi
+          if [ "${{ github.event.inputs.discover_views }}" = "true" ]; then
+            ARGS="--discover-views"
           fi
           echo "Running: python scripts/payroll_refresh.py $ARGS"
           python scripts/payroll_refresh.py $ARGS
