@@ -318,6 +318,13 @@ let PERIODS = {
     offices: [{name:'Marysville',amt:104205.25},{name:'Monroe',amt:93668.68},{name:'Lake Stevens',amt:60567.19},{name:'Stanwood',amt:57554.61},{name:'Everett',amt:16038.90}],
     termed: [{name:'Dr. Kirk',coll:31.00,note:'Terminated'},{name:'Dr. Ping',coll:520.00,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'}],
   },
+  '3.27.26': {
+    label:'3.27.26', dates:'Mar 7 – Mar 20, 2026', payDate:'Mar 27, 2026',
+    period_start:'2026-03-07', period_end:'2026-03-20', pay_date_iso:'2026-03-27',
+    doctors: [],
+    offices: [],
+    termed: [],
+  },
   // JSON from payroll_refresh.py always overrides all of the above when it loads.
 };
 const officeNames = {MV:'Marysville',MO:'Monroe',LS:'Lake Stevens',SW:'Stanwood',EV:'Everett'};
@@ -389,12 +396,11 @@ function updateAllStatuses() {
     p.daysElapsed = daysElapsed;
 
     // Determine status from dates (overrides whatever was in JSON)
-    if (payDate && now > payDate) {
+    // Once the collection window closes (now > end), the period is CLOSED.
+    // "Live" only means the period is actively collecting payments.
+    if (now > end) {
       p.status = 'closed';
     } else if (now >= start && now <= end) {
-      p.status = 'live';
-    } else if (now > end) {
-      // Between period end and pay date — still "live" (finalizing)
       p.status = 'live';
     } else {
       p.status = 'upcoming';
@@ -544,8 +550,9 @@ function buildLiveBanner() {
   banner.style.display = 'block';
   const pct = ((p.daysElapsed / p.daysTotal) * 100).toFixed(0);
   const t = getTotals(p);
-  const projected = p.daysElapsed > 0 ? t.totalColl / p.daysElapsed * p.daysTotal : t.totalColl;
-  const projPay = p.daysElapsed > 0 ? t.totalPayNo / p.daysElapsed * p.daysTotal : t.totalPayNo;
+  const hasDoctors = p.doctors && p.doctors.length > 0;
+  const projected = hasDoctors && p.daysElapsed > 0 ? t.totalColl / p.daysElapsed * p.daysTotal : 0;
+  const projPay = hasDoctors && p.daysElapsed > 0 ? t.totalPayNo / p.daysElapsed * p.daysTotal : 0;
   banner.innerHTML = `
     <div class="card live-card" style="margin-bottom:24px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
@@ -559,6 +566,7 @@ function buildLiveBanner() {
           <span>${pct}% complete</span>
         </div>
       </div>
+      ${hasDoctors ? `
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:20px;text-align:center">
         <div>
           <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Posted So Far</div>
@@ -576,6 +584,11 @@ function buildLiveBanner() {
       <div class="note" style="margin-top:12px;text-align:center">
         Projections based on daily run rate. Final totals change as payments post.
       </div>
+      ` : `
+      <div class="note" style="margin-top:16px;text-align:center;font-size:14px;color:var(--text2)">
+        Awaiting first payments to post. Data will appear automatically at next refresh.
+      </div>
+      `}
     </div>
   `;
 }
@@ -585,6 +598,10 @@ function buildDocTable() {
   const t = getTotals(p);
   const tb = $('doc-table');
   tb.innerHTML = '';
+  if (!p.doctors || p.doctors.length === 0) {
+    tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:40px 0;font-style:italic">No payment data yet — awaiting first posts</td></tr>';
+    return;
+  }
   p.doctors.forEach((d, i) => {
     const tr = document.createElement('tr');
     tr.className = 'clickable';
@@ -635,6 +652,10 @@ function toggleDoc(i) {
 
 function buildOffices() {
   const p = getPeriodData();
+  if (!p.offices || p.offices.length === 0) {
+    $('office-card').innerHTML = '<div style="text-align:center;color:var(--text3);padding:40px 0;font-style:italic">No office data yet — awaiting first posts</div>';
+    return;
+  }
   const max = Math.max(...p.offices.map(o => o.amt));
   const total = p.offices.reduce((s, o) => s + o.amt, 0);
   let html = '';
@@ -716,7 +737,9 @@ function buildKPIs() {
   const projSaved = isLive && p.daysElapsed > 0 ? t.totalSaved / p.daysElapsed * p.daysTotal : t.totalSaved;
 
   // Accuracy: from cross-check in payroll_refresh.py (Azure SQL only)
-  const hasAccuracy = p.accuracy && p.accuracy.pct !== undefined;
+  // Show accuracy only when meaningful (> 0% and data exists)
+  const hasAccuracy = p.accuracy && p.accuracy.pct !== undefined && p.accuracy.total > 0;
+  const hasDoctors = p.doctors && p.doctors.length > 0;
 
   let kpis = `
     <div class="kpi">
@@ -756,8 +779,8 @@ function buildKPIs() {
       `;
     }
   } else {
-    // Closed periods: show accuracy if available, otherwise annualized savings
-    if (hasAccuracy) {
+    // Closed periods: show accuracy if available (and meaningful), otherwise active doctors
+    if (hasAccuracy && p.accuracy.pct > 0) {
       kpis += `
         <div class="kpi">
           <div class="kpi-label">Accuracy</div>
@@ -769,8 +792,8 @@ function buildKPIs() {
       kpis += `
         <div class="kpi">
           <div class="kpi-label">Active Doctors</div>
-          <div class="kpi-value accent-val">${p.doctors.length}</div>
-          <div class="kpi-detail">${p.offices.length} offices</div>
+          <div class="kpi-value accent-val">${hasDoctors ? p.doctors.length : '—'}</div>
+          <div class="kpi-detail">${hasDoctors ? (p.offices ? p.offices.length : 0) + ' offices' : 'Awaiting data'}</div>
         </div>
       `;
     }
