@@ -1074,9 +1074,21 @@ let adminDoctors = null;
 
 function loadAdminDoctors() {
   fetch('data/doctors.json?' + Date.now())
-    .then(r => r.json())
-    .then(data => { adminDoctors = data; buildAdminTables(); })
-    .catch(() => { adminDoctors = null; });
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(data => {
+      adminDoctors = data;
+      buildAdminTables();
+      console.log('Loaded doctors.json:', Object.keys(data.doctors).length, 'active');
+    })
+    .catch(err => {
+      console.error('Failed to load doctors.json:', err);
+      adminDoctors = null;
+      const el = $('admin-active-table');
+      if (el) el.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#FF6B6B">Failed to load doctors.json — check browser console for details</td></tr>';
+    });
 }
 
 function buildAdminTables() {
