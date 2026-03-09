@@ -34,20 +34,14 @@ NOTE: These views already exist in Azure SQL. This script does NOT
 create or alter any views. It only reads from them.
 
 Environment variables:
-  SQL_SERVER, SQL_DATABASE, SQL_USER, SQL_PASSWORD
+  AZURE_SQL_CONN_STR — Full ODBC connection string for Denticon Azure SQL
 """
 
 import os
 import sys
 import json
-import pymssql
 from datetime import datetime, date
 
-# ── Configuration ────────────────────────────────────────────────────────────
-SQL_SERVER   = os.environ.get("SQL_SERVER", "")
-SQL_DATABASE = os.environ.get("SQL_DATABASE", "")
-SQL_USER     = os.environ.get("SQL_USER", "")
-SQL_PASSWORD = os.environ.get("SQL_PASSWORD", "")
 OUTPUT_FILE  = "data/callsheets.json"
 
 # PSPD Office canonical names (used for display normalization)
@@ -68,20 +62,28 @@ def json_serial(obj):
 
 
 def connect():
-    """Connect to Azure SQL Server."""
-    if not all([SQL_SERVER, SQL_DATABASE, SQL_USER, SQL_PASSWORD]):
-        print("ERROR: Missing SQL credentials.")
-        print("  Set SQL_SERVER, SQL_DATABASE, SQL_USER, SQL_PASSWORD")
+    """Connect to Azure SQL Server via ODBC (same as payroll_refresh.py)."""
+    try:
+        import pyodbc
+    except ImportError:
+        print("ERROR: pyodbc required. Install with: pip install pyodbc")
         sys.exit(1)
 
-    print(f"Connecting to {SQL_SERVER}/{SQL_DATABASE}...")
-    return pymssql.connect(
-        server=SQL_SERVER,
-        user=SQL_USER,
-        password=SQL_PASSWORD,
-        database=SQL_DATABASE,
-        tds_version="7.3"
-    )
+    conn_str = os.environ.get("AZURE_SQL_CONN_STR", "")
+    if not conn_str:
+        print("ERROR: AZURE_SQL_CONN_STR environment variable not set.")
+        sys.exit(1)
+
+    drivers = pyodbc.drivers()
+    print(f"  Available ODBC drivers: {drivers}")
+
+    try:
+        conn = pyodbc.connect(conn_str, timeout=30)
+        print("  ✓ Connected to Azure SQL")
+        return conn
+    except pyodbc.Error as e:
+        print(f"ERROR: Failed to connect to Azure SQL: {e}")
+        sys.exit(1)
 
 
 # ── Recall (Due Next 30 Days) ──────────────────────────────────────────────
@@ -89,9 +91,15 @@ def connect():
 # This is the same view used by the "Due Next 30 Days" page in
 # PSPD_Recall_CallLists.pbix
 
+def rows_to_dicts(cursor):
+    """Convert pyodbc cursor results to list of dicts (like pymssql as_dict=True)."""
+    columns = [col[0] for col in cursor.description]
+    return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+
 def query_recall(conn):
     """Pull hygiene recall households due in the next 30 days."""
-    cursor = conn.cursor(as_dict=True)
+    cursor = conn.cursor()
     try:
         cursor.execute("""
             SELECT
@@ -108,7 +116,7 @@ def query_recall(conn):
             FROM vw_RecallHouseholdDueNext30Days_PBI
             ORDER BY KidsDueCount DESC, SuggestedFamilyDate ASC
         """)
-        rows = cursor.fetchall()
+        rows = rows_to_dicts(cursor)
         print(f"  Recall (next 30 days): {len(rows)} households")
         return rows
     except Exception as e:
@@ -123,7 +131,7 @@ def query_recall(conn):
 
 def query_overdue(conn):
     """Pull overdue recall households (past due for hygiene)."""
-    cursor = conn.cursor(as_dict=True)
+    cursor = conn.cursor()
     try:
         cursor.execute("""
             SELECT
@@ -148,7 +156,7 @@ def query_overdue(conn):
             FROM vw_RecallHouseholdDue
             ORDER BY OldestHygieneDate ASC, KidsDueCount DESC
         """)
-        rows = cursor.fetchall()
+        rows = rows_to_dicts(cursor)
         print(f"  Overdue: {len(rows)} households")
         return rows
     except Exception as e:
@@ -162,7 +170,7 @@ def query_overdue(conn):
 
 def query_treatment(conn):
     """Pull unscheduled treatment patients."""
-    cursor = conn.cursor(as_dict=True)
+    cursor = conn.cursor()
     try:
         cursor.execute("""
             SELECT
@@ -186,7 +194,7 @@ def query_treatment(conn):
             FROM vw_TxAction_Unscheduled_Current_Scheduler_v2
             ORDER BY TotalFee DESC
         """)
-        rows = cursor.fetchall()
+        rows = rows_to_dicts(cursor)
         print(f"  Treatment: {len(rows)} patients")
         return rows
     except Exception as e:
@@ -199,7 +207,7 @@ def query_treatment(conn):
 
 def query_data_freshness(conn):
     """Get the last data refresh timestamp from the update stamp views."""
-    cursor = conn.cursor(as_dict=True)
+    cursor = conn.cursor()
     timestamps = {}
 
     # Try vw_LastUpdateStamp (used by Recall model)
@@ -207,8 +215,8 @@ def query_data_freshness(conn):
         cursor.execute("SELECT TOP 1 OperationalDate FROM vw_LastUpdateStamp")
         row = cursor.fetchone()
         if row:
-            timestamps['recall_as_of'] = row['OperationalDate']
-            print(f"  Recall data as of: {row['OperationalDate']}")
+            timestamps['recall_as_of'] = row[0]
+            print(f"  Recall data as of: {row[0]}")
     except Exception:
         pass
 
@@ -217,8 +225,8 @@ def query_data_freshness(conn):
         cursor.execute("SELECT TOP 1 LastDataUTC FROM vw_DataLastUpdate")
         row = cursor.fetchone()
         if row:
-            timestamps['treatment_as_of'] = row['LastDataUTC']
-            print(f"  Treatment data as of: {row['LastDataUTC']}")
+            timestamps['treatment_as_of'] = row[0]
+            print(f"  Treatment data as of: {row[0]}")
     except Exception:
         pass
 
@@ -231,7 +239,7 @@ def query_data_freshness(conn):
 
 def query_contact_log(conn):
     """Pull SMS/contact log from the callsheet_log table (if it exists)."""
-    cursor = conn.cursor(as_dict=True)
+    cursor = conn.cursor()
     try:
         cursor.execute("""
             SELECT row_id, phone, name, type, status, date, message, error
@@ -239,7 +247,7 @@ def query_contact_log(conn):
             WHERE date >= DATEADD(day, -30, GETDATE())
             ORDER BY date DESC
         """)
-        rows = cursor.fetchall()
+        rows = rows_to_dicts(cursor)
         print(f"  Contact log: {len(rows)} entries (last 30 days)")
         return rows
     except Exception:
@@ -250,7 +258,7 @@ def query_contact_log(conn):
 
 def query_bad_phones(conn):
     """Pull known bad phone numbers from the contact log."""
-    cursor = conn.cursor(as_dict=True)
+    cursor = conn.cursor()
     try:
         cursor.execute("""
             SELECT DISTINCT phone
@@ -258,8 +266,8 @@ def query_bad_phones(conn):
             WHERE status IN ('failed', 'undelivered')
               AND (error LIKE '%211%' OR error LIKE '%614%' OR error LIKE '%608%')
         """)
-        rows = cursor.fetchall()
-        phones = [r['phone'] for r in rows if r['phone']]
+        rows = rows_to_dicts(cursor)
+        phones = [r['phone'] for r in rows if r.get('phone')]
         print(f"  Bad phones: {len(phones)} numbers flagged")
         return phones
     except Exception:
@@ -270,7 +278,7 @@ def query_bad_phones(conn):
 def query_zcode_status(conn):
     """Check for Z-code entries marking patients as 'contacted this cycle'.
     Z-codes are typically posted as procedures in the Denticon ledger."""
-    cursor = conn.cursor(as_dict=True)
+    cursor = conn.cursor()
     queries = [
         # Pattern 1: Ledger entry with Z-code procedure
         """SELECT DISTINCT patient_id, MAX(service_date) AS z_code_date
@@ -288,7 +296,7 @@ def query_zcode_status(conn):
     for i, sql in enumerate(queries):
         try:
             cursor.execute(sql)
-            rows = cursor.fetchall()
+            rows = rows_to_dicts(cursor)
             if rows:
                 print(f"  Z-codes: {len(rows)} patients contacted (pattern {i+1})")
                 return {r['patient_id']: r.get('z_code_date', '') for r in rows}
