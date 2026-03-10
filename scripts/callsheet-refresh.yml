@@ -1,0 +1,87 @@
+# .github/workflows/callsheet-refresh.yml
+# Automated call sheet data refresh for PSPD Interactive Call Sheets
+#
+# This workflow:
+#   1. Runs on schedule (5 AM PST daily) or on manual trigger
+#   2. Connects to Azure SQL via AZURE_SQL_CONN_STR secret
+#   3. Runs callsheet_refresh.py to generate data/callsheets.json
+#   4. Commits and pushes the updated JSON to GitHub Pages
+#
+# Required GitHub Secrets:
+#   AZURE_SQL_CONN_STR - Full ODBC connection string for Denticon Azure SQL
+#
+# Azure SQL Views Queried:
+#   vw_RecallHouseholdDueNext30Days_PBI  - Recall families due within 30 days
+#   vw_RecallHouseholdDue                - Overdue recall families
+#   vw_TxAction_Unscheduled_Current_Scheduler_v2 - Unscheduled treatment plans
+#   vw_LastUpdateStamp / vw_DataLastUpdate       - Data freshness timestamps
+#
+# Manual trigger: Go to Actions tab > "Refresh Call Sheets" > "Run workflow"
+
+name: Refresh Call Sheets
+
+on:
+  schedule:
+    # Run at 5 AM PST (1 PM UTC) daily — before office opens
+    - cron: '0 13 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install ODBC Driver 18 for SQL Server
+        run: |
+          # Import Microsoft signing key (modern approach — no deprecated apt-key)
+          curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg
+          # Add Microsoft package repository for Ubuntu 22.04
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" | sudo tee /etc/apt/sources.list.d/mssql-release.list
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc-dev
+          # Verify driver is installed
+          odbcinst -q -d
+
+      - name: Install Python dependencies
+        run: pip install pyodbc
+
+      - name: Verify setup
+        run: |
+          python -c "import pyodbc; print('pyodbc version:', pyodbc.version)"
+          python -c "import pyodbc; print('ODBC drivers:', pyodbc.drivers())"
+
+      - name: Check connection string is set
+        run: |
+          if [ -z "$AZURE_SQL_CONN_STR" ]; then
+            echo "::error::AZURE_SQL_CONN_STR secret is not set or is empty!"
+            echo "Go to Settings > Secrets and variables > Actions > New repository secret"
+            echo "Name: AZURE_SQL_CONN_STR"
+            echo "Value: Your Azure SQL ODBC connection string"
+            exit 1
+          fi
+          echo "Connection string is set (length: ${#AZURE_SQL_CONN_STR} chars)"
+        env:
+          AZURE_SQL_CONN_STR: ${{ secrets.AZURE_SQL_CONN_STR }}
+
+      - name: Run callsheet refresh
+        env:
+          AZURE_SQL_CONN_STR: ${{ secrets.AZURE_SQL_CONN_STR }}
+        run: python scripts/callsheet_refresh.py
+
+      - name: Commit and push updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/callsheets.json
+          git diff --staged --quiet || git commit -m "Auto-refresh call sheet data $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
