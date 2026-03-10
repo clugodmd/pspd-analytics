@@ -41,6 +41,7 @@ import os
 import sys
 import json
 from datetime import datetime, date
+from decimal import Decimal
 
 OUTPUT_FILE  = "data/callsheets.json"
 
@@ -55,9 +56,11 @@ OFFICE_CANONICAL = {
 
 
 def json_serial(obj):
-    """JSON serializer for date/datetime objects."""
+    """JSON serializer for date/datetime/Decimal objects."""
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
+    if isinstance(obj, Decimal):
+        return float(obj)
     raise TypeError(f"Type {type(obj)} not JSON serializable")
 
 
@@ -453,6 +456,7 @@ def main():
         "treatment": treatment,
         "contact_log": contact_log_clean,
         "bad_phones": bad_phones,
+        "generated_at": datetime.utcnow().isoformat() + "Z",
         "generated": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
         "data_as_of": {
             "recall": str(freshness.get("recall_as_of", "")),
