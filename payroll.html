@@ -11,16 +11,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #1B2B24; --bg2: #223428;
-  --card: #204536; --card-hover: #2A5A48;
-  --accent: #6292A0; --accent-light: #7DB0BE; --accent-glow: rgba(98,146,160,0.15); --accent-border: rgba(98,146,160,0.3);
-  --text: #F5F5F5; --text2: #94A3B8; --text3: #6F8090;
-  --border: rgba(255,255,255,0.08);
-  --green: #5DBE6E; --brown: #7D6652; --blue: #6292A0;
-  --burgundy: #52000A;
-  --radius: 12px;
-}
+    :root {
+      --bg: #1C3329; --bg2: #243D33; --card: #2E4A3E; --card-hover: #38564A;
+      --accent: #6292A0; --accent-light: #7AAFBD;
+      --accent-glow: rgba(98,146,160,0.15); --accent-border: rgba(98,146,160,0.35);
+      --text: #F7F8F8; --text2: #9AADA2; --text3: #5E7A6E;
+      --border: rgba(247,248,248,0.08);
+      --green: #5DBE8A; --red: #C4485A; --blue: #6292A0; --purple: #8B7BA5; --teal: #7AAFBD;
+      --wood: #7D6652; --wood-glow: rgba(125,102,82,0.12);
+      --radius: 12px;
+    }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 /* HEADER */
@@ -69,7 +69,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text)
 .sec-title.blue { border-left-color:var(--blue); }
 /* CARDS */
 .card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:24px; }
-.card.brown-card { border-color:rgba(125,102,82,0.2); }
+.card.brown-card { border-color:rgba(98,146,160,0.2); }
 .card.live-card { border-color:rgba(98,146,160,0.25); }
 /* TABLE */
 table { width:100%; border-collapse:collapse; font-size:13px; }
@@ -84,8 +84,8 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
 .bold { font-weight:600; }
 /* BADGES */
 .badge { display:inline-block; padding:3px 10px; border-radius:10px; font-size:11px; font-weight:600; }
-.badge-green { background:rgba(93,190,110,0.15); color:var(--green); }
-.badge-brown { background:rgba(125,102,82,0.15); color:var(--brown); }
+.badge-green { background:rgba(93,190,138,0.15); color:var(--green); }
+.badge-brown { background:rgba(98,146,160,0.15); color:var(--brown); }
 .badge-accent { background:rgba(98,146,160,0.15); color:var(--accent); }
 .badge-blue { background:rgba(98,146,160,0.15); color:var(--blue); }
 /* DOTS */
@@ -157,8 +157,8 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
 .btn-rate:hover { background:rgba(98,146,160,0.25); }
 .btn-term { background:rgba(82,0,10,0.12); border-color:rgba(82,0,10,0.3); color:#FF6B6B; }
 .btn-term:hover { background:rgba(82,0,10,0.25); }
-.btn-react { background:rgba(93,190,110,0.12); border-color:rgba(93,190,110,0.3); color:var(--green); }
-.btn-react:hover { background:rgba(93,190,110,0.25); }
+.btn-react { background:rgba(93,190,138,0.12); border-color:rgba(93,190,138,0.3); color:var(--green); }
+.btn-react:hover { background:rgba(93,190,138,0.25); }
 .btn-primary { padding:10px 24px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; border:none; background:var(--accent); color:#fff; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
 .btn-primary:hover { background:var(--accent-light); }
 .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
@@ -176,7 +176,7 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
 .modal-field input[readonly] { opacity:0.6; cursor:not-allowed; }
 .modal-actions { display:flex; gap:12px; margin-top:24px; justify-content:flex-end; }
 .admin-alert { padding:12px 16px; border-radius:8px; font-size:13px; margin-bottom:16px; display:none; }
-.admin-alert.success { display:block; background:rgba(93,190,110,0.12); border:1px solid rgba(93,190,110,0.3); color:var(--green); }
+.admin-alert.success { display:block; background:rgba(93,190,138,0.12); border:1px solid rgba(93,190,138,0.3); color:var(--green); }
 .admin-alert.error { display:block; background:rgba(82,0,10,0.12); border:1px solid rgba(82,0,10,0.3); color:#FF6B6B; }
 .admin-alert.info { display:block; background:rgba(98,146,160,0.12); border:1px solid var(--accent-border); color:var(--accent); }
 .pat-config { padding:16px; background:var(--bg2); border-radius:var(--radius); border:1px solid var(--border); margin-bottom:24px; }
@@ -418,6 +418,7 @@ let PERIODS = {
   '1.16.26': {
     label:'1.16.26', dates:'Dec 27, 2025 – Jan 9, 2026', payDate:'Jan 16, 2026',
     period_start:'2025-12-27', period_end:'2026-01-09', pay_date_iso:'2026-01-16',
+    locked: true, hardcoded: true, status: 'complete',
     doctors: [
       {name:'Dr. Slaven', pct:0.36, coll:61203.44, payNo:19033.07, payWith:22033.24},
       {name:'Dr. Menon', pct:0.35, coll:46512.10, payNo:14228.71, payWith:16279.24},
@@ -435,6 +436,7 @@ let PERIODS = {
   '1.30.26': {
     label:'1.30.26', dates:'Jan 10 – Jan 23, 2026', payDate:'Jan 30, 2026',
     period_start:'2026-01-10', period_end:'2026-01-23', pay_date_iso:'2026-01-30',
+    locked: true, hardcoded: true, status: 'complete',
     doctors: [
       {name:'Dr. Slaven', pct:0.36, coll:72584.21, payNo:22565.63, payWith:26130.32},
       {name:'Dr. Menon', pct:0.35, coll:51293.44, payNo:15695.60, payWith:17952.70},
@@ -452,6 +454,7 @@ let PERIODS = {
   '2.13.26': {
     label:'2.13.26', dates:'Jan 24 – Feb 6, 2026', payDate:'Feb 13, 2026',
     period_start:'2026-01-24', period_end:'2026-02-06', pay_date_iso:'2026-02-13',
+    locked: true, hardcoded: true, status: 'complete',
     doctors: [
       {name:'Dr. Slaven', pct:0.36, coll:76422.98, payNo:23763.37, payWith:27512.27},
       {name:'Dr. Menon', pct:0.35, coll:52834.61, payNo:16165.59, payWith:18492.11},
@@ -469,6 +472,7 @@ let PERIODS = {
   '2.27.26': {
     label:'2.27.26', dates:'Feb 7 – Feb 20, 2026', payDate:'Feb 27, 2026',
     period_start:'2026-02-07', period_end:'2026-02-20', pay_date_iso:'2026-02-27',
+    locked: true, hardcoded: true, status: 'complete',
     doctors: [
       {name:'Dr. Slaven', pct:0.36, coll:79367.09, payNo:24664.54, payWith:28572.15, off:{MV:31955.29,MO:12059.51,LS:0,SW:35352.29,EV:0}},
       {name:'Dr. Menon', pct:0.35, coll:55076.25, payNo:17389.04, payWith:19276.69, off:{MV:157,MO:22720.80,LS:16970.31,SW:0,EV:15228.14}},
@@ -486,6 +490,7 @@ let PERIODS = {
   '3.13.26': {
     label:'3.13.26', dates:'Feb 21 – Mar 6, 2026', payDate:'Mar 13, 2026',
     period_start:'2026-02-21', period_end:'2026-03-06', pay_date_iso:'2026-03-13',
+    locked: true, hardcoded: true,
     doctors: [
       {name:'Dr. Slaven', pct:0.36, coll:69230.49, payNo:21597.63, payWith:24922.98, off:{MV:36730.98,MO:6950.96,SW:25548.55}},
       {name:'Dr. Choong', pct:0.35, coll:59169.20, payNo:17975.72, payWith:20709.22, off:{MV:27216.21,SW:31952.99}},
@@ -577,15 +582,16 @@ function updateAllStatuses() {
     p.daysTotal = daysTotal;
     p.daysElapsed = daysElapsed;
 
-    // If JSON already has a status from the pipeline, trust it for locked periods
-    if (p.locked) return;
-
     // Three-phase status from dates:
     //   live       = inside the pay period (data recalculates)
     //   processing = period ended, Tanya prepping payroll (data locked)
     //   complete   = payroll paid (frozen forever)
+    // Locked periods still get status computed (for banner display),
+    // but their DATA never changes — only pipeline/JSON can override locked data.
     if (now <= end) {
-      p.status = 'live';
+      // Locked historical periods should never revert to "live"
+      if (!p.locked) p.status = 'live';
+      else p.status = 'complete'; // safety: locked period in date range = already done
     } else if (payDate && now < payDate) {
       p.status = 'processing';
     } else {
@@ -602,8 +608,18 @@ function updateAllStatuses() {
 updateAllStatuses();
 const fallbackKeys = Object.keys(PERIODS);
 if (fallbackKeys.length > 0) {
-  // Show last closed period from fallback
-  currentPeriod = fallbackKeys[fallbackKeys.length - 1];
+  // Pick best default period to show:
+  // 1. Live period with data
+  // 2. Most recent processing period
+  // 3. Most recent complete period
+  // Avoid showing an empty live period as default
+  const sorted = fallbackKeys.sort((a, b) => {
+    const pa = parsePeriodDates(PERIODS[a]), pb = parsePeriodDates(PERIODS[b]);
+    return (pa.start || 0) - (pb.start || 0);
+  });
+  const liveWithData = sorted.find(k => PERIODS[k].status === 'live' && PERIODS[k].doctors && PERIODS[k].doctors.length > 0);
+  const processing = sorted.filter(k => PERIODS[k].status === 'processing').pop();
+  currentPeriod = liveWithData || processing || sorted[sorted.length - 1];
   $('loading-state').style.display = 'none';
   $('dashboard-content').style.display = 'block';
   buildPeriodSelector();
@@ -627,20 +643,17 @@ if (fallbackKeys.length > 0) {
     updateAllStatuses();
 
     // Select the best period to show:
-    // 1. Live period (if any)
-    // 2. Most recent by date
+    // 1. Live period WITH data (skip empty live periods)
+    // 2. Most recent processing period
+    // 3. Most recent by date
     const keys = Object.keys(PERIODS);
-    const liveKey = keys.find(k => PERIODS[k].status === 'live');
-    if (liveKey) {
-      currentPeriod = liveKey;
-    } else {
-      // Sort by parsed start date, pick last
-      const sorted = keys.sort((a, b) => {
-        const pa = parsePeriodDates(PERIODS[a]), pb = parsePeriodDates(PERIODS[b]);
-        return (pa.start || 0) - (pb.start || 0);
-      });
-      currentPeriod = sorted[sorted.length - 1];
-    }
+    const sortedKeys = keys.sort((a, b) => {
+      const pa = parsePeriodDates(PERIODS[a]), pb = parsePeriodDates(PERIODS[b]);
+      return (pa.start || 0) - (pb.start || 0);
+    });
+    const liveWithData = sortedKeys.find(k => PERIODS[k].status === 'live' && PERIODS[k].doctors && PERIODS[k].doctors.length > 0);
+    const processingKey = sortedKeys.filter(k => PERIODS[k].status === 'processing').pop();
+    currentPeriod = liveWithData || processingKey || sortedKeys[sortedKeys.length - 1];
 
     // Show dashboard (in case fallback was empty)
     $('loading-state').style.display = 'none';

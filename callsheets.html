@@ -6,27 +6,19 @@
 <title>PSPD Call Sheets — Interactive Recall & Treatment Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:        #1E3228;
-  --bg2:       #253D32;
-  --card:      #2E483A;
-  --card-hover:#35544A;
-  --accent:    #CD7823;
-  --accent-lt: #E8943D;
-  --accent-glow: rgba(205,120,35,0.15);
-  --text:      #F5F5F5;
-  --text2:     #94A3B8;
-  --text3:     #6F8090;
-  --border:    rgba(255,255,255,0.08);
-  --green:     #5DBE6E;
-  --red:       #E85D5D;
-  --blue:      #5BA4D9;
-  --purple:    #8B6BB5;
-  --yellow:    #E8C84A;
-  --radius:    12px;
-  --sans:      'DM Sans', system-ui, sans-serif;
-  --serif:     'Instrument Serif', Georgia, serif;
-}
+    :root {
+      --bg: #1C3329; --bg2: #243D33; --card: #2E4A3E; --card-hover: #38564A;
+      --accent: #6292A0; --accent-light: #7AAFBD;
+      --accent-glow: rgba(98,146,160,0.15); --accent-border: rgba(98,146,160,0.35);
+      --text: #F7F8F8; --text2: #9AADA2; --text3: #5E7A6E;
+      --border: rgba(247,248,248,0.08);
+      --green: #5DBE8A; --red: #C4485A; --blue: #6292A0; --purple: #8B7BA5; --teal: #7AAFBD;
+      --yellow: #E8C84A; --orange: #D4915E;
+      --wood: #7D6652; --wood-glow: rgba(125,102,82,0.12);
+      --sans: 'DM Sans', sans-serif; --serif: 'Instrument Serif', serif;
+      --accent-lt: #7AAFBD;
+      --radius: 12px;
+    }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
 a { color: var(--accent-lt); text-decoration: none; }
@@ -74,11 +66,11 @@ a:hover { text-decoration: underline; }
   display: inline-flex; align-items: center; gap: 0.3rem;
   padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
 }
-.badge-green { background: rgba(93,190,110,0.15); color: var(--green); }
-.badge-red { background: rgba(232,93,93,0.15); color: var(--red); }
-.badge-blue { background: rgba(91,164,217,0.15); color: var(--blue); }
+.badge-green { background: rgba(93,190,138,0.15); color: var(--green); }
+.badge-red { background: rgba(196,72,90,0.15); color: var(--red); }
+.badge-blue { background: rgba(98,146,160,0.15); color: var(--blue); }
 .badge-orange { background: var(--accent-glow); color: var(--accent-lt); }
-.badge-purple { background: rgba(139,107,181,0.15); color: var(--purple); }
+.badge-purple { background: rgba(139,123,165,0.15); color: var(--purple); }
 .badge-yellow { background: rgba(232,200,74,0.15); color: var(--yellow); }
 
 /* ── Risk Badges ── */
@@ -87,9 +79,9 @@ a:hover { text-decoration: underline; }
   padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.65rem;
   font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
 }
-.risk-high { background: rgba(232,93,93,0.2); color: var(--red); border: 1px solid rgba(232,93,93,0.3); }
+.risk-high { background: rgba(196,72,90,0.2); color: var(--red); border: 1px solid rgba(196,72,90,0.3); }
 .risk-medium { background: rgba(232,200,74,0.2); color: var(--yellow); border: 1px solid rgba(232,200,74,0.3); }
-.risk-low { background: rgba(93,190,110,0.2); color: var(--green); border: 1px solid rgba(93,190,110,0.3); }
+.risk-low { background: rgba(93,190,138,0.2); color: var(--green); border: 1px solid rgba(93,190,138,0.3); }
 
 /* ── Phone Status ── */
 .phone-status {
@@ -99,8 +91,8 @@ a:hover { text-decoration: underline; }
   display: inline-flex; align-items: center; justify-content: center;
   width: 16px; height: 16px; border-radius: 50%; font-size: 0.55rem;
 }
-.phone-ok .phone-icon { background: rgba(93,190,110,0.2); color: var(--green); }
-.phone-bad .phone-icon { background: rgba(232,93,93,0.3); color: var(--red); }
+.phone-ok .phone-icon { background: rgba(93,190,138,0.2); color: var(--green); }
+.phone-bad .phone-icon { background: rgba(196,72,90,0.3); color: var(--red); }
 .phone-unknown .phone-icon { background: rgba(148,163,184,0.2); color: var(--text3); }
 .phone-bad .phone-link { color: var(--red); text-decoration: line-through; }
 
@@ -123,10 +115,12 @@ a:hover { text-decoration: underline; }
   display: inline-flex; align-items: center; gap: 0.2rem;
   padding: 0.1rem 0.4rem; border-radius: 10px; font-size: 0.6rem; font-weight: 600;
 }
-.ch-chip.sms { background: rgba(91,164,217,0.15); color: var(--blue); }
-.ch-chip.email { background: rgba(139,107,181,0.15); color: var(--purple); }
+.ch-chip.sms { background: rgba(98,146,160,0.15); color: var(--blue); }
+.ch-chip.call { background: rgba(93,190,138,0.15); color: var(--green); }
+.ch-chip.weave { background: rgba(122,175,189,0.15); color: var(--teal); }
+.ch-chip.email { background: rgba(139,123,165,0.15); color: var(--purple); }
 .ch-chip.zcode { background: var(--accent-glow); color: var(--accent-lt); }
-.ch-chip.failed { background: rgba(232,93,93,0.15); color: var(--red); }
+.ch-chip.failed { background: rgba(196,72,90,0.15); color: var(--red); }
 
 /* ── KPI Row ── */
 .kpi-row {
@@ -137,7 +131,7 @@ a:hover { text-decoration: underline; }
   background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 1rem 1.2rem; transition: border-color 0.2s;
 }
-.kpi-card:hover { border-color: rgba(205,120,35,0.3); }
+.kpi-card:hover { border-color: rgba(98,146,160,0.3); }
 .kpi-label { font-size: 0.7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
 .kpi-value { font-size: 1.6rem; font-weight: 700; color: var(--text); margin-top: 0.2rem; }
 .kpi-sub { font-size: 0.75rem; color: var(--text2); margin-top: 0.15rem; }
@@ -169,7 +163,7 @@ thead th .sort-arrow { margin-left: 0.3rem; opacity: 0.4; }
 thead th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
 
 tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
-tbody tr:hover { background: rgba(205,120,35,0.05); }
+tbody tr:hover { background: rgba(98,146,160,0.05); }
 tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
 
 .patient-name { font-weight: 600; white-space: nowrap; }
@@ -182,12 +176,12 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
 }
 .tx-tag {
   display: inline-block; padding: 0.15rem 0.4rem; border-radius: 4px;
-  font-size: 0.7rem; font-weight: 600; background: rgba(91,164,217,0.15); color: var(--blue);
+  font-size: 0.7rem; font-weight: 600; background: rgba(98,146,160,0.15); color: var(--blue);
 }
-.tx-tag.ga { background: rgba(232,93,93,0.15); color: var(--red); }
-.tx-tag.ssc { background: rgba(139,107,181,0.15); color: var(--purple); }
+.tx-tag.ga { background: rgba(196,72,90,0.15); color: var(--red); }
+.tx-tag.ssc { background: rgba(139,123,165,0.15); color: var(--purple); }
 .tx-tag.ext { background: rgba(232,200,74,0.15); color: var(--yellow); }
-.tx-tag.seal { background: rgba(93,190,110,0.15); color: var(--green); }
+.tx-tag.seal { background: rgba(93,190,138,0.15); color: var(--green); }
 .tx-tag.sdf { background: var(--accent-glow); color: var(--accent-lt); }
 
 .fee { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -199,25 +193,25 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
   font-size: 0.7rem; font-weight: 600; cursor: pointer;
   font-family: var(--sans); transition: all 0.2s;
 }
-.btn-sms { background: rgba(91,164,217,0.2); color: var(--blue); }
-.btn-sms:hover { background: rgba(91,164,217,0.35); }
-.btn-weave { background: rgba(93,190,110,0.2); color: var(--green); }
-.btn-weave:hover { background: rgba(93,190,110,0.35); }
-.btn-call { background: rgba(93,190,110,0.2); color: var(--green); }
-.btn-call:hover { background: rgba(93,190,110,0.35); }
-.btn-done { background: rgba(93,190,110,0.2); color: var(--green); }
-.btn-done:hover { background: rgba(93,190,110,0.35); }
-.btn-skip { background: rgba(232,93,93,0.15); color: var(--red); }
-.btn-skip:hover { background: rgba(232,93,93,0.3); }
+.btn-sms { background: rgba(98,146,160,0.2); color: var(--blue); }
+.btn-sms:hover { background: rgba(98,146,160,0.35); }
+.btn-weave { background: rgba(93,190,138,0.2); color: var(--green); }
+.btn-weave:hover { background: rgba(93,190,138,0.35); }
+.btn-call { background: rgba(93,190,138,0.2); color: var(--green); }
+.btn-call:hover { background: rgba(93,190,138,0.35); }
+.btn-done { background: rgba(93,190,138,0.2); color: var(--green); }
+.btn-done:hover { background: rgba(93,190,138,0.35); }
+.btn-skip { background: rgba(196,72,90,0.15); color: var(--red); }
+.btn-skip:hover { background: rgba(196,72,90,0.3); }
 .btn-review { background: rgba(232,200,74,0.15); color: var(--yellow); }
 .btn-review:hover { background: rgba(232,200,74,0.3); }
-.btn-log { background: rgba(139,107,181,0.15); color: var(--purple); }
-.btn-log:hover { background: rgba(139,107,181,0.3); }
+.btn-log { background: rgba(139,123,165,0.15); color: var(--purple); }
+.btn-log:hover { background: rgba(139,123,165,0.3); }
 
 .row-contacted { opacity: 0.45; }
 .row-contacted td { text-decoration: line-through; text-decoration-color: var(--text3); }
 .row-skipped { opacity: 0.3; }
-.row-bad-phone { background: rgba(232,93,93,0.04); }
+.row-bad-phone { background: rgba(196,72,90,0.04); }
 
 /* ── SMS Modal ── */
 .modal-overlay {
@@ -336,6 +330,9 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
   <button class="btn-primary" id="bulkSmsBtn" onclick="openBulkSMS()" style="margin-left:auto;">
     Send Bulk SMS
   </button>
+  <button onclick="exportContactLog()" style="background:rgba(98,146,160,0.15);color:var(--accent);border:1px solid rgba(98,146,160,0.3);padding:0.4rem 0.8rem;border-radius:6px;font-size:0.75rem;cursor:pointer;font-family:inherit;" title="Export all contact history as CSV">
+    Export Log
+  </button>
 </div>
 
 <!-- ── KPI Row ── -->
@@ -369,6 +366,7 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
             <th>Names</th>
             <th>Suggest Date</th>
             <th>Office</th>
+            <th>Provider</th>
             <th>History</th>
             <th>Actions</th>
           </tr></thead>
@@ -396,6 +394,7 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
             <th>Names</th>
             <th>Days Overdue <span class="sort-arrow">↕</span></th>
             <th>Office</th>
+            <th>Provider</th>
             <th>History</th>
             <th>Actions</th>
           </tr></thead>
@@ -623,17 +622,37 @@ async function loadData() {
 
 function loadSessionLog() {
   try {
-    const raw = sessionStorage.getItem('pspd_sms_log');
+    const raw = localStorage.getItem('pspd_contact_log');
     return raw ? JSON.parse(raw) : [];
   } catch { return []; }
 }
 
 function saveSessionLog(entry) {
   try {
+    // Add staff name from login
+    var staffUser = localStorage.getItem('pspd_user') || 'unknown';
+    var staffNames = { drlugo:'Dr. Lugo', tanya:'Tanya', angela:'Angela', staff:'Front Desk' };
+    entry.staff = staffNames[staffUser] || staffUser;
+
     const log = loadSessionLog();
     log.push(entry);
-    sessionStorage.setItem('pspd_sms_log', JSON.stringify(log));
+    localStorage.setItem('pspd_contact_log', JSON.stringify(log));
   } catch { /* silent */ }
+}
+
+function exportContactLog() {
+  var log = loadSessionLog();
+  if (!log.length) { alert('No contact history to export.'); return; }
+  var csv = 'Date,Staff,Type,Status,RowID,Phone,Name,Message\\n';
+  for (var i = 0; i < log.length; i++) {
+    var e = log[i];
+    csv += [e.date||'', e.staff||'', e.type||'', e.status||'', e.row_id||'', e.phone||'', (e.name||'').replace(/,/g,' '), (e.message||'').replace(/,/g,' ')].join(',') + '\\n';
+  }
+  var blob = new Blob([csv], {type:'text/csv'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'contact_log_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
 }
 
 function showEmpty() {
@@ -642,7 +661,7 @@ function showEmpty() {
   document.getElementById('last-updated').textContent = 'Waiting for first data refresh';
   ['recall-body', 'overdue-body', 'treatment-body', 'review-body'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:3rem;color:var(--text3);">
+    if (el) el.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:3rem;color:var(--text3);">
       No data loaded. Push <code>data/callsheets.json</code> via GitHub Actions to populate this dashboard.
     </td></tr>`;
   });
@@ -844,11 +863,14 @@ function contactHistoryCell(rowId) {
   const chips = entries.slice(-3).map(e => {
     let cls = 'sms';
     let label = 'SMS';
+    if (e.type === 'call') { cls = 'call'; label = 'Called'; }
     if (e.type === 'email') { cls = 'email'; label = 'Email'; }
+    if (e.type === 'weave') { cls = 'weave'; label = 'Weave'; }
     if (e.type === 'zcode') { cls = 'zcode'; label = 'Z-code'; }
     if (e.status === 'failed' || e.status === 'undelivered') { cls = 'failed'; label += ' ✗'; }
+    const staffTag = e.staff ? ` (${e.staff})` : '';
     const dt = e.date ? e.date.split(' ')[0] : '';
-    return `<span class="ch-chip ${cls}" title="${esc(e.date || '')}: ${esc(e.message || '').slice(0,50)}">${label} ${dt}</span>`;
+    return `<span class="ch-chip ${cls}" title="${esc(e.date || '')}${staffTag}: ${esc(e.message || '').slice(0,50)}">${label} ${dt}</span>`;
   });
 
   return `<div class="contact-history-row">${chips.join('')}
@@ -871,7 +893,7 @@ function render() {
 function renderRecall(items) {
   const body = document.getElementById('recall-body');
   document.getElementById('recall-count').textContent = items.length + ' households';
-  if (!items.length) { body.innerHTML = emptyRow(10); return; }
+  if (!items.length) { body.innerHTML = emptyRow(11); return; }
 
   body.innerHTML = items.map(r => {
     const id = 'recall-' + r.household_id;
@@ -885,6 +907,7 @@ function renderRecall(items) {
       <td style="font-size:0.78rem;">${esc(r.kids_due_names || '-')}</td>
       <td>${esc(r.suggest_date || '-')}</td>
       <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span></td>
+      <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}</td>
       <td>${contactHistoryCell(id)}</td>
       <td>${actionBtns(id, r.phone)}</td>
     </tr>`;
@@ -894,7 +917,7 @@ function renderRecall(items) {
 function renderOverdue(items) {
   const body = document.getElementById('overdue-body');
   document.getElementById('overdue-count').textContent = items.length + ' households';
-  if (!items.length) { body.innerHTML = emptyRow(10); return; }
+  if (!items.length) { body.innerHTML = emptyRow(11); return; }
 
   body.innerHTML = items.map(r => {
     const id = 'overdue-' + r.household_id;
@@ -909,6 +932,7 @@ function renderOverdue(items) {
       <td style="font-size:0.78rem;">${esc(r.kids_due_names || '-')}</td>
       <td><span class="badge ${daysClass}">${r.days_overdue || 0} days</span></td>
       <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span></td>
+      <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}</td>
       <td>${contactHistoryCell(id)}</td>
       <td>${actionBtns(id, r.phone)}</td>
     </tr>`;
@@ -918,7 +942,7 @@ function renderOverdue(items) {
 function renderTreatment(items) {
   const body = document.getElementById('treatment-body');
   document.getElementById('treatment-count').textContent = items.length + ' patients';
-  if (!items.length) { body.innerHTML = emptyRow(10); return; }
+  if (!items.length) { body.innerHTML = emptyRow(11); return; }
 
   body.innerHTML = items.map(r => {
     const id = 'tx-' + r.patient_id;
@@ -981,6 +1005,8 @@ function actionBtns(id, phone) {
   return `<div class="action-btns">
     ${phone && !isBad ? `<button class="btn-weave" onclick="markWeave('${id}')" title="Contacted via Weave">Weave</button>` : ''}
     ${phone && !isBad ? `<button class="btn-sms" onclick="openSmsModalById('${id}')" title="Send SMS via Twilio">SMS</button>` : ''}
+    ${phone && !isBad ? `<button class="btn-call" onclick="markCalled('${id}')" title="Log phone call" style="background:rgba(98,146,160,0.15);color:var(--accent);border:1px solid rgba(98,146,160,0.3);padding:0.2rem 0.5rem;border-radius:4px;font-size:0.65rem;cursor:pointer;font-family:inherit;">Called</button>` : ''}
+    <button class="btn-email" onclick="markEmailed('${id}')" title="Log email sent" style="background:rgba(139,123,165,0.15);color:var(--purple);border:1px solid rgba(139,123,165,0.3);padding:0.2rem 0.5rem;border-radius:4px;font-size:0.65rem;cursor:pointer;font-family:inherit;">Emailed</button>
     ${isBad ? '<span class="badge badge-red" style="font-size:0.6rem;">Bad #</span>' : ''}
     <button class="btn-done" onclick="markDone('${id}')" title="Mark contacted (other)">Done</button>
     <button class="btn-skip" onclick="markSkip('${id}')" title="Skip">Skip</button>
@@ -1081,6 +1107,78 @@ function markWeave(id) {
     date: new Date().toISOString().split('T')[0] + ' ' + new Date().toTimeString().slice(0,5),
     status: 'sent',
   };
+  // Pull phone/name from row data
+  const items = getFilteredData();
+  const view = currentView;
+  let record;
+  if (view === 'treatment') {
+    record = items.find(r => 'tx-' + r.patient_id === id);
+    if (record) { logEntry.phone = record.phone || ''; logEntry.name = record.name || record.fname || ''; }
+  } else {
+    record = items.find(r => view + '-' + r.household_id === id);
+    if (record) { logEntry.phone = record.phone || ''; logEntry.name = record.household || ''; }
+  }
+  contactLog.push(logEntry);
+  saveSessionLog(logEntry);
+  contactedSet.add(id);
+  skippedSet.delete(id);
+  const row = document.getElementById(id);
+  if (row) { row.className = 'row-contacted'; }
+  updateKPIs();
+  render();
+}
+
+function markCalled(id) {
+  const logEntry = {
+    row_id: id,
+    phone: '',
+    name: '',
+    type: 'call',
+    message: 'Phone call logged',
+    date: new Date().toISOString().split('T')[0] + ' ' + new Date().toTimeString().slice(0,5),
+    status: 'sent',
+  };
+  // Try to pull phone/name from the row data
+  const items = getFilteredData();
+  const view = currentView;
+  let record;
+  if (view === 'treatment') {
+    record = items.find(r => 'tx-' + r.patient_id === id);
+    if (record) { logEntry.phone = record.phone || ''; logEntry.name = record.name || record.fname || ''; }
+  } else {
+    record = items.find(r => view + '-' + r.household_id === id);
+    if (record) { logEntry.phone = record.phone || ''; logEntry.name = record.household || ''; }
+  }
+  contactLog.push(logEntry);
+  saveSessionLog(logEntry);
+  contactedSet.add(id);
+  skippedSet.delete(id);
+  const row = document.getElementById(id);
+  if (row) { row.className = 'row-contacted'; }
+  updateKPIs();
+  render();
+}
+
+function markEmailed(id) {
+  const logEntry = {
+    row_id: id,
+    phone: '',
+    name: '',
+    type: 'email',
+    message: 'Email sent',
+    date: new Date().toISOString().split('T')[0] + ' ' + new Date().toTimeString().slice(0,5),
+    status: 'sent',
+  };
+  const items = getFilteredData();
+  const view = currentView;
+  let record;
+  if (view === 'treatment') {
+    record = items.find(r => 'tx-' + r.patient_id === id);
+    if (record) { logEntry.phone = record.phone || ''; logEntry.name = record.name || record.fname || ''; }
+  } else {
+    record = items.find(r => view + '-' + r.household_id === id);
+    if (record) { logEntry.phone = record.phone || ''; logEntry.name = record.household || ''; }
+  }
   contactLog.push(logEntry);
   saveSessionLog(logEntry);
   contactedSet.add(id);
