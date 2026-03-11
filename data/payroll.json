@@ -566,7 +566,7 @@
       ]
     }
   },
-  "last_updated": "2026-03-11T10:00:25.867283Z",
+  "last_updated": "2026-03-11T14:42:48.606264Z",
   "generated_by": "payroll_refresh.py",
   "source": "rpt.vw_income_allocation (Azure SQL)"
 }
