@@ -374,6 +374,16 @@ def clean_row(row):
             except (ValueError, TypeError):
                 cleaned[key] = 0
 
+    # Ensure household has a display name (not just RPID number)
+    hh = str(cleaned.get("household", "")).strip()
+    if not hh or hh.isdigit():
+        # Fallback: use kids_due_names or household_id
+        kids = str(cleaned.get("kids_due_names", "")).strip()
+        if kids:
+            cleaned["household"] = kids + " Family"
+        else:
+            cleaned["household"] = f"Household {hh}" if hh else "Unknown"
+
     # Normalize risk tags for consistent display
     risk = str(cleaned.get("caries_risk", "")).strip()
     if risk.lower() in ("high", "3"):
