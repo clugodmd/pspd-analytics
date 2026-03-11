@@ -157,6 +157,7 @@ def query_overdue(conn):
                     ELSE NULL
                 END                               AS days_overdue
             FROM vw_RecallHouseholdDue
+            WHERE HouseholdLastVisitAnyDate >= DATEADD(year, -1, GETDATE())
             ORDER BY OldestHygieneDate ASC, KidsDueCount DESC
         """)
         rows = rows_to_dicts(cursor)
