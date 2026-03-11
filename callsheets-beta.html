@@ -8,12 +8,14 @@
 <style>
     :root {
       --bg: #1C3329; --bg2: #243D33; --card: #2E4A3E; --card-hover: #38564A;
-      --accent: #6292A0; --accent-light: #7AAFBD;
+      --accent: #6292A0; --accent-light: #7AAFBD; --accent-lt: #7AAFBD;
       --accent-glow: rgba(98,146,160,0.15); --accent-border: rgba(98,146,160,0.35);
       --text: #F7F8F8; --text2: #9AADA2; --text3: #5E7A6E;
       --border: rgba(247,248,248,0.08);
       --green: #5DBE8A; --red: #C4485A; --blue: #6292A0; --purple: #8B7BA5; --teal: #7AAFBD;
+      --yellow: #E8C84A; --orange: #D4915E;
       --wood: #7D6652; --wood-glow: rgba(125,102,82,0.12);
+      --sans: 'DM Sans', sans-serif; --serif: 'Instrument Serif', serif;
       --radius: 12px;
     }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -601,6 +603,19 @@ async function loadData() {
     document.getElementById('badge-connected').className = 'badge badge-green';
     document.getElementById('badge-connected').textContent = 'Connected';
 
+    // Debug: log data counts to console
+    console.log('[BETA] Data loaded:', {
+      recall: (data.recall || []).length,
+      overdue: (data.overdue || []).length,
+      treatment: (data.treatment || []).length,
+      generated: data.generated
+    });
+    if (data.treatment && data.treatment.length > 0) {
+      console.log('[BETA] Treatment sample:', JSON.stringify(data.treatment[0]).slice(0, 300));
+    } else {
+      console.log('[BETA] WARNING: Treatment array is empty!');
+    }
+
     // Load contact log from data (server-side) + localStorage (session-side)
     if (data.contact_log) {
       contactLog = [...data.contact_log];
@@ -954,8 +969,14 @@ function renderOverdue(items) {
 
 function renderTreatment(items) {
   const body = document.getElementById('treatment-body');
-  document.getElementById('treatment-count').textContent = items.length + ' patients';
-  if (!items.length) { body.innerHTML = emptyRow(10); return; }
+  const rawCount = (data.treatment || []).length;
+  document.getElementById('treatment-count').textContent = items.length + ' patients' + (items.length !== rawCount ? ` (${rawCount} total, ${rawCount - items.length} filtered)` : '');
+  if (!items.length) {
+    body.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:3rem;color:var(--text3);">
+      ${rawCount === 0 ? 'No treatment data from server. Check if the treatment query ran successfully in GitHub Actions.' : 'All ' + rawCount + ' patients filtered out. Try changing your filters above.'}
+    </td></tr>`;
+    return;
+  }
 
   body.innerHTML = items.map(r => {
     const id = 'tx-' + r.patient_id;
@@ -1015,7 +1036,9 @@ function renderTxTags(summary) {
 
 function actionBtns(id, phone) {
   const isBad = isBadPhone(phone);
+  const isContacted = contactedSet.has(id) || skippedSet.has(id);
   return `<div class="action-btns">
+    ${isContacted ? `<button onclick="resetRow('${id}')" title="Undo — reset this row" style="background:rgba(196,72,90,0.15);color:var(--red);border:1px solid rgba(196,72,90,0.3);padding:0.2rem 0.5rem;border-radius:4px;font-size:0.65rem;cursor:pointer;font-family:inherit;">↩ Reset</button>` : ''}
     ${phone && !isBad ? `<button class="btn-weave" onclick="markWeave('${id}')" title="Contacted via Weave">Weave</button>` : ''}
     ${phone && !isBad ? `<button class="btn-sms" onclick="openSmsModalById('${id}')" title="Send SMS via Twilio">SMS</button>` : ''}
     ${phone && !isBad ? `<button class="btn-call" onclick="markCalled('${id}')" title="Log phone call" style="background:rgba(98,146,160,0.15);color:var(--accent);border:1px solid rgba(98,146,160,0.3);padding:0.2rem 0.5rem;border-radius:4px;font-size:0.65rem;cursor:pointer;font-family:inherit;">Called</button>` : ''}
@@ -1098,6 +1121,8 @@ function markDone(id) {
   skippedSet.delete(id);
   const row = document.getElementById(id);
   if (row) { row.className = 'row-contacted'; }
+  lastAction = { row_id: id, type: 'done', logIndex: -1 };
+  showUndoToast('Marked as done — click Undo if accidental');
   updateKPIs();
 }
 
@@ -1106,6 +1131,8 @@ function markSkip(id) {
   contactedSet.delete(id);
   const row = document.getElementById(id);
   if (row) { row.className = 'row-skipped'; }
+  lastAction = { row_id: id, type: 'skip', logIndex: -1 };
+  showUndoToast('Skipped — click Undo if accidental');
   updateKPIs();
 }
 
@@ -1220,34 +1247,56 @@ function showUndoToast(msg) {
 
 function undoLastAction() {
   if (!lastAction) return;
-  const { row_id, logIndex } = lastAction;
+  const { row_id, type, logIndex } = lastAction;
 
-  // Remove from contactLog
+  // Remove from contactLog (if it was a logged action, not just done/skip)
   if (logIndex >= 0 && logIndex < contactLog.length) {
     contactLog.splice(logIndex, 1);
   }
 
   // Remove from localStorage log
-  try {
-    const stored = loadSessionLog();
-    // Remove the last entry matching this row_id
-    for (let i = stored.length - 1; i >= 0; i--) {
-      if (stored[i].row_id === row_id) {
-        stored.splice(i, 1);
-        break;
+  if (type !== 'done' && type !== 'skip') {
+    try {
+      const stored = loadSessionLog();
+      for (let i = stored.length - 1; i >= 0; i--) {
+        if (stored[i].row_id === row_id) {
+          stored.splice(i, 1);
+          break;
+        }
       }
-    }
-    localStorage.setItem('pspd_contact_log', JSON.stringify(stored));
-  } catch { /* silent */ }
+      localStorage.setItem('pspd_contact_log', JSON.stringify(stored));
+    } catch { /* silent */ }
+  }
 
   // Un-mark the row
   contactedSet.delete(row_id);
+  skippedSet.delete(row_id);
   const row = document.getElementById(row_id);
   if (row) { row.className = ''; }
 
   lastAction = null;
   document.getElementById('undoToast').classList.remove('show');
   clearTimeout(undoTimer);
+  updateKPIs();
+  render();
+}
+
+// Manual reset for any row (right-click alternative)
+function resetRow(id) {
+  // Remove all log entries for this row from localStorage
+  try {
+    const stored = loadSessionLog();
+    const filtered = stored.filter(e => e.row_id !== id);
+    localStorage.setItem('pspd_contact_log', JSON.stringify(filtered));
+  } catch { /* silent */ }
+
+  // Remove from in-memory log
+  contactLog = contactLog.filter(e => e.row_id !== id);
+
+  contactedSet.delete(id);
+  skippedSet.delete(id);
+  const row = document.getElementById(id);
+  if (row) { row.className = ''; }
   updateKPIs();
   render();
 }
