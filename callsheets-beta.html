@@ -748,8 +748,7 @@ function switchView(view) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   document.querySelectorAll('.view-panel').forEach(p => p.style.display = 'none');
   document.getElementById('view-' + view).style.display = 'block';
-  updateKPIs();
-  if (view === 'review') renderReview();
+  render();
 }
 
 // ════════════════════════════════════════
