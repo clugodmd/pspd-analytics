@@ -747,95 +747,97 @@
         {
           "name": "Dr. Patel",
           "pct": 0.32,
-          "coll": 33652.36,
-          "payNo": 9336.61,
-          "payWith": 10768.76,
+          "coll": 35912.05,
+          "payNo": 9953.38,
+          "payWith": 11491.86,
           "off": {
-            "MO": 26382.52,
-            "MV": 7269.84
+            "MO": 27626.41,
+            "MV": 8285.64
           }
         },
         {
           "name": "Dr. Choong",
           "pct": 0.35,
-          "coll": 26625.13,
-          "payNo": 8183.46,
-          "payWith": 9318.8,
+          "coll": 28991.38,
+          "payNo": 8890.06,
+          "payWith": 10146.98,
           "off": {
-            "SW": 10817.18,
-            "MV": 15807.95
+            "MV": 16448.4,
+            "SW": 12542.98
           }
         },
         {
           "name": "Dr. Slaven",
           "pct": 0.36,
-          "coll": 18192.71,
-          "payNo": 5653.09,
-          "payWith": 6549.38,
+          "coll": 20693.34,
+          "payNo": 6333.62,
+          "payWith": 7449.6,
           "off": {
-            "MV": 7948.34,
-            "SW": 9388.37,
-            "MO": 856.0
+            "MV": 8948.17,
+            "SW": 10648.17,
+            "MO": 1097.0
           }
         },
         {
           "name": "Dr. Menon",
           "pct": 0.35,
-          "coll": 16436.77,
-          "payNo": 5217.34,
-          "payWith": 5752.87,
+          "coll": 20045.01,
+          "payNo": 6232.78,
+          "payWith": 7015.75,
           "off": {
-            "MO": 8174.42,
             "EV": 3560.82,
-            "LS": 4701.53
+            "MO": 8985.12,
+            "LS": 7499.07
           }
         },
         {
           "name": "Dr. Benton",
           "pct": 0.33,
-          "coll": 15146.68,
-          "payNo": 4507.67,
-          "payWith": 4998.4,
+          "coll": 18458.19,
+          "payNo": 5362.03,
+          "payWith": 6091.2,
           "off": {
-            "MO": 6544.76,
-            "LS": 4618.87,
-            "MV": 3983.05
+            "LS": 6356.38,
+            "MV": 3983.05,
+            "MO": 7868.76,
+            "SW": 0.0,
+            "EV": 250.0
           }
         },
         {
           "name": "Dr. Welter",
           "pct": 0.31,
-          "coll": 11184.11,
-          "payNo": 3025.48,
-          "payWith": 3467.07,
+          "coll": 13515.84,
+          "payNo": 3591.99,
+          "payWith": 4189.91,
           "off": {
             "MV": 2441.26,
-            "EV": 220.01,
-            "LS": 8522.84
+            "LS": 10854.57,
+            "EV": 220.01
           }
         },
         {
           "name": "Dr. Bell",
           "pct": 0.35,
-          "coll": 9189.37,
-          "payNo": 2846.72,
-          "payWith": 3216.28,
+          "coll": 12044.97,
+          "payNo": 3721.93,
+          "payWith": 4215.74,
           "off": {
-            "MO": 4693.55,
-            "LS": 4495.82
+            "MO": 5284.15,
+            "LS": 6760.82
           }
         },
         {
           "name": "Dr. Lugo",
           "pct": 0.36,
-          "coll": 924.66,
+          "coll": 2366.81,
           "payNo": 0.0,
-          "payWith": 332.88,
+          "payWith": 852.05,
           "off": {
-            "MV": 815.52,
-            "MO": 0.56,
-            "LS": 0.96,
-            "SW": 107.62
+            "LS": 2.11,
+            "MV": 2251.52,
+            "SW": 109.8,
+            "MO": 3.38
           }
         },
         {
@@ -852,23 +854,23 @@
       "offices": [
         {
           "name": "Monroe",
-          "amt": 46651.81
+          "amt": 51114.82
         },
         {
           "name": "Marysville",
-          "amt": 38284.09
+          "amt": 42376.17
         },
         {
           "name": "Lake Stevens",
-          "amt": 22437.21
+          "amt": 31570.14
         },
         {
           "name": "Stanwood",
-          "amt": 20313.17
+          "amt": 23300.95
         },
         {
           "name": "Everett",
-          "amt": 4113.44
+          "amt": 4363.44
         }
       ],
       "termed": [
@@ -891,7 +893,7 @@
       "locked": false
     }
   },
-  "last_updated": "2026-03-12T04:05:31.508451Z",
+  "last_updated": "2026-03-12T11:13:26.578009Z",
   "generated_by": "payroll_refresh.py",
   "source": "rpt.vw_income_allocation (Azure SQL)"
 }
