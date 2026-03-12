@@ -32,14 +32,13 @@
     },
     "Benton, Patricia": {
       "display": "Dr. Benton",
-      "pct": 0.32,
+      "pct": 0.33,
       "owner": false,
       "pay_basis": "collections",
       "status": "active",
       "rate_history": [
         {"pct": 0.32, "effective": "2025-01-01", "end": "2026-02-12"},
-        {"pct": 0.33, "effective": "2026-02-13", "end": "2026-02-26"},
-        {"pct": 0.32, "effective": "2026-02-27", "end": null}
+        {"pct": 0.33, "effective": "2026-02-13", "end": null}
       ]
     },
     "Welter, Erin": {
