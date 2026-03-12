@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PSPD Call Sheets — BETA</title>
+<title>PSPD Call Sheets — Interactive Recall & Treatment Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
 <style>
     :root {
       --bg: #1C3329; --bg2: #243D33; --card: #2E4A3E; --card-hover: #38564A;
-      --accent: #6292A0; --accent-light: #7AAFBD; --accent-lt: #7AAFBD;
+      --accent: #6292A0; --accent-light: #7AAFBD;
       --accent-glow: rgba(98,146,160,0.15); --accent-border: rgba(98,146,160,0.35);
       --text: #F7F8F8; --text2: #9AADA2; --text3: #5E7A6E;
       --border: rgba(247,248,248,0.08);
@@ -16,6 +16,7 @@
       --yellow: #E8C84A; --orange: #D4915E;
       --wood: #7D6652; --wood-glow: rgba(125,102,82,0.12);
       --sans: 'DM Sans', sans-serif; --serif: 'Instrument Serif', serif;
+      --accent-lt: #7AAFBD;
       --radius: 12px;
     }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -160,9 +161,13 @@ thead th {
 thead th:hover { color: var(--accent-lt); }
 thead th .sort-arrow { margin-left: 0.3rem; opacity: 0.4; }
 thead th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
+thead th.sortable { cursor: pointer; user-select: none; }
+thead th.sortable:hover { color: var(--accent); }
+thead th.sortable:hover .sort-arrow { opacity: 0.8; }
 
 tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
-tbody tr:hover { background: rgba(98,146,160,0.05); }
+tbody tr:nth-child(odd) { background: rgba(232,200,74,0.02); }
+tbody tr:hover { background: rgba(98,146,160,0.08); }
 tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
 
 .patient-name { font-weight: 600; white-space: nowrap; }
@@ -206,25 +211,42 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
 .btn-review:hover { background: rgba(232,200,74,0.3); }
 .btn-log { background: rgba(139,123,165,0.15); color: var(--purple); }
 .btn-log:hover { background: rgba(139,123,165,0.3); }
+.btn-undo { background: rgba(196,72,90,0.2); color: var(--red); border: 1px solid rgba(196,72,90,0.4); padding: 0.3rem 0.6rem; }
+.btn-undo:hover { background: rgba(196,72,90,0.35); }
+
+/* ── Weave Popup ── */
+.weave-popup {
+  position: absolute; background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.5rem; min-width: 180px; z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.weave-popup button {
+  display: block; width: 100%; padding: 0.4rem 0.6rem;
+  border: none; border-radius: 4px; background: rgba(98,146,160,0.15);
+  color: var(--text); font-size: 0.75rem; cursor: pointer;
+  text-align: left; margin-bottom: 0.3rem; font-family: var(--sans);
+  transition: background 0.2s;
+}
+.weave-popup button:last-child { margin-bottom: 0; }
+.weave-popup button:hover { background: rgba(98,146,160,0.3); }
+
+/* ── Settings Modal ── */
+.settings-modal { max-width: 500px; }
+.settings-field { margin-bottom: 1rem; }
+.settings-field label { display: block; font-size: 0.8rem; color: var(--text2); margin-bottom: 0.4rem; font-weight: 600; }
+.settings-field input { width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 0.85rem; }
+.settings-field input:focus { outline: none; border-color: var(--accent); }
+
+/* ── Guide Section ── */
+.guide-section { margin-top: 2rem; padding: 1.5rem; background: rgba(232,200,74,0.05); border: 1px solid rgba(232,200,74,0.2); border-radius: var(--radius); }
+.guide-toggle { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 600; color: var(--accent-lt); user-select: none; }
+.guide-toggle:hover { color: var(--text); }
+.guide-content { margin-top: 1rem; font-size: 0.8rem; color: var(--text2); line-height: 1.6; }
+.guide-content dt { font-weight: 600; color: var(--text); margin-top: 0.5rem; }
+.guide-content dd { margin-left: 1rem; margin-bottom: 0.3rem; }
 
 .row-contacted { opacity: 0.45; }
 .row-contacted td { text-decoration: line-through; text-decoration-color: var(--text3); }
-
-/* Undo toast */
-.undo-toast {
-  position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
-  background: var(--card); border: 1px solid var(--accent-border); color: var(--text);
-  padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.85rem;
-  display: flex; align-items: center; gap: 0.8rem; z-index: 9999;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4); opacity: 0; transition: opacity 0.3s;
-  pointer-events: none;
-}
-.undo-toast.show { opacity: 1; pointer-events: auto; }
-.undo-toast button {
-  background: var(--accent); color: #fff; border: none; padding: 0.3rem 0.7rem;
-  border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-family: inherit;
-}
-.undo-toast button:hover { background: var(--accent-light); }
 .row-skipped { opacity: 0.3; }
 .row-bad-phone { background: rgba(196,72,90,0.04); }
 
@@ -300,7 +322,7 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
 <div class="header">
   <div class="header-top">
     <div>
-      <h1>Call Sheets <span style="background:var(--accent);color:#fff;font-size:0.5em;padding:0.15em 0.5em;border-radius:4px;vertical-align:middle;">BETA</span></h1>
+      <h1>Call Sheets</h1>
       <div class="subtitle">Interactive Recall & Treatment Action Dashboard</div>
     </div>
     <div style="display:flex; gap:0.5rem; align-items:center;">
@@ -334,7 +356,7 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
     <option value="bad-phone">Bad Phone #</option>
   </select>
   <input class="search-input" type="text" id="searchInput" placeholder="Search name, phone, or email..." oninput="applyFilters()">
-  <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+  <select class="sort-select" id="sortSelect" onchange="columnSortKey=null;document.querySelectorAll('th.sortable').forEach(h=>{h.classList.remove('sorted');h.querySelector('.sort-arrow').textContent='↕'});applyFilters()">
     <option value="priority">Sort: Priority</option>
     <option value="risk-desc">Sort: Risk High-Low</option>
     <option value="name">Sort: Name A-Z</option>
@@ -348,6 +370,12 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
   <button onclick="exportContactLog()" style="background:rgba(98,146,160,0.15);color:var(--accent);border:1px solid rgba(98,146,160,0.3);padding:0.4rem 0.8rem;border-radius:6px;font-size:0.75rem;cursor:pointer;font-family:inherit;" title="Export all contact history as CSV">
     Export Log
   </button>
+  <button onclick="openSettingsModal()" style="background:rgba(98,146,160,0.15);color:var(--accent);border:1px solid rgba(98,146,160,0.3);padding:0.4rem 0.8rem;border-radius:6px;font-size:0.75rem;cursor:pointer;font-family:inherit;" title="Open settings">
+    ⚙️ Settings
+  </button>
+  <button onclick="resetAllSession()" style="background:rgba(196,72,90,0.15);color:var(--red);border:1px solid rgba(196,72,90,0.3);padding:0.4rem 0.8rem;border-radius:6px;font-size:0.75rem;cursor:pointer;font-family:inherit;" title="Reset all session state">
+    Reset Session
+  </button>
 </div>
 
 <!-- ── KPI Row ── -->
@@ -358,7 +386,7 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
   <div class="kpi-card"><div class="kpi-label">Contacted</div><div class="kpi-value" id="kpi-contacted">0</div><div class="kpi-sub" id="kpi-contacted-sub">of 0 visible</div></div>
   <div class="kpi-card"><div class="kpi-label">SMS Sent</div><div class="kpi-value" id="kpi-sms">0</div><div class="kpi-sub" id="kpi-sms-sub">via Twilio</div></div>
   <div class="kpi-card"><div class="kpi-label">Bad Numbers</div><div class="kpi-value" id="kpi-bad-phones" style="color:var(--red);">0</div><div class="kpi-sub" id="kpi-bad-sub">need review</div></div>
-  <div class="kpi-card"><div class="kpi-label">High Risk</div><div class="kpi-value" id="kpi-high-risk" style="color:var(--red);">0</div><div class="kpi-sub" id="kpi-risk-sub">treatment patients</div></div>
+  <div class="kpi-card"><div class="kpi-label">High Risk</div><div class="kpi-value" id="kpi-high-risk" style="color:var(--red);">0</div><div class="kpi-sub" id="kpi-risk-sub">patients</div></div>
 </div>
 
 <!-- ── Main Content ── -->
@@ -367,21 +395,21 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
   <div id="view-recall" class="view-panel">
     <div class="table-wrap">
       <div class="table-header">
-        <h3>Household Hygiene Recall — Due Next 30 Days</h3>
+        <h3>Household Hygiene List – Next 30 Days</h3>
         <span class="table-count" id="recall-count">Loading...</span>
       </div>
       <div style="overflow-x:auto;">
         <table id="recall-table">
           <thead><tr>
-            <th>Household <span class="sort-arrow">↕</span></th>
-            <th>Phone <span class="sort-arrow">↕</span></th>
+            <th data-sort="household" class="sortable">Household <span class="sort-arrow">↕</span></th>
+            <th data-sort="phone" class="sortable">Phone <span class="sort-arrow">↕</span></th>
             <th>Email</th>
-            <th>Risk</th>
-            <th>Kids Due <span class="sort-arrow">↕</span></th>
+            <th data-sort="risk" class="sortable">Risk <span class="sort-arrow">↕</span></th>
+            <th data-sort="kids" class="sortable">Kids Due <span class="sort-arrow">↕</span></th>
             <th>Names</th>
-            <th>Suggest Date</th>
-            <th>Office</th>
-            <th>Provider</th>
+            <th data-sort="suggest_date" class="sortable">Suggest Date <span class="sort-arrow">↕</span></th>
+            <th data-sort="office" class="sortable">Office <span class="sort-arrow">↕</span></th>
+            <th data-sort="provider" class="sortable">Provider <span class="sort-arrow">↕</span></th>
             <th>History</th>
             <th>Actions</th>
           </tr></thead>
@@ -395,21 +423,21 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
   <div id="view-overdue" class="view-panel" style="display:none;">
     <div class="table-wrap">
       <div class="table-header">
-        <h3>Overdue Households — Past Due Recall</h3>
+        <h3>Household Recall Call List — Overdue</h3>
         <span class="table-count" id="overdue-count">Loading...</span>
       </div>
       <div style="overflow-x:auto;">
         <table id="overdue-table">
           <thead><tr>
-            <th>Household <span class="sort-arrow">↕</span></th>
-            <th>Phone <span class="sort-arrow">↕</span></th>
+            <th data-sort="household" class="sortable">Household <span class="sort-arrow">↕</span></th>
+            <th data-sort="phone" class="sortable">Phone <span class="sort-arrow">↕</span></th>
             <th>Email</th>
-            <th>Risk</th>
-            <th>Kids Due <span class="sort-arrow">↕</span></th>
+            <th data-sort="risk" class="sortable">Risk <span class="sort-arrow">↕</span></th>
+            <th data-sort="kids" class="sortable">Kids Due <span class="sort-arrow">↕</span></th>
             <th>Names</th>
-            <th>Days Overdue <span class="sort-arrow">↕</span></th>
-            <th>Office</th>
-            <th>Provider</th>
+            <th data-sort="overdue" class="sortable">Days Overdue <span class="sort-arrow">↕</span></th>
+            <th data-sort="office" class="sortable">Office <span class="sort-arrow">↕</span></th>
+            <th data-sort="provider" class="sortable">Provider <span class="sort-arrow">↕</span></th>
             <th>History</th>
             <th>Actions</th>
           </tr></thead>
@@ -423,19 +451,19 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
   <div id="view-treatment" class="view-panel" style="display:none;">
     <div class="table-wrap">
       <div class="table-header">
-        <h3>Unscheduled Treatment — Action Required</h3>
+        <h3>Unscheduled Treatment – Action Required</h3>
         <span class="table-count" id="treatment-count">Loading...</span>
       </div>
       <div style="overflow-x:auto;">
         <table id="treatment-table">
           <thead><tr>
-            <th>Patient <span class="sort-arrow">↕</span></th>
+            <th data-sort="patient" class="sortable">Patient <span class="sort-arrow">↕</span></th>
             <th>Age</th>
-            <th>Phone <span class="sort-arrow">↕</span></th>
+            <th data-sort="phone" class="sortable">Phone <span class="sort-arrow">↕</span></th>
             <th>Email</th>
-            <th>Risk</th>
+            <th data-sort="risk" class="sortable">Risk <span class="sort-arrow">↕</span></th>
             <th>Treatment</th>
-            <th>Fee <span class="sort-arrow">↕</span></th>
+            <th data-sort="fee" class="sortable">Fee <span class="sort-arrow">↕</span></th>
             <th>Booking</th>
             <th>History</th>
             <th>Actions</th>
@@ -468,6 +496,33 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
         </table>
       </div>
     </div>
+  <!-- ── Guide Section ── -->
+  <div class="guide-section">
+    <div class="guide-toggle" onclick="toggleGuide()">
+      <span id="guideToggleIcon">▶</span>
+      <span>Guide</span>
+    </div>
+    <div id="guideContent" class="guide-content" style="display:none;">
+      <dl>
+        <dt>Household ID</dt>
+        <dd>Responsible party ID representing the family unit</dd>
+
+        <dt>Kids Due</dt>
+        <dd>Number of children overdue in the household</dd>
+
+        <dt>Days Overdue</dt>
+        <dd>Capped at 365 days for prioritization purposes</dd>
+
+        <dt>Last Hygiene Office</dt>
+        <dd>Office where last cleaning occurred</dd>
+
+        <dt>Highlighted Rows</dt>
+        <dd>Indicates last hygiene office ≠ last visit office</dd>
+
+        <dt>Risk Factors</dt>
+        <dd>Multiple Missed Appointments, Possible Graduating Soon</dd>
+      </dl>
+    </div>
   </div>
 </div>
 
@@ -475,6 +530,9 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
 <div class="modal-overlay" id="smsModal">
   <div class="modal">
     <h3 id="smsModalTitle">Send SMS</h3>
+    <div id="twilioNotice" style="background:rgba(232,200,74,0.15); padding:0.75rem; border-radius:6px; margin-bottom:1rem; border:1px solid rgba(232,200,74,0.3); font-size:0.8rem; color:var(--yellow); display:none;">
+      <strong>Notice:</strong> Twilio not yet connected — messages will be logged only. <a href="javascript:openSettingsModal()" style="color:inherit; text-decoration:underline;">Configure Twilio</a>
+    </div>
     <div style="margin-bottom:0.75rem;">
       <label style="font-size:0.8rem; color:var(--text2);">To:</label>
       <div id="smsTo" style="font-weight:600;"></div>
@@ -545,6 +603,28 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
   </div>
 </div>
 
+<!-- ── Settings Modal ── -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal settings-modal">
+    <h3>Settings</h3>
+    <div class="settings-field">
+      <label for="twilioUrl">Twilio Function URL</label>
+      <input type="text" id="twilioUrl" placeholder="https://your-twilio-function.com" value="">
+    </div>
+    <div class="settings-field">
+      <label for="staffName">Default Staff Name</label>
+      <input type="text" id="staffName" placeholder="Your name" value="">
+    </div>
+    <div style="background:rgba(98,146,160,0.1); padding:0.75rem; border-radius:6px; margin-bottom:1rem; font-size:0.8rem; color:var(--text2);">
+      <strong>Current Status:</strong> <span id="twilioStatus" style="color:var(--red);">Not connected</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeSettingsModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveSettingsModal()">Save Settings</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Footer ── -->
 <div class="footer">
   Puget Sound Pediatric Dentistry — Call Sheet Dashboard v2.0<br>
@@ -591,7 +671,24 @@ let currentSmsTarget = null;
 let contactLog = [];            // Persistent contact log: [{id, phone, type, status, date, message}]
 let badPhoneSet = new Set();    // Phone numbers confirmed bad
 let reviewItems = [];           // Aggregated items needing attention
-let lastAction = null;          // Last contact action for undo: {row_id, type, logIndex}
+let actionHistory = [];         // Track actions for undo: [{row_id, action_type, timestamp, prev_state}]
+let appSettings = {};           // Store settings: {twilioFunctionUrl, staffName}
+
+// ════════════════════════════════════════
+// ── Settings ──
+// ════════════════════════════════════════
+function loadSettings() {
+  try {
+    const saved = localStorage.getItem('pspd_settings');
+    appSettings = saved ? JSON.parse(saved) : {};
+  } catch { appSettings = {}; }
+}
+
+function saveSettings() {
+  try {
+    localStorage.setItem('pspd_settings', JSON.stringify(appSettings));
+  } catch { /* silent */ }
+}
 
 // ════════════════════════════════════════
 // ── Data Loading ──
@@ -604,19 +701,6 @@ async function loadData() {
     document.getElementById('last-updated').textContent = 'Updated: ' + (data.generated || 'Unknown');
     document.getElementById('badge-connected').className = 'badge badge-green';
     document.getElementById('badge-connected').textContent = 'Connected';
-
-    // Debug: log data counts to console
-    console.log('[BETA] Data loaded:', {
-      recall: (data.recall || []).length,
-      overdue: (data.overdue || []).length,
-      treatment: (data.treatment || []).length,
-      generated: data.generated
-    });
-    if (data.treatment && data.treatment.length > 0) {
-      console.log('[BETA] Treatment sample:', JSON.stringify(data.treatment[0]).slice(0, 300));
-    } else {
-      console.log('[BETA] WARNING: Treatment array is empty!');
-    }
 
     // Load contact log from data (server-side) + localStorage (session-side)
     if (data.contact_log) {
@@ -643,10 +727,10 @@ async function loadData() {
     });
 
     buildReviewList();
+    loadSettings();
     render();
   } catch (e) {
-    console.error('Callsheet load error:', e);
-    showEmpty(e.message || 'Unknown error');
+    showEmpty();
   }
 }
 
@@ -685,17 +769,14 @@ function exportContactLog() {
   a.click();
 }
 
-function showEmpty(errMsg) {
+function showEmpty() {
   document.getElementById('badge-connected').className = 'badge badge-red';
   document.getElementById('badge-connected').textContent = 'No Data';
   document.getElementById('last-updated').textContent = 'Waiting for first data refresh';
-  const hint = errMsg
-    ? `<br><span style="font-size:0.7rem;color:var(--red);opacity:0.7;">Error: ${errMsg}</span>`
-    : '';
   ['recall-body', 'overdue-body', 'treatment-body', 'review-body'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:3rem;color:var(--text3);">
-      No data loaded. Make sure <code>data/callsheets.json</code> exists in the repo (generated by GitHub Actions).${hint}
+      No data loaded. Push <code>data/callsheets.json</code> via GitHub Actions to populate this dashboard.
     </td></tr>`;
   });
 }
@@ -765,7 +846,8 @@ function switchView(view) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   document.querySelectorAll('.view-panel').forEach(p => p.style.display = 'none');
   document.getElementById('view-' + view).style.display = 'block';
-  render();
+  updateKPIs();
+  if (view === 'review') renderReview();
 }
 
 // ════════════════════════════════════════
@@ -780,6 +862,11 @@ function getFilteredData() {
   const sort = document.getElementById('sortSelect').value;
 
   let items = [...(data[currentView] || [])];
+
+  // Overdue tab: limit to within 1 year overdue (matches PowerBI filter)
+  if (currentView === 'overdue') {
+    items = items.filter(r => (r.days_overdue || 0) <= 365);
+  }
 
   if (office !== 'ALL') {
     items = items.filter(r => {
@@ -815,17 +902,21 @@ function getFilteredData() {
     });
   }
 
-  // Sort
-  items.sort((a, b) => {
-    switch (sort) {
-      case 'name': return (a.name || a.household || '').localeCompare(b.name || b.household || '');
-      case 'fee-desc': return (b.total_fee || 0) - (a.total_fee || 0);
-      case 'overdue-desc': return (b.days_overdue || 0) - (a.days_overdue || 0);
-      case 'kids-desc': return (b.kids_due_count || 0) - (a.kids_due_count || 0);
-      case 'risk-desc': return riskScore(b) - riskScore(a);
-      default: return (b.priority_score || 0) - (a.priority_score || 0);
-    }
-  });
+  // Sort — column header sort takes priority over dropdown
+  if (columnSortKey) {
+    items.sort(columnSortCompare);
+  } else {
+    items.sort((a, b) => {
+      switch (sort) {
+        case 'name': return (a.name || a.household || '').localeCompare(b.name || b.household || '');
+        case 'fee-desc': return (b.total_fee || 0) - (a.total_fee || 0);
+        case 'overdue-desc': return (b.days_overdue || 0) - (a.days_overdue || 0);
+        case 'kids-desc': return (b.kids_due_count || 0) - (a.kids_due_count || 0);
+        case 'risk-desc': return riskScore(b) - riskScore(a);
+        default: return (b.priority_score || 0) - (a.priority_score || 0);
+      }
+    });
+  }
 
   return items;
 }
@@ -848,6 +939,77 @@ function riskScore(r) {
 }
 
 function applyFilters() { render(); }
+
+// ════════════════════════════════════════
+// ── Column Header Sort ──
+// ════════════════════════════════════════
+let columnSortKey = null;
+let columnSortDir = 'asc'; // toggles asc/desc
+
+function initColumnSort() {
+  document.querySelectorAll('th.sortable[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      if (columnSortKey === key) {
+        columnSortDir = columnSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        columnSortKey = key;
+        columnSortDir = 'asc';
+      }
+      // Clear dropdown to avoid conflict
+      document.getElementById('sortSelect').value = 'priority';
+      // Update visual indicators
+      document.querySelectorAll('th.sortable').forEach(h => h.classList.remove('sorted'));
+      th.classList.add('sorted');
+      th.querySelector('.sort-arrow').textContent = columnSortDir === 'asc' ? '↑' : '↓';
+      // Re-render
+      render();
+    });
+  });
+}
+
+function columnSortCompare(a, b) {
+  if (!columnSortKey) return 0;
+  let va, vb;
+  switch (columnSortKey) {
+    case 'household':
+      va = (a.household || a.name || '').toLowerCase();
+      vb = (b.household || b.name || '').toLowerCase();
+      return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    case 'patient':
+      va = ((a.lname || '') + (a.fname || '') + (a.name || '')).toLowerCase();
+      vb = ((b.lname || '') + (b.fname || '') + (b.name || '')).toLowerCase();
+      return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    case 'phone':
+      va = (a.phone || '').replace(/\D/g, '');
+      vb = (b.phone || '').replace(/\D/g, '');
+      return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    case 'risk':
+      va = riskScore(a); vb = riskScore(b);
+      return columnSortDir === 'asc' ? va - vb : vb - va;
+    case 'kids':
+      va = a.kids_due_count || 0; vb = b.kids_due_count || 0;
+      return columnSortDir === 'asc' ? va - vb : vb - va;
+    case 'overdue':
+      va = a.days_overdue || 0; vb = b.days_overdue || 0;
+      return columnSortDir === 'asc' ? va - vb : vb - va;
+    case 'suggest_date':
+      va = a.suggest_date || ''; vb = b.suggest_date || '';
+      return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    case 'office':
+      va = (a.last_office || a.office || '').toLowerCase();
+      vb = (b.last_office || b.office || '').toLowerCase();
+      return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    case 'provider':
+      va = (a.last_provider || '').toLowerCase();
+      vb = (b.last_provider || '').toLowerCase();
+      return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    case 'fee':
+      va = a.total_fee || 0; vb = b.total_fee || 0;
+      return columnSortDir === 'asc' ? va - vb : vb - va;
+    default: return 0;
+  }
+}
 
 // ════════════════════════════════════════
 // ── Risk Badge Renderer ──
@@ -938,7 +1100,7 @@ function renderRecall(items) {
       <td><span class="badge badge-blue">${r.kids_due_count || 0}</span></td>
       <td style="font-size:0.78rem;">${esc(r.kids_due_names || '-')}</td>
       <td>${esc(r.suggest_date || '-')}</td>
-      <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span>${r.most_frequent_office && r.most_frequent_office !== r.last_office ? '<br><span style="font-size:0.6rem;color:var(--text3);">Usual: ' + esc(r.most_frequent_office) + '</span>' : ''}</td>
+      <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span></td>
       <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}</td>
       <td>${contactHistoryCell(id)}</td>
       <td>${actionBtns(id, r.phone)}</td>
@@ -963,7 +1125,7 @@ function renderOverdue(items) {
       <td><span class="badge badge-blue">${r.kids_due_count || 0}</span></td>
       <td style="font-size:0.78rem;">${esc(r.kids_due_names || '-')}</td>
       <td><span class="badge ${daysClass}">${r.days_overdue || 0} days</span></td>
-      <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span>${r.most_frequent_office && r.most_frequent_office !== r.last_office ? '<br><span style="font-size:0.6rem;color:var(--text3);">Usual: ' + esc(r.most_frequent_office) + '</span>' : ''}</td>
+      <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span></td>
       <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}</td>
       <td>${contactHistoryCell(id)}</td>
       <td>${actionBtns(id, r.phone)}</td>
@@ -973,14 +1135,8 @@ function renderOverdue(items) {
 
 function renderTreatment(items) {
   const body = document.getElementById('treatment-body');
-  const rawCount = (data.treatment || []).length;
-  document.getElementById('treatment-count').textContent = items.length + ' patients' + (items.length !== rawCount ? ` (${rawCount} total, ${rawCount - items.length} filtered)` : '');
-  if (!items.length) {
-    body.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:3rem;color:var(--text3);">
-      ${rawCount === 0 ? 'No treatment data from server. Check if the treatment query ran successfully in GitHub Actions.' : 'All ' + rawCount + ' patients filtered out. Try changing your filters above.'}
-    </td></tr>`;
-    return;
-  }
+  document.getElementById('treatment-count').textContent = items.length + ' patients';
+  if (!items.length) { body.innerHTML = emptyRow(11); return; }
 
   body.innerHTML = items.map(r => {
     const id = 'tx-' + r.patient_id;
@@ -1040,13 +1196,19 @@ function renderTxTags(summary) {
 
 function actionBtns(id, phone) {
   const isBad = isBadPhone(phone);
-  const isContacted = contactedSet.has(id) || skippedSet.has(id);
-  return `<div class="action-btns">
-    ${isContacted ? `<button onclick="resetRow('${id}')" title="Undo — reset this row" style="background:rgba(196,72,90,0.15);color:var(--red);border:1px solid rgba(196,72,90,0.3);padding:0.2rem 0.5rem;border-radius:4px;font-size:0.65rem;cursor:pointer;font-family:inherit;">↩ Reset</button>` : ''}
-    ${phone && !isBad ? `<button class="btn-weave" onclick="markWeave('${id}')" title="Contacted via Weave">Weave</button>` : ''}
+  const hasUndo = actionHistory.some(a => a.row_id === id && a.is_last);
+  return `<div class="action-btns" style="position:relative;">
+    ${phone && !isBad ? `<div style="position:relative;display:inline-block;">
+      <button class="btn-weave" onclick="showWeavePopup(event, '${esc(phone)}', '${id}')" title="Contact via Weave">💬 Weave</button>
+      <div id="weave-popup-${id}" class="weave-popup" style="display:none;position:absolute;top:100%;left:0;margin-top:0.3rem;">
+        <button onclick="weaveOpenApp('${esc(phone)}');closeWeavePopup('${id}')">Open in Weave</button>
+        <button onclick="markWeave('${id}');closeWeavePopup('${id}')">Mark as Contacted</button>
+      </div>
+    </div>` : ''}
     ${phone && !isBad ? `<button class="btn-sms" onclick="openSmsModalById('${id}')" title="Send SMS via Twilio">SMS</button>` : ''}
     ${phone && !isBad ? `<button class="btn-call" onclick="markCalled('${id}')" title="Log phone call" style="background:rgba(98,146,160,0.15);color:var(--accent);border:1px solid rgba(98,146,160,0.3);padding:0.2rem 0.5rem;border-radius:4px;font-size:0.65rem;cursor:pointer;font-family:inherit;">Called</button>` : ''}
     <button class="btn-email" onclick="markEmailed('${id}')" title="Log email sent" style="background:rgba(139,123,165,0.15);color:var(--purple);border:1px solid rgba(139,123,165,0.3);padding:0.2rem 0.5rem;border-radius:4px;font-size:0.65rem;cursor:pointer;font-family:inherit;">Emailed</button>
+    ${hasUndo ? `<button class="btn-undo" onclick="undoLastAction('${id}')" title="Undo last action">↩ Undo</button>` : ''}
     ${isBad ? '<span class="badge badge-red" style="font-size:0.6rem;">Bad #</span>' : ''}
     <button class="btn-done" onclick="markDone('${id}')" title="Mark contacted (other)">Done</button>
     <button class="btn-skip" onclick="markSkip('${id}')" title="Skip">Skip</button>
@@ -1111,9 +1273,9 @@ function updateKPIs() {
   const badCount = reviewItems.filter(r => r.issue.includes('Bad') || r.issue.includes('Missing') || r.issue.includes('Invalid')).length;
   document.getElementById('kpi-bad-phones').textContent = badCount;
 
-  // High risk (only treatment patients have caries_risk data from Denticon)
-  const txPts = data.treatment || [];
-  const highRiskCount = txPts.filter(r => riskScore(r) >= 3).length;
+  // High risk
+  const allPts = [...(data.recall || []), ...(data.overdue || []), ...(data.treatment || [])];
+  const highRiskCount = allPts.filter(r => riskScore(r) >= 3).length;
   document.getElementById('kpi-high-risk').textContent = highRiskCount;
 }
 
@@ -1121,26 +1283,25 @@ function updateKPIs() {
 // ── Row Actions ──
 // ════════════════════════════════════════
 function markDone(id) {
+  recordAction(id, 'done');
   contactedSet.add(id);
   skippedSet.delete(id);
   const row = document.getElementById(id);
   if (row) { row.className = 'row-contacted'; }
-  lastAction = { row_id: id, type: 'done', logIndex: -1 };
-  showUndoToast('Marked as done — click Undo if accidental');
   updateKPIs();
 }
 
 function markSkip(id) {
+  recordAction(id, 'skip');
   skippedSet.add(id);
   contactedSet.delete(id);
   const row = document.getElementById(id);
   if (row) { row.className = 'row-skipped'; }
-  lastAction = { row_id: id, type: 'skip', logIndex: -1 };
-  showUndoToast('Skipped — click Undo if accidental');
   updateKPIs();
 }
 
 function markWeave(id) {
+  recordAction(id, 'weave');
   // Log as "contacted via Weave" — no SMS sent from dashboard
   const logEntry = {
     row_id: id,
@@ -1168,13 +1329,12 @@ function markWeave(id) {
   skippedSet.delete(id);
   const row = document.getElementById(id);
   if (row) { row.className = 'row-contacted'; }
-  lastAction = { row_id: id, type: 'weave', logIndex: contactLog.length - 1 };
-  showUndoToast('Marked as Weave contact — click Undo if accidental');
   updateKPIs();
   render();
 }
 
 function markCalled(id) {
+  recordAction(id, 'call');
   const logEntry = {
     row_id: id,
     phone: '',
@@ -1201,13 +1361,12 @@ function markCalled(id) {
   skippedSet.delete(id);
   const row = document.getElementById(id);
   if (row) { row.className = 'row-contacted'; }
-  lastAction = { row_id: id, type: 'call', logIndex: contactLog.length - 1 };
-  showUndoToast('Phone call logged — click Undo if accidental');
   updateKPIs();
   render();
 }
 
 function markEmailed(id) {
+  recordAction(id, 'email');
   const logEntry = {
     row_id: id,
     phone: '',
@@ -1233,74 +1392,6 @@ function markEmailed(id) {
   skippedSet.delete(id);
   const row = document.getElementById(id);
   if (row) { row.className = 'row-contacted'; }
-  lastAction = { row_id: id, type: 'email', logIndex: contactLog.length - 1 };
-  showUndoToast('Email logged — click Undo if accidental');
-  updateKPIs();
-  render();
-}
-
-// ── Undo System ──
-let undoTimer = null;
-function showUndoToast(msg) {
-  const toast = document.getElementById('undoToast');
-  document.getElementById('undoMsg').textContent = msg;
-  toast.classList.add('show');
-  clearTimeout(undoTimer);
-  undoTimer = setTimeout(() => { toast.classList.remove('show'); lastAction = null; }, 6000);
-}
-
-function undoLastAction() {
-  if (!lastAction) return;
-  const { row_id, type, logIndex } = lastAction;
-
-  // Remove from contactLog (if it was a logged action, not just done/skip)
-  if (logIndex >= 0 && logIndex < contactLog.length) {
-    contactLog.splice(logIndex, 1);
-  }
-
-  // Remove from localStorage log
-  if (type !== 'done' && type !== 'skip') {
-    try {
-      const stored = loadSessionLog();
-      for (let i = stored.length - 1; i >= 0; i--) {
-        if (stored[i].row_id === row_id) {
-          stored.splice(i, 1);
-          break;
-        }
-      }
-      localStorage.setItem('pspd_contact_log', JSON.stringify(stored));
-    } catch { /* silent */ }
-  }
-
-  // Un-mark the row
-  contactedSet.delete(row_id);
-  skippedSet.delete(row_id);
-  const row = document.getElementById(row_id);
-  if (row) { row.className = ''; }
-
-  lastAction = null;
-  document.getElementById('undoToast').classList.remove('show');
-  clearTimeout(undoTimer);
-  updateKPIs();
-  render();
-}
-
-// Manual reset for any row (right-click alternative)
-function resetRow(id) {
-  // Remove all log entries for this row from localStorage
-  try {
-    const stored = loadSessionLog();
-    const filtered = stored.filter(e => e.row_id !== id);
-    localStorage.setItem('pspd_contact_log', JSON.stringify(filtered));
-  } catch { /* silent */ }
-
-  // Remove from in-memory log
-  contactLog = contactLog.filter(e => e.row_id !== id);
-
-  contactedSet.delete(id);
-  skippedSet.delete(id);
-  const row = document.getElementById(id);
-  if (row) { row.className = ''; }
   updateKPIs();
   render();
 }
@@ -1309,6 +1400,198 @@ function flagReviewed(rowId) {
   reviewItems = reviewItems.filter(r => r.row_id !== rowId);
   renderReview();
   updateKPIs();
+}
+
+// ════════════════════════════════════════
+// ── Undo System ──
+// ════════════════════════════════════════
+function recordAction(rowId, actionType) {
+  // Remove existing undo markers for this row
+  actionHistory.forEach(a => { if (a.row_id === rowId) a.is_last = false; });
+
+  // Save current state before action
+  const prevState = {
+    inContacted: contactedSet.has(rowId),
+    inSkipped: skippedSet.has(rowId),
+    logEntriesCount: contactLog.filter(e => e.row_id === rowId).length
+  };
+
+  actionHistory.push({
+    row_id: rowId,
+    action_type: actionType,
+    timestamp: new Date().getTime(),
+    prev_state: prevState,
+    is_last: true
+  });
+}
+
+function undoLastAction(rowId) {
+  const action = actionHistory.find(a => a.row_id === rowId && a.is_last);
+  if (!action) return;
+
+  const prevState = action.prev_state;
+
+  // Restore contact state
+  if (prevState.inContacted) {
+    contactedSet.add(rowId);
+  } else {
+    contactedSet.delete(rowId);
+  }
+
+  if (prevState.inSkipped) {
+    skippedSet.add(rowId);
+  } else {
+    skippedSet.delete(rowId);
+  }
+
+  // Remove last log entry for this row
+  const rowLog = contactLog.filter(e => e.row_id === rowId);
+  if (rowLog.length > prevState.logEntriesCount) {
+    const lastEntry = rowLog[rowLog.length - 1];
+    const idx = contactLog.indexOf(lastEntry);
+    if (idx > -1) contactLog.splice(idx, 1);
+
+    // Also remove from session log
+    const sessionLog = loadSessionLog();
+    const sessionIdx = sessionLog.findIndex(e => e.row_id === rowId && e.date === lastEntry.date && e.type === lastEntry.type);
+    if (sessionIdx > -1) {
+      sessionLog.splice(sessionIdx, 1);
+      localStorage.setItem('pspd_contact_log', JSON.stringify(sessionLog));
+    }
+  }
+
+  // Remove action from history
+  const actionIdx = actionHistory.indexOf(action);
+  if (actionIdx > -1) actionHistory.splice(actionIdx, 1);
+
+  // Update row visual
+  const row = document.getElementById(rowId);
+  if (row) {
+    if (prevState.inContacted) {
+      row.className = 'row-contacted';
+    } else if (prevState.inSkipped) {
+      row.className = 'row-skipped';
+    } else {
+      row.className = '';
+    }
+  }
+
+  updateKPIs();
+  render();
+}
+
+function resetAllSession() {
+  if (!confirm('Are you sure you want to reset ALL session state? This will clear:\n- All contacted records\n- All skipped records\n- All action history\n- SMS count\n\nThis cannot be undone.')) {
+    return;
+  }
+
+  contactedSet.clear();
+  skippedSet.clear();
+  actionHistory = [];
+  smsSentCount = 0;
+  localStorage.removeItem('pspd_contact_log');
+
+  render();
+  updateKPIs();
+}
+
+// ════════════════════════════════════════
+// ── Weave Integration ──
+// ════════════════════════════════════════
+function showWeavePopup(event, phone, rowId) {
+  event.stopPropagation();
+  const popup = document.getElementById('weave-popup-' + rowId);
+  if (!popup) return;
+
+  // Close any other open popups
+  document.querySelectorAll('.weave-popup').forEach(p => {
+    if (p.id !== 'weave-popup-' + rowId) p.style.display = 'none';
+  });
+
+  popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+
+  // Close on outside click
+  if (popup.style.display === 'block') {
+    setTimeout(() => {
+      document.addEventListener('click', function closePopup(e) {
+        if (!popup.contains(e.target) && e.target.closest('button') !== event.target) {
+          popup.style.display = 'none';
+          document.removeEventListener('click', closePopup);
+        }
+      });
+    }, 0);
+  }
+}
+
+function closeWeavePopup(rowId) {
+  const popup = document.getElementById('weave-popup-' + rowId);
+  if (popup) popup.style.display = 'none';
+}
+
+function weaveOpenApp(phone) {
+  // Generate Weave deep link
+  const cleanPhone = phone.replace(/[\s\-\(\)\.]/g, '');
+  const weaveUrl = 'weave://messages?phone=' + encodeURIComponent(cleanPhone);
+
+  // Try to open the Weave app
+  window.location.href = weaveUrl;
+
+  // Fallback: if app doesn't exist, show message
+  setTimeout(() => {
+    alert('Opening Weave app... If it doesn\'t open, please make sure you have the Weave app installed.');
+  }, 500);
+}
+
+// ════════════════════════════════════════
+// ── Settings Modal ──
+// ════════════════════════════════════════
+function openSettingsModal() {
+  document.getElementById('twilioUrl').value = appSettings.twilioFunctionUrl || '';
+  document.getElementById('staffName').value = appSettings.staffName || '';
+
+  // Show Twilio status
+  const twilioStatus = document.getElementById('twilioStatus');
+  if (TWILIO_FUNCTION_URL || appSettings.twilioFunctionUrl) {
+    twilioStatus.textContent = 'Connected';
+    twilioStatus.style.color = 'var(--green)';
+  } else {
+    twilioStatus.textContent = 'Not connected';
+    twilioStatus.style.color = 'var(--red)';
+  }
+
+  document.getElementById('settingsModal').classList.add('show');
+}
+
+function closeSettingsModal() {
+  document.getElementById('settingsModal').classList.remove('show');
+}
+
+function saveSettingsModal() {
+  const twilioUrl = document.getElementById('twilioUrl').value.trim();
+  const staffName = document.getElementById('staffName').value.trim();
+
+  appSettings.twilioFunctionUrl = twilioUrl;
+  appSettings.staffName = staffName;
+  saveSettings();
+
+  alert('Settings saved!');
+  closeSettingsModal();
+}
+
+// ════════════════════════════════════════
+// ── Guide Toggle ──
+// ════════════════════════════════════════
+function toggleGuide() {
+  const content = document.getElementById('guideContent');
+  const icon = document.getElementById('guideToggleIcon');
+
+  if (content.style.display === 'none') {
+    content.style.display = 'block';
+    icon.textContent = '▼';
+  } else {
+    content.style.display = 'none';
+    icon.textContent = '▶';
+  }
 }
 
 // ════════════════════════════════════════
@@ -1323,6 +1606,11 @@ function openSmsModal(phone, name, office, kids, rowId) {
   const historyHtml = contactHistoryCell(rowId);
   document.getElementById('smsContactHistory').innerHTML =
     `<div style="font-size:0.75rem;color:var(--text3);margin-bottom:0.5rem;">Previous contact:</div>${historyHtml}`;
+
+  // Show Twilio notice if not connected
+  const twilioNotice = document.getElementById('twilioNotice');
+  const hasConnection = TWILIO_FUNCTION_URL || appSettings.twilioFunctionUrl;
+  twilioNotice.style.display = hasConnection ? 'none' : 'block';
 
   // Auto-select template based on current view
   const tmpl = document.getElementById('smsTemplate');
@@ -1399,8 +1687,9 @@ async function sendSMS() {
     z_code: writeZcode,
   };
 
-  if (!TWILIO_FUNCTION_URL) {
+  if (!TWILIO_FUNCTION_URL && !appSettings.twilioFunctionUrl) {
     // Demo mode
+    recordAction(currentSmsTarget.rowId, 'sms');
     smsSentCount++;
     contactLog.push(logEntry);
     saveSessionLog(logEntry);
@@ -1413,7 +1702,8 @@ async function sendSMS() {
   }
 
   try {
-    const resp = await fetch(TWILIO_FUNCTION_URL, {
+    const url = appSettings.twilioFunctionUrl || TWILIO_FUNCTION_URL;
+    const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1426,6 +1716,7 @@ async function sendSMS() {
     });
     const result = await resp.json();
     if (result.success) {
+      recordAction(currentSmsTarget.rowId, 'sms');
       logEntry.status = 'sent';
       logEntry.sid = result.sid;
       smsSentCount++;
@@ -1512,8 +1803,9 @@ async function sendBulkSMS() {
       status: 'sent', z_code: writeZcode,
     };
 
-    if (!TWILIO_FUNCTION_URL) {
+    if (!TWILIO_FUNCTION_URL && !appSettings.twilioFunctionUrl) {
       // Demo mode
+      recordAction(id, 'sms');
       smsSentCount++;
       sent++;
       contactLog.push(logEntry);
@@ -1522,13 +1814,15 @@ async function sendBulkSMS() {
       console.log(`[Demo Bulk] SMS to ${phone}: ${body.slice(0,60)}...`);
     } else {
       try {
-        const resp = await fetch(TWILIO_FUNCTION_URL, {
+        const url = appSettings.twilioFunctionUrl || TWILIO_FUNCTION_URL;
+        const resp = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ to: phone, body, office, row_id: id, write_zcode: writeZcode })
         });
         const result = await resp.json();
         if (result.success) {
+          recordAction(id, 'sms');
           logEntry.status = 'sent';
           smsSentCount++; sent++;
           contactLog.push(logEntry);
@@ -1600,14 +1894,9 @@ function esc(str) {
 }
 
 // ── Init ──
+loadSettings();
 loadData();
+initColumnSort();
 </script>
-
-<!-- Undo Toast -->
-<div class="undo-toast" id="undoToast">
-  <span id="undoMsg">Action logged</span>
-  <button onclick="undoLastAction()">Undo</button>
-</div>
-
 </body>
 </html>
