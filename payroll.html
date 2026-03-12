@@ -630,13 +630,58 @@ if (fallbackKeys.length > 0) {
   const liveWithData = sorted.find(k => PERIODS[k].status === 'live' && PERIODS[k].doctors && PERIODS[k].doctors.length > 0);
   const processing = sorted.filter(k => PERIODS[k].status === 'processing').pop();
   currentPeriod = liveWithData || processing || sorted[sorted.length - 1];
+  applyAdminRates(); // Apply rate overrides to fallback data too
   $('loading-state').style.display = 'none';
   $('dashboard-content').style.display = 'block';
   buildPeriodSelector();
   buildAll();
 }
 
-// Then overlay live JSON data (Tanya-verified, from payroll_refresh.py)
+// Apply admin config rate_history to override doctor rates in all periods.
+// This ensures rate changes (e.g. Benton 32%→33%) take effect even if
+// payroll.json was generated before the rate update.
+function applyAdminRates() {
+  const docs = (adminDoctors && adminDoctors.doctors) ? adminDoctors.doctors : {};
+  // Build a lookup: display name → rate_history
+  const rateMap = {};
+  for (const [key, cfg] of Object.entries(docs)) {
+    if (cfg.rate_history && cfg.rate_history.length > 0) {
+      rateMap[cfg.display] = cfg.rate_history;
+    }
+  }
+  if (Object.keys(rateMap).length === 0) return;
+
+  for (const [pKey, period] of Object.entries(PERIODS)) {
+    if (!period.doctors || period.doctors.length === 0) continue;
+    // Use period_start to determine which rate was effective
+    const pStart = period.period_start || null;
+    if (!pStart) continue;
+
+    period.doctors.forEach(d => {
+      const hist = rateMap[d.name];
+      if (!hist) return;
+      // Find the rate_history entry that covers this period_start
+      for (let i = 0; i < hist.length; i++) {
+        const h = hist[i];
+        const eff = h.effective;
+        const end = h.end || '9999-12-31';
+        if (pStart >= eff && pStart <= end) {
+          const oldPct = d.pct;
+          if (oldPct !== h.pct && oldPct > 0) {
+            const ratio = h.pct / oldPct;
+            d.pct = h.pct;
+            // Scale pay amounts proportionally (preserves x-ray exclusion math)
+            if (d.payNo !== undefined) d.payNo = Math.round(d.payNo * ratio * 100) / 100;
+            if (d.payWith !== undefined) d.payWith = Math.round(d.payWith * ratio * 100) / 100;
+          }
+          break;
+        }
+      }
+    });
+  }
+}
+
+// Then overlay live JSON data (from payroll_refresh.py)
 (async function loadLiveData() {
   try {
     const resp = await fetch('data/payroll.json?t=' + Date.now());
@@ -648,6 +693,9 @@ if (fallbackKeys.length > 0) {
     for (const [key, val] of Object.entries(json.periods)) {
       PERIODS[key] = val;
     }
+
+    // Apply admin rate overrides (rate_history) to all periods
+    applyAdminRates();
 
     // Auto-detect statuses from dates
     updateAllStatuses();
