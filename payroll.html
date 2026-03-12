@@ -653,6 +653,8 @@ function applyAdminRates() {
 
   for (const [pKey, period] of Object.entries(PERIODS)) {
     if (!period.doctors || period.doctors.length === 0) continue;
+    // NEVER touch locked/hardcoded periods — those are Tanya-verified
+    if (period.locked || period.hardcoded) continue;
     // Use period_start to determine which rate was effective
     const pStart = period.period_start || null;
     if (!pStart) continue;
