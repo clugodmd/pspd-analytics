@@ -494,7 +494,7 @@ let PERIODS = {
     doctors: [
       {name:'Dr. Slaven', pct:0.36, coll:69230.49, payNo:21597.63, payWith:24922.98, off:{MV:36730.98,MO:6950.96,SW:25548.55}},
       {name:'Dr. Choong', pct:0.35, coll:59169.20, payNo:17975.72, payWith:20709.22, off:{MV:27216.21,SW:31952.99}},
-      {name:'Dr. Benton', pct:0.32, coll:57960.30, payNo:16573.44, payWith:18547.30, off:{EV:277.00,LS:13735.69,MV:8969.60,MO:34978.01}},
+      {name:'Dr. Benton', pct:0.33, coll:57960.30, payNo:16573.44, payWith:18547.30, off:{EV:277.00,LS:13735.69,MV:8969.60,MO:34978.01}},
       {name:'Dr. Welter', pct:0.31, coll:41528.38, payNo:11077.06, payWith:12873.80, off:{EV:7402.89,LS:19030.46,MV:9850.89,MO:5244.14}},
       {name:'Dr. Menon', pct:0.35, coll:38127.60, payNo:11583.30, payWith:13344.66, off:{EV:5506.94,LS:13031.08,MO:19589.58}},
       {name:'Dr. Patel', pct:0.32, coll:23302.06, payNo:6447.23, payWith:7456.66, off:{EV:366.00,MV:4616.22,MO:18319.84}},
@@ -508,9 +508,19 @@ let PERIODS = {
   '3.27.26': {
     label:'3.27.26', dates:'Mar 7 – Mar 20, 2026', payDate:'Mar 27, 2026',
     period_start:'2026-03-07', period_end:'2026-03-20', pay_date_iso:'2026-03-27',
-    doctors: [],
-    offices: [],
-    termed: [],
+    doctors: [
+      {name:'Dr. Patel', pct:0.32, coll:39201.91, payNo:10998.77, payWith:12544.61, off:{MV:8646.44,MO:30555.47}},
+      {name:'Dr. Choong', pct:0.35, coll:29187.33, payNo:8958.22, payWith:10215.57, off:{MV:16399.95,SW:12787.38}},
+      {name:'Dr. Slaven', pct:0.36, coll:20868.74, payNo:6396.77, payWith:7512.75, off:{MV:8771.77,MO:1367.60,SW:10729.37}},
+      {name:'Dr. Menon', pct:0.35, coll:20375.13, payNo:6348.32, payWith:7131.30, off:{EV:3560.82,LS:7697.33,MO:9116.98}},
+      {name:'Dr. Benton', pct:0.33, coll:19027.40, payNo:5549.87, payWith:6279.04, off:{LS:6356.38,MV:3990.55,MO:7912.47,SW:768.00}},
+      {name:'Dr. Welter', pct:0.31, coll:15257.34, payNo:4131.86, payWith:4729.78, off:{EV:241.21,LS:11544.67,MV:3471.46}},
+      {name:'Dr. Bell', pct:0.35, coll:11794.97, payNo:3634.43, payWith:4128.24, off:{LS:6760.82,MO:5034.15}},
+      {name:'Dr. Lugo', pct:0.36, coll:3398.51, payNo:0, payWith:1223.46, off:{LS:2.11,MV:2736.52,MO:3.38,SW:656.50}},
+      {name:'Dr. Schrack', pct:0.45, coll:332.61, payNo:149.67, payWith:149.67, off:{EV:332.61}},
+    ],
+    offices: [{name:'Monroe',amt:53990.05},{name:'Marysville',amt:44034.82},{name:'Lake Stevens',amt:32458.50},{name:'Stanwood',amt:24941.25},{name:'Everett',amt:4134.64}],
+    termed: [{name:'Dr. Kirk',coll:115.32,note:'Terminated'}],
   },
   // JSON from payroll_refresh.py always overrides all of the above when it loads.
 };
@@ -1117,7 +1127,7 @@ let adminDoctors = {
     "Slaven, Chad": {"display":"Dr. Slaven","pct":0.36,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.36,"effective":"2025-01-01","end":null}]},
     "Menon, Leena": {"display":"Dr. Menon","pct":0.35,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.35,"effective":"2025-01-01","end":null}]},
     "Choong, Carissa": {"display":"Dr. Choong","pct":0.35,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.35,"effective":"2025-01-01","end":null}]},
-    "Benton, Patricia": {"display":"Dr. Benton","pct":0.32,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.32,"effective":"2025-01-01","end":"2026-02-12"},{"pct":0.33,"effective":"2026-02-13","end":"2026-02-26"},{"pct":0.32,"effective":"2026-02-27","end":null}]},
+    "Benton, Patricia": {"display":"Dr. Benton","pct":0.33,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.32,"effective":"2025-01-01","end":"2026-02-12"},{"pct":0.33,"effective":"2026-02-13","end":null}]},
     "Welter, Erin": {"display":"Dr. Welter","pct":0.31,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.31,"effective":"2025-01-01","end":null}]},
     "Patel, Dusayant": {"display":"Dr. Patel","pct":0.32,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.32,"effective":"2025-01-01","end":null}]},
     "Bell, Kendra": {"display":"Dr. Bell","pct":0.35,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.35,"effective":"2025-01-01","end":null}]},
