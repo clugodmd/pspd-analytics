@@ -1170,7 +1170,7 @@ const WORKFLOW_FILE = 'doctor-admin.yml';
 // Doctor config for admin — embedded data (guaranteed to work)
 // When admin actions run, they update data/doctors.json in the repo.
 // The fetch below tries to load the latest version; falls back to this embedded copy.
-let adminDoctors = {
+var adminDoctors = {
   "doctors": {
     "Slaven, Chad": {"display":"Dr. Slaven","pct":0.36,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.36,"effective":"2025-01-01","end":null}]},
     "Menon, Leena": {"display":"Dr. Menon","pct":0.35,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.35,"effective":"2025-01-01","end":null}]},
