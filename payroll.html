@@ -691,8 +691,10 @@ function applyAdminRates() {
     const json = await resp.json();
     if (!json.periods) return;
 
-    // MERGE: JSON periods override fallback. JSON is always authoritative.
+    // MERGE: JSON periods override fallback — EXCEPT locked/hardcoded periods.
+    // Locked periods contain Tanya-verified data and must never be overwritten.
     for (const [key, val] of Object.entries(json.periods)) {
+      if (PERIODS[key] && (PERIODS[key].locked || PERIODS[key].hardcoded)) continue;
       PERIODS[key] = val;
     }
 
