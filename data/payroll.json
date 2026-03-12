@@ -792,10 +792,10 @@
         },
         {
           "name": "Dr. Benton",
-          "pct": 0.32,
+          "pct": 0.33,
           "coll": 15146.68,
-          "payNo": 4371.08,
-          "payWith": 4846.94,
+          "payNo": 4507.67,
+          "payWith": 4998.4,
           "off": {
             "MO": 6544.76,
             "LS": 4618.87,
@@ -891,7 +891,7 @@
       "locked": false
     }
   },
-  "last_updated": "2026-03-12T00:57:18.995239Z",
+  "last_updated": "2026-03-12T04:05:31.508451Z",
   "generated_by": "payroll_refresh.py",
   "source": "rpt.vw_income_allocation (Azure SQL)"
 }
