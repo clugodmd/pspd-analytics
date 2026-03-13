@@ -464,7 +464,7 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
             <th data-sort="risk" class="sortable">Risk <span class="sort-arrow">↕</span></th>
             <th>Treatment</th>
             <th data-sort="fee" class="sortable">Fee <span class="sort-arrow">↕</span></th>
-            <th>Booking</th>
+            <th data-sort="plan_age" class="sortable">Plan Age <span class="sort-arrow">⇕</span></th>
             <th data-sort="provider" class="sortable">Tx Doctor <span class="sort-arrow">↕</span></th>
             <th>History</th>
             <th>Actions</th>
@@ -923,6 +923,11 @@ function getFilteredData() {
     });
   }
 
+  // Filter out test patients
+  items = items.filter(r => {
+    const name = (r.name || r.fname || '').toLowerCase();
+    return !name.startsWith('test,') && !name.startsWith('test ');
+  });
   return items;
 }
 
@@ -1003,6 +1008,9 @@ function columnSortCompare(a, b) {
       va = (a.last_provider || a.diagnosing_provider || '').toLowerCase();
       vb = (b.last_provider || b.diagnosing_provider || '').toLowerCase();
       return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+        case 'plan_age':
+          va = a.days_since_plan || 0; vb = b.days_since_plan || 0;
+          return columnSortDir === 'asc' ? va - vb : vb - va;
     case 'fee':
       va = a.total_fee || 0; vb = b.total_fee || 0;
       return columnSortDir === 'asc' ? va - vb : vb - va;
@@ -1062,25 +1070,27 @@ function riskBadge(r) {
 
 function computeRiskBadge(r) {
   let score = 0;
-
-  // Factor 1: Days overdue (overdue tab)
   const daysOverdue = r.days_overdue || 0;
   if (daysOverdue > 270) score += 3;
   else if (daysOverdue > 180) score += 2;
   else if (daysOverdue > 90) score += 1;
-
-  // Factor 2: Number of kids due (more kids = more urgency)
+  const daysSincePlan = r.days_since_plan || 0;
+  if (daysSincePlan > 180) score += 3;
+  else if (daysSincePlan > 90) score += 2;
+  else if (daysSincePlan > 30) score += 1;
+  const fee = r.total_fee || 0;
+  if (fee >= 3000) score += 2;
+  else if (fee >= 1000) score += 1;
   const kids = r.kids_due_count || 0;
   if (kids >= 4) score += 2;
   else if (kids >= 2) score += 1;
-
-  // Factor 3: Bad phone (can't reach them)
   if (isBadPhone(r.phone)) score += 1;
-
+  const tx = (r.tx_summary || '').toLowerCase();
+  if (/\bga\b|\bblock\b/.test(tx)) score += 1;
   if (score >= 4) return '<span class="risk-badge risk-high">High</span>';
   if (score >= 2) return '<span class="risk-badge risk-medium">Med</span>';
   if (score >= 1) return '<span class="risk-badge risk-low">Low</span>';
-  return '<span style="color:var(--text3);font-size:0.7rem;">—</span>';
+  return '<span style="color:var(--text3);font-size:0.7rem;">\u2014</span>';
 }
 
 function riskScore(r) {
@@ -1088,18 +1098,24 @@ function riskScore(r) {
   if (risk === 'high' || risk === '3') return 3;
   if (risk === 'medium' || risk === 'moderate' || risk === '2') return 2;
   if (risk === 'low' || risk === '1') return 1;
-
-  // Compute from available data
   let score = 0;
   const daysOverdue = r.days_overdue || 0;
   if (daysOverdue > 270) score += 3;
   else if (daysOverdue > 180) score += 2;
   else if (daysOverdue > 90) score += 1;
+  const daysSincePlan = r.days_since_plan || 0;
+  if (daysSincePlan > 180) score += 3;
+  else if (daysSincePlan > 90) score += 2;
+  else if (daysSincePlan > 30) score += 1;
+  const fee = r.total_fee || 0;
+  if (fee >= 3000) score += 2;
+  else if (fee >= 1000) score += 1;
   const kids = r.kids_due_count || 0;
   if (kids >= 4) score += 2;
   else if (kids >= 2) score += 1;
   if (isBadPhone(r.phone)) score += 1;
-
+  const tx = (r.tx_summary || '').toLowerCase();
+  if (/\bga\b|\bblock\b/.test(tx)) score += 1;
   if (score >= 4) return 3;
   if (score >= 2) return 2;
   if (score >= 1) return 1;
@@ -1167,6 +1183,25 @@ function contactHistoryCell(rowId, record) {
     parts.push(`<button class="btn-log" onclick="showHistory('${rowId}')" title="View full history" style="padding:0.15rem 0.4rem;">...</button>`);
   } else if (!parts.length) {
     return '<span style="color:var(--text3);font-size:0.7rem;">No history</span>';
+  }
+
+  
+  // Treatment plan age (treatment tab)
+  if (record.days_since_plan != null && record.days_since_plan > 0) {
+    const d = record.days_since_plan;
+    let ageColor = 'var(--text3)';
+    let ageLabel = d + 'd since plan';
+    if (d >= 180) { ageColor = 'var(--red)'; ageLabel = Math.round(d/30) + 'mo \u2014 needs review'; }
+    else if (d >= 90) { ageColor = 'var(--yellow)'; ageLabel = Math.round(d/30) + 'mo \u2014 may need review'; }
+    parts.push('<span style="font-size:0.68rem;color:' + ageColor + ';">Tx plan: ' + ageLabel + '</span>');
+  }
+  if (record.next_appt_date) {
+    const typeLabel = record.next_appt_type || '';
+    const isTxAppt = /treatment|tx|restor|ga|block|sdf/i.test(typeLabel);
+    const apptColor = isTxAppt ? 'var(--green)' : 'var(--text3)';
+    parts.push('<span style="font-size:0.65rem;color:' + apptColor + ';">Next: ' + record.next_appt_date + ' (' + typeLabel + ')</span>');
+  } else if (record.next_appt_type === 'No Future Appt') {
+    parts.push('<span style="font-size:0.65rem;color:var(--red);">No future appt</span>');
   }
 
   return `<div class="contact-history-row">${parts.join('<br>')}</div>`;
@@ -1310,7 +1345,7 @@ function renderTreatmentRow(r) {
     <td>${riskBadge(r)}</td>
     <td>${renderTxTags(r.tx_summary || r.treatment || '')}</td>
     <td class="fee">${r.total_fee ? '$' + Number(r.total_fee).toLocaleString() : '-'}</td>
-    <td>${bookingSlotCell(r)}</td>
+    <td>${planAgeCell(r)}</td>
     <td style="font-size:0.78rem;color:var(--text2);">${esc(r.diagnosing_provider || '-')}</td>
     <td>${contactHistoryCell(id, r)}</td>
     <td>${actionBtns(id, r.phone)}</td>
@@ -1364,8 +1399,32 @@ function bookingSlotCell(r) {
   return `<span class="badge badge-blue">${esc(String(slot) || '-')}</span>`;
 }
 
+function planAgeCell(r) {
+  const days = r.days_since_plan || 0;
+  const tx = (r.tx_summary || r.treatment || '').toLowerCase();
+  const isGA = /\bga\b|\bblock\b/.test(tx);
+  let slot = r.booking_slot || '';
+  let ageBadge = '';
+  if (days >= 180) {
+    const mo = Math.round(days / 30);
+    ageBadge = '<span class="risk-badge risk-high" style="font-size:0.6rem;">' + mo + 'mo</span>';
+  } else if (days >= 90) {
+    const mo = Math.round(days / 30);
+    ageBadge = '<span class="risk-badge risk-medium" style="font-size:0.6rem;">' + mo + 'mo</span>';
+  } else {
+    ageBadge = '<span style="font-size:0.72rem;color:var(--text2);">' + days + 'd</span>';
+  }
+  let bookingBadge = '';
+  if (isGA) {
+    bookingBadge = '<span class="badge badge-red" style="font-size:0.55rem;padding:0.1rem 0.3rem;">GA</span>';
+  } else if (slot) {
+    bookingBadge = '<span style="font-size:0.6rem;color:var(--text3);">' + slot + 'min</span>';
+  }
+  return '<div style="text-align:center;line-height:1.4;">' + ageBadge + (bookingBadge ? '<br>' + bookingBadge : '') + '</div>';
+}
+
 function renderTxTags(summary) {
-  if (!summary) return '-';
+  if (!summary) return '<span class="risk-badge risk-medium" style="font-size:0.6rem;cursor:help;" title="Treatment plan exists but no procedures listed \u2014 review charting">No Tx Listed</span>';
   const tags = summary.split(/[,;]+/).map(s => s.trim()).filter(Boolean);
   return '<div class="tx-summary">' + tags.map(t => {
     const tl = t.toLowerCase();
