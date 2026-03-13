@@ -401,7 +401,7 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
       <div style="overflow-x:auto;">
         <table id="recall-table">
           <thead><tr>
-            <th data-sort="household" class="sortable">Household <span class="sort-arrow">↕</span></th>
+            <th data-sort="household" class="sortable">Family / ID <span class="sort-arrow">↕</span></th>
             <th data-sort="phone" class="sortable">Phone <span class="sort-arrow">↕</span></th>
             <th>Email</th>
             <th data-sort="risk" class="sortable">Risk <span class="sort-arrow">↕</span></th>
@@ -429,7 +429,7 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
       <div style="overflow-x:auto;">
         <table id="overdue-table">
           <thead><tr>
-            <th data-sort="household" class="sortable">Household <span class="sort-arrow">↕</span></th>
+            <th data-sort="household" class="sortable">Family / ID <span class="sort-arrow">↕</span></th>
             <th data-sort="phone" class="sortable">Phone <span class="sort-arrow">↕</span></th>
             <th>Email</th>
             <th data-sort="risk" class="sortable">Risk <span class="sort-arrow">↕</span></th>
@@ -843,6 +843,11 @@ function getLastAttempt(rowId) {
 // ════════════════════════════════════════
 function switchView(view) {
   currentView = view;
+  // Reset column sort when switching tabs so old sorts don't carry over
+  columnSortKey = null;
+  columnSortDir = 'asc';
+  document.querySelectorAll('th.sortable .sort-arrow').forEach(a => a.textContent = '↕');
+  document.querySelectorAll('th.sortable').forEach(h => h.classList.remove('sorted'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   document.querySelectorAll('.view-panel').forEach(p => p.style.display = 'none');
   document.getElementById('view-' + view).style.display = 'block';
@@ -929,13 +934,7 @@ function hasZcode(r) {
   return r.z_code_date && r.z_code_date !== '';
 }
 
-function riskScore(r) {
-  const risk = (r.risk || r.caries_risk || '').toString().toLowerCase();
-  if (risk === 'high' || risk === '3') return 3;
-  if (risk === 'medium' || risk === 'moderate' || risk === '2') return 2;
-  if (risk === 'low' || risk === '1') return 1;
-  return 0;
-}
+// riskScore() is defined below with riskBadge()
 
 function applyFilters() { render(); }
 
@@ -1011,14 +1010,99 @@ function columnSortCompare(a, b) {
 }
 
 // ════════════════════════════════════════
+// ── Household Name Formatter ──
+// ════════════════════════════════════════
+function formatHousehold(r) {
+  // Extract a short family name from kids_due_names and append the household_id
+  // e.g. "Melanie Ramos (9); Marianna Ramos (12)..." → "Ramos Family"
+  const names = r.kids_due_names || r.household || '';
+  let familyName = '';
+
+  // Try to extract last name from first child: "FirstName LastName (age)"
+  const firstChild = names.split(';')[0].trim();
+  const nameMatch = firstChild.match(/^(.+?)\s*\(\d+\)$/);
+  if (nameMatch) {
+    const parts = nameMatch[1].trim().split(/\s+/);
+    if (parts.length >= 2) {
+      familyName = parts[parts.length - 1]; // last word = last name
+    } else {
+      familyName = parts[0];
+    }
+  } else {
+    // Fallback: try the household field which ends with " Family"
+    const hh = r.household || '';
+    if (hh.endsWith(' Family')) {
+      // Just grab last name from first person listed
+      const p = hh.split(';')[0].trim().split(/\s+/);
+      familyName = p.length >= 2 ? p[p.length - 1].replace(/\(\d+\)/g, '').trim() : p[0];
+    } else {
+      familyName = hh.substring(0, 20);
+    }
+  }
+
+  const hid = r.household_id || '';
+  return `<strong>${esc(familyName)} Family</strong>
+    <span style="display:block;font-size:0.7rem;color:var(--text3);">ID: ${hid}</span>`;
+}
+
+// ════════════════════════════════════════
 // ── Risk Badge Renderer ──
 // ════════════════════════════════════════
 function riskBadge(r) {
+  // First check if the data includes explicit risk
   const risk = (r.risk || r.caries_risk || '').toString().toLowerCase();
   if (risk === 'high' || risk === '3') return '<span class="risk-badge risk-high">High</span>';
   if (risk === 'medium' || risk === 'moderate' || risk === '2') return '<span class="risk-badge risk-medium">Med</span>';
   if (risk === 'low' || risk === '1') return '<span class="risk-badge risk-low">Low</span>';
+
+  // Compute risk from available data when no explicit risk field
+  return computeRiskBadge(r);
+}
+
+function computeRiskBadge(r) {
+  let score = 0;
+
+  // Factor 1: Days overdue (overdue tab)
+  const daysOverdue = r.days_overdue || 0;
+  if (daysOverdue > 270) score += 3;
+  else if (daysOverdue > 180) score += 2;
+  else if (daysOverdue > 90) score += 1;
+
+  // Factor 2: Number of kids due (more kids = more urgency)
+  const kids = r.kids_due_count || 0;
+  if (kids >= 4) score += 2;
+  else if (kids >= 2) score += 1;
+
+  // Factor 3: Bad phone (can't reach them)
+  if (isBadPhone(r.phone)) score += 1;
+
+  if (score >= 4) return '<span class="risk-badge risk-high">High</span>';
+  if (score >= 2) return '<span class="risk-badge risk-medium">Med</span>';
+  if (score >= 1) return '<span class="risk-badge risk-low">Low</span>';
   return '<span style="color:var(--text3);font-size:0.7rem;">—</span>';
+}
+
+function riskScore(r) {
+  const risk = (r.risk || r.caries_risk || '').toString().toLowerCase();
+  if (risk === 'high' || risk === '3') return 3;
+  if (risk === 'medium' || risk === 'moderate' || risk === '2') return 2;
+  if (risk === 'low' || risk === '1') return 1;
+
+  // Compute from available data
+  let score = 0;
+  const daysOverdue = r.days_overdue || 0;
+  if (daysOverdue > 270) score += 3;
+  else if (daysOverdue > 180) score += 2;
+  else if (daysOverdue > 90) score += 1;
+  const kids = r.kids_due_count || 0;
+  if (kids >= 4) score += 2;
+  else if (kids >= 2) score += 1;
+  if (isBadPhone(r.phone)) score += 1;
+
+  if (score >= 4) return 3;
+  if (score >= 2) return 2;
+  if (score >= 1) return 1;
+  return 0;
 }
 
 // ════════════════════════════════════════
@@ -1049,26 +1133,42 @@ function phoneCell(phone, name, office, kids, rowId) {
 // ════════════════════════════════════════
 // ── Contact History Chips ──
 // ════════════════════════════════════════
-function contactHistoryCell(rowId) {
+function contactHistoryCell(rowId, record) {
+  // Build a combined history: dental visit info + contact log
+  let parts = [];
+
+  // Show dental/hygiene history from the data record
+  if (record) {
+    if (record.most_recent_hygiene) {
+      parts.push(`<span style="font-size:0.68rem;color:var(--text2);">Last hyg: ${record.most_recent_hygiene}</span>`);
+    }
+    if (record.last_visit_date && record.last_visit_date !== record.most_recent_hygiene) {
+      parts.push(`<span style="font-size:0.68rem;color:var(--text3);">Last visit: ${record.last_visit_date}</span>`);
+    }
+  }
+
+  // Show contact log entries (from this session / centralized tracking)
   const entries = contactLog.filter(e => e.row_id === rowId);
-  if (!entries.length) return '<span style="color:var(--text3);font-size:0.7rem;">No contact</span>';
+  if (entries.length) {
+    const chips = entries.slice(-3).map(e => {
+      let cls = 'sms';
+      let label = 'SMS';
+      if (e.type === 'call') { cls = 'call'; label = 'Called'; }
+      if (e.type === 'email') { cls = 'email'; label = 'Email'; }
+      if (e.type === 'weave') { cls = 'weave'; label = 'Weave'; }
+      if (e.type === 'zcode') { cls = 'zcode'; label = 'Z-code'; }
+      if (e.status === 'failed' || e.status === 'undelivered') { cls = 'failed'; label += ' ✗'; }
+      const staffTag = e.staff ? ` (${e.staff})` : '';
+      const dt = e.date ? e.date.split(' ')[0] : '';
+      return `<span class="ch-chip ${cls}" title="${esc(e.date || '')}${staffTag}: ${esc(e.message || '').slice(0,50)}">${label} ${dt}</span>`;
+    });
+    parts.push(chips.join(''));
+    parts.push(`<button class="btn-log" onclick="showHistory('${rowId}')" title="View full history" style="padding:0.15rem 0.4rem;">...</button>`);
+  } else if (!parts.length) {
+    return '<span style="color:var(--text3);font-size:0.7rem;">No history</span>';
+  }
 
-  const chips = entries.slice(-3).map(e => {
-    let cls = 'sms';
-    let label = 'SMS';
-    if (e.type === 'call') { cls = 'call'; label = 'Called'; }
-    if (e.type === 'email') { cls = 'email'; label = 'Email'; }
-    if (e.type === 'weave') { cls = 'weave'; label = 'Weave'; }
-    if (e.type === 'zcode') { cls = 'zcode'; label = 'Z-code'; }
-    if (e.status === 'failed' || e.status === 'undelivered') { cls = 'failed'; label += ' ✗'; }
-    const staffTag = e.staff ? ` (${e.staff})` : '';
-    const dt = e.date ? e.date.split(' ')[0] : '';
-    return `<span class="ch-chip ${cls}" title="${esc(e.date || '')}${staffTag}: ${esc(e.message || '').slice(0,50)}">${label} ${dt}</span>`;
-  });
-
-  return `<div class="contact-history-row">${chips.join('')}
-    <button class="btn-log" onclick="showHistory('${rowId}')" title="View full history" style="padding:0.15rem 0.4rem;">...</button>
-  </div>`;
+  return `<div class="contact-history-row">${parts.join('<br>')}</div>`;
 }
 
 // ════════════════════════════════════════
@@ -1143,7 +1243,7 @@ function renderRecallRow(r) {
   const id = 'recall-' + r.household_id;
   const cls = contactedSet.has(id) ? 'row-contacted' : skippedSet.has(id) ? 'row-skipped' : isBadPhone(r.phone) ? 'row-bad-phone' : '';
   return `<tr class="${cls}" id="${id}">
-    <td class="patient-name">${esc(r.household || r.household_id)}</td>
+    <td class="patient-name">${formatHousehold(r)}</td>
     <td>${phoneCell(r.phone, r.household, r.last_office, r.kids_due_names, id)}</td>
     <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
     <td>${riskBadge(r)}</td>
@@ -1152,7 +1252,7 @@ function renderRecallRow(r) {
     <td>${esc(r.suggest_date || '-')}</td>
     <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span></td>
     <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}</td>
-    <td>${contactHistoryCell(id)}</td>
+    <td>${contactHistoryCell(id, r)}</td>
     <td>${actionBtns(id, r.phone)}</td>
   </tr>`;
 }
@@ -1173,7 +1273,7 @@ function renderOverdueRow(r) {
   const cls = contactedSet.has(id) ? 'row-contacted' : skippedSet.has(id) ? 'row-skipped' : isBadPhone(r.phone) ? 'row-bad-phone' : '';
   const daysClass = (r.days_overdue || 0) > 180 ? 'badge-red' : (r.days_overdue || 0) > 90 ? 'badge-orange' : 'badge-yellow';
   return `<tr class="${cls}" id="${id}">
-    <td class="patient-name">${esc(r.household || r.household_id)}</td>
+    <td class="patient-name">${formatHousehold(r)}</td>
     <td>${phoneCell(r.phone, r.household, r.last_office, r.kids_due_names, id)}</td>
     <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
     <td>${riskBadge(r)}</td>
@@ -1182,7 +1282,7 @@ function renderOverdueRow(r) {
     <td><span class="badge ${daysClass}">${r.days_overdue || 0} days</span></td>
     <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span></td>
     <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}</td>
-    <td>${contactHistoryCell(id)}</td>
+    <td>${contactHistoryCell(id, r)}</td>
     <td>${actionBtns(id, r.phone)}</td>
   </tr>`;
 }
@@ -1210,7 +1310,7 @@ function renderTreatmentRow(r) {
     <td>${renderTxTags(r.tx_summary || r.treatment || '')}</td>
     <td class="fee">${r.total_fee ? '$' + Number(r.total_fee).toLocaleString() : '-'}</td>
     <td><span class="badge ${r.booking_slot === 'GA' ? 'badge-red' : 'badge-blue'}">${esc(r.booking_slot || '-')}</span></td>
-    <td>${contactHistoryCell(id)}</td>
+    <td>${contactHistoryCell(id, r)}</td>
     <td>${actionBtns(id, r.phone)}</td>
   </tr>`;
 }
