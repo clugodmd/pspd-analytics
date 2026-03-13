@@ -173,10 +173,34 @@ def query_overdue(conn):
 # This is the same view used by Treatment - Unscheduled.pbix
 
 def query_treatment(conn):
-    """Pull unscheduled treatment patients."""
+    """Pull unscheduled treatment patients.
+
+    Note: RiskTag column was removed — it does not exist in the view.
+    The view columns can be checked with:
+      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_NAME = 'vw_TxAction_Unscheduled_Current_Scheduler_v2'
+    """
     cursor = conn.cursor()
+
+    # First, try to discover available columns so we can include risk if it exists
+    risk_col = "NULL AS caries_risk"
     try:
         cursor.execute("""
+            SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = 'vw_TxAction_Unscheduled_Current_Scheduler_v2'
+              AND COLUMN_NAME IN ('RiskTag', 'CariesRisk', 'caries_risk', 'Risk', 'RiskLevel')
+        """)
+        risk_rows = [row[0] for row in cursor.fetchall()]
+        if risk_rows:
+            risk_col = f"{risk_rows[0]} AS caries_risk"
+            print(f"  Found risk column: {risk_rows[0]}")
+        else:
+            print(f"  No risk column found in treatment view — will use NULL")
+    except Exception:
+        pass
+
+    try:
+        cursor.execute(f"""
             SELECT
                 PATID                       AS patient_id,
                 FNAME                       AS fname,
@@ -191,7 +215,7 @@ def query_treatment(conn):
                 BookingSlot                 AS booking_slot,
                 DiagnosingProvider          AS diagnosing_provider,
                 PrimaryCarrierName          AS insurance,
-                RiskTag                     AS caries_risk,
+                {risk_col},
                 DaysSinceLastPlanActivity   AS days_since_plan,
                 NextApptDate                AS next_appt_date,
                 NextApptType                AS next_appt_type
@@ -203,7 +227,31 @@ def query_treatment(conn):
         return rows
     except Exception as e:
         print(f"  ✗ Treatment query failed: {e}")
-        return []
+        # Fallback: try minimal query without problematic columns
+        try:
+            print(f"  Retrying with minimal columns...")
+            cursor.execute("""
+                SELECT
+                    PATID                       AS patient_id,
+                    FNAME                       AS fname,
+                    LNAME                       AS lname,
+                    CONCAT(LNAME, ', ', FNAME)  AS name,
+                    AgeYears                    AS age,
+                    FormattedCellPhone          AS phone,
+                    EMAIL                       AS email,
+                    OfficeName                  AS last_office,
+                    TotalFee                    AS total_fee,
+                    BookingSlot                 AS booking_slot,
+                    NULL                        AS caries_risk
+                FROM vw_TxAction_Unscheduled_Current_Scheduler_v2
+                ORDER BY TotalFee DESC
+            """)
+            rows = rows_to_dicts(cursor)
+            print(f"  Treatment (minimal): {len(rows)} patients")
+            return rows
+        except Exception as e2:
+            print(f"  ✗ Treatment fallback also failed: {e2}")
+            return []
 
 
 # ── Data Freshness ──────────────────────────────────────────────────────────
