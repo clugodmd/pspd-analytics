@@ -465,6 +465,7 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
             <th>Treatment</th>
             <th data-sort="fee" class="sortable">Fee <span class="sort-arrow">↕</span></th>
             <th>Booking</th>
+            <th data-sort="provider" class="sortable">Tx Doctor <span class="sort-arrow">↕</span></th>
             <th>History</th>
             <th>Actions</th>
           </tr></thead>
@@ -999,8 +1000,8 @@ function columnSortCompare(a, b) {
       vb = (b.last_office || b.office || '').toLowerCase();
       return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
     case 'provider':
-      va = (a.last_provider || '').toLowerCase();
-      vb = (b.last_provider || '').toLowerCase();
+      va = (a.last_provider || a.diagnosing_provider || '').toLowerCase();
+      vb = (b.last_provider || b.diagnosing_provider || '').toLowerCase();
       return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
     case 'fee':
       va = a.total_fee || 0; vb = b.total_fee || 0;
@@ -1213,7 +1214,7 @@ function loadMoreRows() {
 }
 
 function loadMoreHtml(remaining) {
-  const cols = currentView === 'treatment' ? 10 : 11;
+  const cols = 11;
   return `<tr class="load-more-row"><td colspan="${cols}" style="text-align:center;padding:1rem;">
     <button onclick="loadMoreRows()" style="background:var(--green);color:#fff;border:none;padding:0.5rem 2rem;border-radius:6px;cursor:pointer;font-size:0.9rem;">
       Show Next ${Math.min(PAGE_SIZE, remaining)} of ${remaining} Remaining
@@ -1309,7 +1310,8 @@ function renderTreatmentRow(r) {
     <td>${riskBadge(r)}</td>
     <td>${renderTxTags(r.tx_summary || r.treatment || '')}</td>
     <td class="fee">${r.total_fee ? '$' + Number(r.total_fee).toLocaleString() : '-'}</td>
-    <td><span class="badge ${r.booking_slot === 'GA' ? 'badge-red' : 'badge-blue'}">${esc(r.booking_slot || '-')}</span></td>
+    <td>${bookingSlotCell(r)}</td>
+    <td style="font-size:0.78rem;color:var(--text2);">${esc(r.diagnosing_provider || '-')}</td>
     <td>${contactHistoryCell(id, r)}</td>
     <td>${actionBtns(id, r.phone)}</td>
   </tr>`;
@@ -1347,6 +1349,19 @@ function renderReview() {
       <td><button class="btn-review" onclick="flagReviewed('${esc(r.row_id)}')">Mark Reviewed</button></td>
     </tr>`;
   }).join('');
+}
+
+function bookingSlotCell(r) {
+  const tx = (r.tx_summary || r.treatment || '').toLowerCase();
+  let slot = r.booking_slot || '';
+  // SDF or sealant-only treatments are 30 min, not 60
+  const isSdfOrSealant = /\bsdf\b|\bseal/.test(tx) && !/\bga\b|\bblock\b|\bssc\b|\bcrown\b|\bext/.test(tx);
+  if (isSdfOrSealant && (slot === '60' || slot === 60)) {
+    slot = '30';
+  }
+  const isGA = String(slot).toUpperCase() === 'GA' || /\bga\b|\bblock\b/.test(tx);
+  if (isGA) return `<span class="badge badge-red">GA</span>`;
+  return `<span class="badge badge-blue">${esc(String(slot) || '-')}</span>`;
 }
 
 function renderTxTags(summary) {
