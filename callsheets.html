@@ -846,8 +846,7 @@ function switchView(view) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   document.querySelectorAll('.view-panel').forEach(p => p.style.display = 'none');
   document.getElementById('view-' + view).style.display = 'block';
-  updateKPIs();
-  if (view === 'review') renderReview();
+  render();
 }
 
 // ════════════════════════════════════════
@@ -1073,87 +1072,158 @@ function contactHistoryCell(rowId) {
 }
 
 // ════════════════════════════════════════
-// ── Rendering ──
+// ── Rendering (with pagination) ──
 // ════════════════════════════════════════
+const PAGE_SIZE = 50;
+let currentPage = 1;
+let currentFilteredItems = [];
+
 function render() {
   if (currentView === 'review') { renderReview(); updateKPIs(); return; }
-  const items = getFilteredData();
-  if (currentView === 'recall') renderRecall(items);
-  else if (currentView === 'overdue') renderOverdue(items);
-  else renderTreatment(items);
+  currentPage = 1;
+  currentFilteredItems = getFilteredData();
+  if (currentView === 'recall') renderRecall(currentFilteredItems);
+  else if (currentView === 'overdue') renderOverdue(currentFilteredItems);
+  else renderTreatment(currentFilteredItems);
   updateKPIs();
+}
+
+function loadMoreRows() {
+  currentPage++;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const slice = currentFilteredItems.slice(start, start + PAGE_SIZE);
+  if (!slice.length) return;
+  const bodyId = currentView === 'recall' ? 'recall-body' : currentView === 'overdue' ? 'overdue-body' : 'treatment-body';
+  const body = document.getElementById(bodyId);
+  // Remove existing "load more" row
+  const loadMoreRow = body.querySelector('.load-more-row');
+  if (loadMoreRow) loadMoreRow.remove();
+  // Append new rows
+  let html;
+  if (currentView === 'recall') html = slice.map(r => renderRecallRow(r)).join('');
+  else if (currentView === 'overdue') html = slice.map(r => renderOverdueRow(r)).join('');
+  else html = slice.map(r => renderTreatmentRow(r)).join('');
+  body.insertAdjacentHTML('beforeend', html);
+  // Add another load more button if needed
+  const shown = currentPage * PAGE_SIZE;
+  if (shown < currentFilteredItems.length) {
+    const remaining = currentFilteredItems.length - shown;
+    body.insertAdjacentHTML('beforeend', loadMoreHtml(remaining));
+  }
+}
+
+function loadMoreHtml(remaining) {
+  const cols = currentView === 'treatment' ? 10 : 11;
+  return `<tr class="load-more-row"><td colspan="${cols}" style="text-align:center;padding:1rem;">
+    <button onclick="loadMoreRows()" style="background:var(--green);color:#fff;border:none;padding:0.5rem 2rem;border-radius:6px;cursor:pointer;font-size:0.9rem;">
+      Show Next ${Math.min(PAGE_SIZE, remaining)} of ${remaining} Remaining
+    </button>
+    <button onclick="loadAllRows()" style="background:transparent;color:var(--text2);border:1px solid var(--border);padding:0.5rem 1.5rem;border-radius:6px;cursor:pointer;font-size:0.85rem;margin-left:0.5rem;">
+      Show All
+    </button>
+  </td></tr>`;
+}
+
+function loadAllRows() {
+  const bodyId = currentView === 'recall' ? 'recall-body' : currentView === 'overdue' ? 'overdue-body' : 'treatment-body';
+  const body = document.getElementById(bodyId);
+  const loadMoreRow = body.querySelector('.load-more-row');
+  if (loadMoreRow) loadMoreRow.remove();
+  const start = currentPage * PAGE_SIZE;
+  const slice = currentFilteredItems.slice(start);
+  let html;
+  if (currentView === 'recall') html = slice.map(r => renderRecallRow(r)).join('');
+  else if (currentView === 'overdue') html = slice.map(r => renderOverdueRow(r)).join('');
+  else html = slice.map(r => renderTreatmentRow(r)).join('');
+  body.insertAdjacentHTML('beforeend', html);
+  currentPage = Math.ceil(currentFilteredItems.length / PAGE_SIZE);
+}
+
+function renderRecallRow(r) {
+  const id = 'recall-' + r.household_id;
+  const cls = contactedSet.has(id) ? 'row-contacted' : skippedSet.has(id) ? 'row-skipped' : isBadPhone(r.phone) ? 'row-bad-phone' : '';
+  return `<tr class="${cls}" id="${id}">
+    <td class="patient-name">${esc(r.household || r.household_id)}</td>
+    <td>${phoneCell(r.phone, r.household, r.last_office, r.kids_due_names, id)}</td>
+    <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
+    <td>${riskBadge(r)}</td>
+    <td><span class="badge badge-blue">${r.kids_due_count || 0}</span></td>
+    <td style="font-size:0.78rem;">${esc(r.kids_due_names || '-')}</td>
+    <td>${esc(r.suggest_date || '-')}</td>
+    <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span></td>
+    <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}</td>
+    <td>${contactHistoryCell(id)}</td>
+    <td>${actionBtns(id, r.phone)}</td>
+  </tr>`;
 }
 
 function renderRecall(items) {
   const body = document.getElementById('recall-body');
   document.getElementById('recall-count').textContent = items.length + ' households';
   if (!items.length) { body.innerHTML = emptyRow(11); return; }
+  const page = items.slice(0, PAGE_SIZE);
+  body.innerHTML = page.map(r => renderRecallRow(r)).join('');
+  if (items.length > PAGE_SIZE) {
+    body.insertAdjacentHTML('beforeend', loadMoreHtml(items.length - PAGE_SIZE));
+  }
+}
 
-  body.innerHTML = items.map(r => {
-    const id = 'recall-' + r.household_id;
-    const cls = contactedSet.has(id) ? 'row-contacted' : skippedSet.has(id) ? 'row-skipped' : isBadPhone(r.phone) ? 'row-bad-phone' : '';
-    return `<tr class="${cls}" id="${id}">
-      <td class="patient-name">${esc(r.household || r.household_id)}</td>
-      <td>${phoneCell(r.phone, r.household, r.last_office, r.kids_due_names, id)}</td>
-      <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
-      <td>${riskBadge(r)}</td>
-      <td><span class="badge badge-blue">${r.kids_due_count || 0}</span></td>
-      <td style="font-size:0.78rem;">${esc(r.kids_due_names || '-')}</td>
-      <td>${esc(r.suggest_date || '-')}</td>
-      <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span></td>
-      <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}</td>
-      <td>${contactHistoryCell(id)}</td>
-      <td>${actionBtns(id, r.phone)}</td>
-    </tr>`;
-  }).join('');
+function renderOverdueRow(r) {
+  const id = 'overdue-' + r.household_id;
+  const cls = contactedSet.has(id) ? 'row-contacted' : skippedSet.has(id) ? 'row-skipped' : isBadPhone(r.phone) ? 'row-bad-phone' : '';
+  const daysClass = (r.days_overdue || 0) > 180 ? 'badge-red' : (r.days_overdue || 0) > 90 ? 'badge-orange' : 'badge-yellow';
+  return `<tr class="${cls}" id="${id}">
+    <td class="patient-name">${esc(r.household || r.household_id)}</td>
+    <td>${phoneCell(r.phone, r.household, r.last_office, r.kids_due_names, id)}</td>
+    <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
+    <td>${riskBadge(r)}</td>
+    <td><span class="badge badge-blue">${r.kids_due_count || 0}</span></td>
+    <td style="font-size:0.78rem;">${esc(r.kids_due_names || '-')}</td>
+    <td><span class="badge ${daysClass}">${r.days_overdue || 0} days</span></td>
+    <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span></td>
+    <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}</td>
+    <td>${contactHistoryCell(id)}</td>
+    <td>${actionBtns(id, r.phone)}</td>
+  </tr>`;
 }
 
 function renderOverdue(items) {
   const body = document.getElementById('overdue-body');
   document.getElementById('overdue-count').textContent = items.length + ' households';
   if (!items.length) { body.innerHTML = emptyRow(11); return; }
+  const page = items.slice(0, PAGE_SIZE);
+  body.innerHTML = page.map(r => renderOverdueRow(r)).join('');
+  if (items.length > PAGE_SIZE) {
+    body.insertAdjacentHTML('beforeend', loadMoreHtml(items.length - PAGE_SIZE));
+  }
+}
 
-  body.innerHTML = items.map(r => {
-    const id = 'overdue-' + r.household_id;
-    const cls = contactedSet.has(id) ? 'row-contacted' : skippedSet.has(id) ? 'row-skipped' : isBadPhone(r.phone) ? 'row-bad-phone' : '';
-    const daysClass = (r.days_overdue || 0) > 180 ? 'badge-red' : (r.days_overdue || 0) > 90 ? 'badge-orange' : 'badge-yellow';
-    return `<tr class="${cls}" id="${id}">
-      <td class="patient-name">${esc(r.household || r.household_id)}</td>
-      <td>${phoneCell(r.phone, r.household, r.last_office, r.kids_due_names, id)}</td>
-      <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
-      <td>${riskBadge(r)}</td>
-      <td><span class="badge badge-blue">${r.kids_due_count || 0}</span></td>
-      <td style="font-size:0.78rem;">${esc(r.kids_due_names || '-')}</td>
-      <td><span class="badge ${daysClass}">${r.days_overdue || 0} days</span></td>
-      <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span></td>
-      <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}</td>
-      <td>${contactHistoryCell(id)}</td>
-      <td>${actionBtns(id, r.phone)}</td>
-    </tr>`;
-  }).join('');
+function renderTreatmentRow(r) {
+  const id = 'tx-' + r.patient_id;
+  const cls = contactedSet.has(id) ? 'row-contacted' : skippedSet.has(id) ? 'row-skipped' : isBadPhone(r.phone) ? 'row-bad-phone' : '';
+  return `<tr class="${cls}" id="${id}">
+    <td class="patient-name">${esc(r.name || (r.lname + ', ' + r.fname))}</td>
+    <td class="patient-age">${r.age || '-'}</td>
+    <td>${phoneCell(r.phone, r.name || r.fname, '', '', id)}</td>
+    <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
+    <td>${riskBadge(r)}</td>
+    <td>${renderTxTags(r.tx_summary || r.treatment || '')}</td>
+    <td class="fee">${r.total_fee ? '$' + Number(r.total_fee).toLocaleString() : '-'}</td>
+    <td><span class="badge ${r.booking_slot === 'GA' ? 'badge-red' : 'badge-blue'}">${esc(r.booking_slot || '-')}</span></td>
+    <td>${contactHistoryCell(id)}</td>
+    <td>${actionBtns(id, r.phone)}</td>
+  </tr>`;
 }
 
 function renderTreatment(items) {
   const body = document.getElementById('treatment-body');
   document.getElementById('treatment-count').textContent = items.length + ' patients';
   if (!items.length) { body.innerHTML = emptyRow(11); return; }
-
-  body.innerHTML = items.map(r => {
-    const id = 'tx-' + r.patient_id;
-    const cls = contactedSet.has(id) ? 'row-contacted' : skippedSet.has(id) ? 'row-skipped' : isBadPhone(r.phone) ? 'row-bad-phone' : '';
-    return `<tr class="${cls}" id="${id}">
-      <td class="patient-name">${esc(r.name || (r.lname + ', ' + r.fname))}</td>
-      <td class="patient-age">${r.age || '-'}</td>
-      <td>${phoneCell(r.phone, r.name || r.fname, '', '', id)}</td>
-      <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
-      <td>${riskBadge(r)}</td>
-      <td>${renderTxTags(r.tx_summary || r.treatment || '')}</td>
-      <td class="fee">${r.total_fee ? '$' + Number(r.total_fee).toLocaleString() : '-'}</td>
-      <td><span class="badge ${r.booking_slot === 'GA' ? 'badge-red' : 'badge-blue'}">${esc(r.booking_slot || '-')}</span></td>
-      <td>${contactHistoryCell(id)}</td>
-      <td>${actionBtns(id, r.phone)}</td>
-    </tr>`;
-  }).join('');
+  const page = items.slice(0, PAGE_SIZE);
+  body.innerHTML = page.map(r => renderTreatmentRow(r)).join('');
+  if (items.length > PAGE_SIZE) {
+    body.insertAdjacentHTML('beforeend', loadMoreHtml(items.length - PAGE_SIZE));
+  }
 }
 
 function renderReview() {
