@@ -741,7 +741,7 @@
       "period_end": "2026-03-20",
       "pay_date_iso": "2026-03-27",
       "status": "live",
-      "daysElapsed": 6,
+      "daysElapsed": 7,
       "daysTotal": 14,
       "doctors": [
         {
@@ -893,7 +893,7 @@
       "locked": false
     }
   },
-  "last_updated": "2026-03-12T14:43:55.257465Z",
+  "last_updated": "2026-03-13T04:03:35.048092Z",
   "generated_by": "payroll_refresh.py",
   "source": "rpt.vw_income_allocation (Azure SQL)"
 }
