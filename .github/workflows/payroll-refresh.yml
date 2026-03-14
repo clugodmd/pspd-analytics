@@ -16,8 +16,8 @@ name: Refresh Payroll Data
 
 on:
   schedule:
-    # Run at 6 AM and 6 PM PST (2 PM and 2 AM UTC)
-    - cron: '0 14 * * *'
+    # Run at 4 AM CST (10 AM UTC) and 6 PM PST (2 AM UTC)
+    - cron: '0 10 * * *'
     - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
