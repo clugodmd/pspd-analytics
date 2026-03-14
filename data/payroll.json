@@ -762,8 +762,8 @@
           "payNo": 9340.67,
           "payWith": 10684.74,
           "off": {
-            "SW": 12622.98,
-            "MV": 17904.85
+            "MV": 17904.85,
+            "SW": 12622.98
           }
         },
         {
@@ -773,8 +773,8 @@
           "payNo": 6875.45,
           "payWith": 7780.71,
           "off": {
-            "MO": 10631.52,
             "EV": 3560.82,
+            "MO": 10631.52,
             "LS": 8038.27
           }
         },
@@ -785,8 +785,8 @@
           "payNo": 6792.34,
           "payWith": 8002.63,
           "off": {
-            "SW": 11232.37,
             "MV": 9900.17,
+            "SW": 11232.37,
             "MO": 1097.0
           }
         },
@@ -894,7 +894,7 @@
       "locked": false
     }
   },
-  "last_updated": "2026-03-14T04:02:19.402245Z",
+  "last_updated": "2026-03-14T13:40:15.764522Z",
   "generated_by": "payroll_refresh.py",
   "source": "rpt.vw_income_allocation (Azure SQL)"
 }
