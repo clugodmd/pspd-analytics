@@ -9,12 +9,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #1E3228; --bg2: #253D32; --card: #2E483A; --card-hover: #3D5E4C;
-      --accent: #CD7823; --accent-light: #E8943D;
-      --accent-glow: rgba(205,120,35,0.15); --accent-border: rgba(205,120,35,0.3);
-      --text: #F5F5F5; --text2: #94A3B8; --text3: #6F8090;
-      --border: rgba(255,255,255,0.08);
-      --green: #5DBE6E; --red: #E85D5D; --purple: #8B6BB5; --blue: #5BA4D9;
+      --bg: #1C3329; --bg2: #243D33; --card: #2E4A3E; --card-hover: #38564A;
+      --accent: #6292A0; --accent-light: #7AAFBD;
+      --accent-glow: rgba(98,146,160,0.15); --accent-border: rgba(98,146,160,0.35);
+      --text: #F7F8F8; --text2: #9AADA2; --text3: #5E7A6E;
+      --border: rgba(247,248,248,0.08);
+      --green: #5DBE8A; --red: #C4485A; --blue: #6292A0; --purple: #8B7BA5; --teal: #7AAFBD;
+      --wood: #7D6652; --wood-glow: rgba(125,102,82,0.12);
       --radius: 12px;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -28,9 +29,9 @@
     .nav-tabs { display:flex; justify-content:center; gap:8px; padding:16px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
     .tab-btn { padding:8px 20px; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; border:1px solid transparent; background:transparent; color:var(--text2); transition:all 0.2s; font-family:'DM Sans',sans-serif; }
     .tab-btn:hover { color:var(--text); }
-    .tab-btn.active { background:rgba(205,120,35,0.2); color:var(--accent); border-color:var(--accent-border); }
+    .tab-btn.active { background:rgba(98,146,160,0.2); color:var(--accent); border-color:var(--accent-border); }
 
-    .main { max-width:1200px; margin:0 auto; padding:32px 16px; }
+    .main { max-width:1400px; margin:0 auto; padding:32px 16px; }
     .view { display:none; }
     .view.active { display:block; }
 
@@ -42,74 +43,92 @@
     .card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:24px; }
 
     .kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:32px; }
-    .kpi { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; text-align:center; transition:all 0.2s; }
+    .kpi { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; transition:all 0.2s; }
     .kpi:hover { border-color:var(--accent-border); box-shadow:0 0 20px var(--accent-glow); }
     .kpi .kpi-label { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text3); font-weight:600; margin-bottom:8px; }
-    .kpi .kpi-value { font-size:clamp(24px,3vw,30px); font-weight:700; }
+    .kpi .kpi-value { font-size:clamp(28px,4vw,36px); font-weight:700; line-height:1.1; }
     .kpi .kpi-value.accent-val { background:linear-gradient(135deg,var(--accent),var(--accent-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
     .kpi .kpi-value.green-val { color:var(--green); }
     .kpi .kpi-value.red-val { color:var(--red); }
     .kpi .kpi-value.blue-val { color:var(--blue); }
-    .kpi .kpi-detail { font-size:12px; color:var(--text3); margin-top:4px; }
+    .kpi .kpi-detail { font-size:13px; color:var(--text2); margin-top:8px; }
+    .kpi .kpi-sublabel { font-size:11px; color:var(--text3); margin-top:4px; }
 
     .two-col { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
     @media(max-width:900px) { .two-col { grid-template-columns:1fr; } }
 
+    .three-col { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+    @media(max-width:1200px) { .three-col { grid-template-columns:repeat(2,1fr); } }
+    @media(max-width:768px) { .three-col { grid-template-columns:1fr; } }
+
     table { width:100%; border-collapse:collapse; font-size:13px; }
-    th { text-align:left; padding:10px 12px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3); border-bottom:2px solid rgba(255,255,255,0.06); font-weight:600; }
+    th { text-align:left; padding:12px 14px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3); border-bottom:2px solid rgba(255,255,255,0.06); font-weight:700; }
     th.r, td.r { text-align:right; }
-    td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); }
-    tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; padding-top:14px; }
-    .mono { font-family:'DM Sans',monospace; }
+    td { padding:12px 14px; border-bottom:1px solid rgba(255,255,255,0.04); }
+    tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; padding-top:14px; color:var(--accent); }
+    tr.section-row td { padding-top:16px; font-weight:700; color:var(--accent); font-size:14px; border-bottom:2px solid var(--accent-border); }
+    .mono { font-family:'Courier New',monospace; }
     .dim { color:var(--text2); }
-    .bold { font-weight:600; }
+    .bold { font-weight:700; }
 
-    .badge { display:inline-block; padding:3px 10px; border-radius:10px; font-size:11px; font-weight:600; }
-    .badge-green { background:rgba(93,190,110,0.15); color:var(--green); }
-    .badge-red { background:rgba(232,93,93,0.15); color:var(--red); }
-    .badge-orange { background:rgba(205,120,35,0.15); color:var(--accent); }
-    .badge-blue { background:rgba(91,164,217,0.15); color:var(--blue); }
+    .badge { display:inline-block; padding:4px 12px; border-radius:10px; font-size:11px; font-weight:600; }
+    .badge-green { background:rgba(93,190,138,0.15); color:var(--green); }
+    .badge-red { background:rgba(196,72,90,0.15); color:var(--red); }
+    .badge-orange { background:rgba(98,146,160,0.15); color:var(--accent); }
+    .badge-blue { background:rgba(98,146,160,0.15); color:var(--blue); }
 
-    .trend-up { color:var(--green); }
-    .trend-down { color:var(--red); }
+    .trend { display:inline-flex; align-items:center; gap:4px; font-size:13px; font-weight:600; }
+    .trend.up { color:var(--green); }
+    .trend.down { color:var(--red); }
 
-    .chart-bar { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
-    .chart-bar .label { width:120px; font-size:13px; color:var(--text2); flex-shrink:0; }
-    .chart-bar .bar-wrap { flex:1; height:26px; background:var(--bg2); border-radius:4px; overflow:hidden; position:relative; }
-    .chart-bar .bar-fill { height:100%; border-radius:4px; }
-    .chart-bar .bar-fill.income { background:linear-gradient(135deg,var(--green),#7FD98E); opacity:0.75; }
-    .chart-bar .bar-fill.expense { background:linear-gradient(135deg,var(--red),#F08080); opacity:0.75; }
-    .chart-bar .bar-fill.profit { background:linear-gradient(135deg,var(--accent),var(--accent-light)); opacity:0.75; }
-    .chart-bar .amt { width:90px; text-align:right; font-size:13px; color:var(--text2); }
+    .chart-row { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+    .chart-row .label { width:140px; font-size:13px; color:var(--text2); flex-shrink:0; }
+    .chart-row .bars { flex:1; display:flex; gap:4px; height:32px; background:var(--bg2); border-radius:6px; overflow:hidden; position:relative; }
+    .chart-row .bar { height:100%; border-radius:4px; position:relative; transition:all 0.2s; }
+    .chart-row .bar.revenue { background:linear-gradient(135deg,var(--green),#7FD9A2); }
+    .chart-row .bar.expense { background:linear-gradient(135deg,var(--red),#D06878); }
+    .chart-row .bar.net { background:linear-gradient(135deg,var(--accent),var(--accent-light)); }
+    .chart-row .amt { width:100px; text-align:right; font-size:12px; color:var(--text2); flex-shrink:0; mono }
 
-    .month-selector { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:0; }
+    .trend-chart { margin:20px 0; }
+    .trend-month { display:grid; grid-template-columns:80px 1fr 1fr 1fr 1fr; gap:12px; align-items:center; margin-bottom:16px; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+    .trend-month.header { font-weight:700; font-size:11px; text-transform:uppercase; color:var(--text3); letter-spacing:0.5px; border-bottom:2px solid var(--border); }
+    .trend-month .month-name { font-weight:600; }
+    .trend-month .number { text-align:right; mono; font-size:13px; }
+
+    .bar-wrapper { position:relative; height:24px; background:var(--bg2); border-radius:4px; overflow:hidden; }
+    .bar-fill { height:100%; border-radius:4px; position:absolute; top:0; left:0; }
+    .bar-fill.rev { background:linear-gradient(135deg,var(--green),#7FD9A2); }
+    .bar-fill.exp { background:linear-gradient(135deg,var(--red),#D06878); }
+
+    .year-selector { display:flex; gap:8px; margin-bottom:24px; }
+    .year-btn { padding:8px 20px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text2); transition:all 0.2s; font-family:'DM Sans',sans-serif; }
+    .year-btn:hover { border-color:var(--accent-border); color:var(--text); }
+    .year-btn.active { background:var(--accent-glow); border-color:var(--accent-border); color:var(--accent); }
+
+    .month-selector { display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; }
     .month-btn { padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text2); transition:all 0.2s; font-family:'DM Sans',sans-serif; }
     .month-btn:hover { border-color:var(--accent-border); color:var(--text); }
     .month-btn.active { background:var(--accent-glow); border-color:var(--accent-border); color:var(--accent); }
 
-    .waterfall { display:flex; align-items:flex-end; justify-content:center; gap:8px; height:200px; margin:20px 0; }
-    .waterfall-bar { display:flex; flex-direction:column; align-items:center; flex:1; max-width:80px; }
-    .waterfall-bar .bar { width:100%; border-radius:4px 4px 0 0; min-height:4px; }
-    .waterfall-bar .bar.income-bar { background:linear-gradient(180deg,var(--green),#4AA85A); }
-    .waterfall-bar .bar.expense-bar { background:linear-gradient(180deg,var(--red),#C74545); }
-    .waterfall-bar .bar.profit-bar { background:linear-gradient(180deg,var(--accent),var(--accent-light)); }
-    .waterfall-bar .val { font-size:11px; font-weight:600; margin-bottom:4px; }
-    .waterfall-bar .lbl { font-size:10px; color:var(--text3); margin-top:6px; text-align:center; }
+    .aging-bar { display:flex; gap:2px; height:40px; border-radius:8px; overflow:hidden; margin-bottom:16px; }
+    .aging-segment { flex:1; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; transition:all 0.2s; }
+    .aging-segment:hover { filter:brightness(1.2); }
+    .aging-legend { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:16px; font-size:12px; }
+    .aging-legend-item { display:flex; align-items:center; gap:8px; }
+    .aging-swatch { width:14px; height:14px; border-radius:3px; flex-shrink:0; }
 
-    .aging-row { display:flex; gap:4px; margin-bottom:16px; border-radius:6px; overflow:hidden; }
-    .aging-segment { height:32px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; transition:all 0.3s; }
-    .aging-legend { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; font-size:12px; color:var(--text2); margin-top:8px; }
-    .aging-legend .swatch { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:4px; vertical-align:middle; }
+    .customer-list { }
+    .customer-item { display:grid; grid-template-columns:1fr auto auto; gap:16px; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+    .customer-item.header { font-weight:700; font-size:11px; text-transform:uppercase; color:var(--text3); border-bottom:2px solid var(--border); }
+    .customer-name { }
+    .customer-balance { text-align:right; mono; }
+    .customer-age { text-align:right; }
 
     .empty-state { text-align:center; padding:60px 20px; }
     .empty-state .icon { font-size:48px; margin-bottom:16px; }
-    .empty-state .title { font-size:20px; font-weight:600; margin-bottom:8px; }
+    .empty-state .title { font-size:24px; font-weight:600; margin-bottom:12px; }
     .empty-state .desc { color:var(--text3); font-size:14px; line-height:1.6; max-width:500px; margin:0 auto; }
-    .empty-state .steps { text-align:left; display:inline-block; margin-top:20px; }
-    .empty-state .step { display:flex; align-items:center; gap:10px; margin-bottom:10px; color:var(--text2); font-size:13px; }
-    .empty-state .step-num { width:24px; height:24px; border-radius:50%; background:var(--accent-glow); border:1px solid var(--accent-border); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; }
-    .empty-state .step.done .step-num { background:rgba(93,190,110,0.15); border-color:rgba(93,190,110,0.3); color:var(--green); }
-    .empty-state .step.done { color:var(--green); }
 
     .footer { text-align:center; padding:24px 16px; border-top:1px solid var(--border); margin-top:40px; font-size:12px; color:var(--text3); line-height:1.6; }
     .footer strong { color:var(--accent); font-weight:600; }
@@ -127,7 +146,6 @@
     <a href="index.html" class="back-link">&larr; Control Tower Home</a>
     <h1>Puget Sound <span>Pediatric Dentistry</span></h1>
     <div class="sub">Dentrepreneur Control Tower &mdash; Financial Overview</div>
-    <div class="month-selector" id="month-selector"></div>
   </div>
 
   <div class="nav-tabs">
@@ -142,19 +160,15 @@
     <!-- OVERVIEW -->
     <div class="view active" id="view-overview">
       <div class="kpi-row" id="kpi-overview"></div>
+
+      <div class="card">
+        <div class="sec-title green">Revenue vs Expenses Trend — Year to Date</div>
+        <div id="trend-chart" style="margin-top:20px;"></div>
+      </div>
+
       <div class="two-col">
         <div>
-          <div class="sec-title green">Revenue vs Expenses</div>
-          <div class="card" id="rev-exp-chart"></div>
-        </div>
-        <div>
-          <div class="sec-title">Profit Waterfall</div>
-          <div class="card" id="waterfall-chart"></div>
-        </div>
-      </div>
-      <div class="two-col" style="margin-top:0">
-        <div>
-          <div class="sec-title blue">Top Expense Categories</div>
+          <div class="sec-title blue">Top 5 Expense Categories YTD</div>
           <div class="card" id="top-expenses"></div>
         </div>
         <div>
@@ -166,31 +180,55 @@
 
     <!-- P&L -->
     <div class="view" id="view-pnl">
-      <div class="sec-title green">Profit &amp; Loss Statement</div>
-      <div class="card" id="pnl-table" style="overflow-x:auto"></div>
+      <div style="display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap; align-items:center;">
+        <div>
+          <div style="font-size:11px; text-transform:uppercase; color:var(--text3); font-weight:600; margin-bottom:8px;">Year</div>
+          <div class="year-selector" id="year-selector"></div>
+        </div>
+        <div>
+          <div style="font-size:11px; text-transform:uppercase; color:var(--text3); font-weight:600; margin-bottom:8px;">Month</div>
+          <div class="month-selector" id="pnl-month-selector"></div>
+        </div>
+      </div>
+      <div class="card" id="pnl-table" style="overflow-x:auto;"></div>
     </div>
 
     <!-- BALANCE SHEET -->
     <div class="view" id="view-balance">
       <div class="sec-title blue">Balance Sheet</div>
-      <div class="card" id="balance-table" style="overflow-x:auto"></div>
+      <div class="card" id="balance-table" style="overflow-x:auto;"></div>
     </div>
 
     <!-- CASH FLOW -->
     <div class="view" id="view-cashflow">
       <div class="sec-title">Cash Flow Statement</div>
-      <div class="card" id="cashflow-table" style="overflow-x:auto"></div>
+      <div class="card" id="cashflow-table" style="overflow-x:auto;"></div>
     </div>
 
     <!-- AR / AP -->
     <div class="view" id="view-receivables">
+      <div class="three-col">
+        <div>
+          <div class="sec-title red">AR KPIs</div>
+          <div class="card" id="ar-kpis"></div>
+        </div>
+        <div>
+          <div class="sec-title blue">AP KPIs</div>
+          <div class="card" id="ap-kpis"></div>
+        </div>
+        <div>
+          <div class="sec-title">AR Aging Distribution</div>
+          <div class="card" id="ar-aging-full"></div>
+        </div>
+      </div>
+
       <div class="two-col">
         <div>
-          <div class="sec-title red">Accounts Receivable</div>
+          <div class="sec-title red">Top 15 Customers (AR)</div>
           <div class="card" id="ar-detail"></div>
         </div>
         <div>
-          <div class="sec-title blue">Accounts Payable</div>
+          <div class="sec-title blue">Vendors (AP)</div>
           <div class="card" id="ap-detail"></div>
         </div>
       </div>
@@ -208,15 +246,18 @@
     const fmt = n => Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
     const fmtK = n => '$'+(Math.abs(n)/1000).toFixed(1)+'K';
     const fmtWhole = n => '$'+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:0});
+    const fmtPct = n => (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
 
     let DATA = null;
-    let currentMonth = null;
+    let selectedYear = null;
+    let selectedMonth = null;
 
     function showView(id, btn) {
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       $('view-'+id).classList.add('active');
       btn.classList.add('active');
+      if (id === 'pnl') buildPnLView();
     }
 
     function showEmpty() {
@@ -226,320 +267,535 @@
           <div class="title">Financial Dashboard Ready</div>
           <div class="desc">
             This dashboard will display your QuickBooks Online financial data once the connection is complete.
-            Angela will be able to see P&L, Balance Sheet, Cash Flow, and AR/AP at a glance.
-          </div>
-          <div class="steps">
-            <div class="step done"><div class="step-num">✓</div> QuickBooks Developer app created</div>
-            <div class="step done"><div class="step-num">✓</div> API credentials stored in GitHub</div>
-            <div class="step"><div class="step-num">3</div> Complete OAuth token exchange</div>
-            <div class="step"><div class="step-num">4</div> Run first data pull from QBO</div>
           </div>
         </div>
       `;
     }
 
-    function buildMonthSelector() {
-      if (!DATA || !DATA.months) return;
-      const row = $('month-selector');
-      row.innerHTML = '';
-      DATA.months.forEach(m => {
+    function getMonthsByYear(year) {
+      if (!DATA || !DATA.months) return [];
+      return DATA.months.filter(m => m.year === year);
+    }
+
+    function buildYearSelector() {
+      if (!DATA || !DATA.months || DATA.months.length === 0) return;
+      const years = [...new Set(DATA.months.map(m => m.year))].sort((a,b) => b-a);
+      const sel = $('year-selector');
+      sel.innerHTML = '';
+      years.forEach(y => {
         const btn = document.createElement('button');
-        btn.className = 'month-btn' + (m.key === currentMonth ? ' active' : '');
-        btn.textContent = m.label;
-        btn.onclick = () => { currentMonth = m.key; buildMonthSelector(); buildAll(); };
-        row.appendChild(btn);
+        btn.className = 'year-btn' + (y === selectedYear ? ' active' : '');
+        btn.textContent = y;
+        btn.onclick = () => {
+          selectedYear = y;
+          buildYearSelector();
+          buildMonthSelectorForPnL();
+        };
+        sel.appendChild(btn);
       });
+      if (!selectedYear && years.length > 0) {
+        selectedYear = years[0];
+        buildYearSelector();
+        buildMonthSelectorForPnL();
+      }
     }
 
-    function getMonth() {
+    function buildMonthSelectorForPnL() {
+      const months = getMonthsByYear(selectedYear);
+      const sel = $('pnl-month-selector');
+      sel.innerHTML = '';
+      months.forEach(m => {
+        const btn = document.createElement('button');
+        btn.className = 'month-btn' + (m.key === selectedMonth ? ' active' : '');
+        btn.textContent = m.label.split(' ')[0];
+        btn.onclick = () => {
+          selectedMonth = m.key;
+          buildMonthSelectorForPnL();
+          buildPnLTable();
+        };
+        sel.appendChild(btn);
+      });
+      if (!selectedMonth && months.length > 0) {
+        selectedMonth = months[months.length - 1].key;
+        buildMonthSelectorForPnL();
+      }
+    }
+
+    function getMonth(key) {
       if (!DATA || !DATA.months) return null;
-      return DATA.months.find(m => m.key === currentMonth) || DATA.months[0];
+      return DATA.months.find(m => m.key === key);
     }
 
-    function buildKPIs() {
-      const m = getMonth();
-      if (!m) return;
-      const pnl = m.pnl || {};
-      const revenue = pnl.totalIncome || 0;
-      const expenses = pnl.totalExpenses || 0;
-      const netIncome = pnl.netIncome || 0;
-      const margin = revenue > 0 ? (netIncome / revenue * 100).toFixed(1) : '0.0';
-      const ar = m.ar ? m.ar.total || 0 : 0;
-      const ap = m.ap ? m.ap.total || 0 : 0;
-      const cash = m.balance ? m.balance.cash || 0 : 0;
+    function getYTDData(year) {
+      if (!DATA) return null;
+      const months = getMonthsByYear(year);
+      if (months.length === 0) return null;
+      const lastMonth = months[months.length - 1];
+      if (year === DATA.current_year && DATA.ytd && DATA.ytd.current) {
+        return { data: DATA.ytd.current, label: 'YTD ' + year };
+      }
+      if (year === DATA.prior_year && DATA.ytd && DATA.ytd.prior) {
+        return { data: DATA.ytd.prior, label: 'YTD ' + year };
+      }
+      return null;
+    }
+
+    function buildOverviewKPIs() {
+      if (!DATA || !DATA.current_year) {
+        $('kpi-overview').innerHTML = '';
+        return;
+      }
+
+      const ytd = getYTDData(DATA.current_year);
+      if (!ytd) {
+        $('kpi-overview').innerHTML = '';
+        return;
+      }
+
+      const curr = ytd.data;
+      const rev = curr.totalIncome || 0;
+      const net = curr.netIncome || 0;
+      const margin = rev > 0 ? (net / rev * 100) : 0;
+
+      let priorYtd = getYTDData(DATA.prior_year);
+      let revPctChange = 0;
+      let netPctChange = 0;
+      if (priorYtd) {
+        const priorRev = priorYtd.data.totalIncome || 0;
+        const priorNet = priorYtd.data.netIncome || 0;
+        revPctChange = priorRev !== 0 ? ((rev - priorRev) / Math.abs(priorRev) * 100) : 0;
+        netPctChange = priorNet !== 0 ? ((net - priorNet) / Math.abs(priorNet) * 100) : 0;
+      }
+
+      const m = getMonth(selectedMonth) || (DATA.months && DATA.months[DATA.months.length-1]);
+      const ar = m && m.ar ? (m.ar.total || 0) : 0;
+      const cash = m && m.balance ? (m.balance.cash || 0) : 0;
 
       $('kpi-overview').innerHTML = `
         <div class="kpi">
-          <div class="kpi-label">Revenue</div>
-          <div class="kpi-value accent-val">${fmtWhole(revenue)}</div>
-          <div class="kpi-detail">${m.label}</div>
+          <div class="kpi-label">YTD Revenue</div>
+          <div class="kpi-value accent-val">${fmtWhole(rev)}</div>
+          <div class="kpi-detail">${revPctChange !== 0 ? `<span class="trend ${revPctChange>=0?'up':'down'}">${revPctChange>=0?'▲':'▼'} ${fmtPct(revPctChange)}</span>` : ''}</div>
+          <div class="kpi-sublabel">vs prior year YTD</div>
         </div>
         <div class="kpi">
-          <div class="kpi-label">Net Income</div>
-          <div class="kpi-value ${netIncome >= 0 ? 'green-val' : 'red-val'}">${netIncome < 0 ? '-' : ''}${fmtWhole(netIncome)}</div>
-          <div class="kpi-detail">${margin}% margin</div>
+          <div class="kpi-label">YTD Net Income</div>
+          <div class="kpi-value ${net>=0?'green-val':'red-val'}">${net<0?'-':''}${fmtWhole(net)}</div>
+          <div class="kpi-detail">${margin.toFixed(1)}% margin</div>
+          <div class="kpi-sublabel">${netPctChange !== 0 ? `<span class="trend ${netPctChange>=0?'up':'down'}">${netPctChange>=0?'▲':'▼'} ${fmtPct(netPctChange)}</span>` : 'vs prior year'}</div>
         </div>
         <div class="kpi">
           <div class="kpi-label">Cash on Hand</div>
           <div class="kpi-value blue-val">${fmtWhole(cash)}</div>
-          <div class="kpi-detail">All accounts</div>
+          <div class="kpi-detail">Current month</div>
         </div>
         <div class="kpi">
           <div class="kpi-label">AR Outstanding</div>
-          <div class="kpi-value ${ar > 50000 ? 'red-val' : 'accent-val'}">${fmtWhole(ar)}</div>
-          <div class="kpi-detail">AP: ${fmtWhole(ap)}</div>
+          <div class="kpi-value ${ar>50000?'red-val':'accent-val'}">${fmtWhole(ar)}</div>
+          <div class="kpi-detail">${ar>50000?'⚠ High':'Current'}</div>
         </div>
       `;
     }
 
-    function buildRevenueExpenseChart() {
-      const m = getMonth();
-      if (!m || !m.pnl) return;
-      const revenue = m.pnl.totalIncome || 0;
-      const expenses = Math.abs(m.pnl.totalExpenses || 0);
-      const netIncome = m.pnl.netIncome || 0;
-      const max = Math.max(revenue, expenses);
+    function buildTrendChart() {
+      if (!DATA || !DATA.current_year) {
+        $('trend-chart').innerHTML = '';
+        return;
+      }
 
-      $('rev-exp-chart').innerHTML = `
-        <div class="chart-bar">
-          <div class="label">Revenue</div>
-          <div class="bar-wrap"><div class="bar-fill income" style="width:${(revenue/max*100).toFixed(1)}%"></div></div>
-          <div class="amt">${fmtK(revenue)}</div>
-        </div>
-        <div class="chart-bar">
-          <div class="label">Expenses</div>
-          <div class="bar-wrap"><div class="bar-fill expense" style="width:${(expenses/max*100).toFixed(1)}%"></div></div>
-          <div class="amt">${fmtK(expenses)}</div>
-        </div>
-        <div class="chart-bar">
-          <div class="label" style="font-weight:600;color:var(--text)">Net Income</div>
-          <div class="bar-wrap"><div class="bar-fill profit" style="width:${(Math.abs(netIncome)/max*100).toFixed(1)}%"></div></div>
-          <div class="amt" style="font-weight:600;color:${netIncome>=0?'var(--green)':'var(--red)'}">${netIncome<0?'-':''}${fmtK(netIncome)}</div>
+      const months = getMonthsByYear(DATA.current_year);
+      if (months.length === 0) {
+        $('trend-chart').innerHTML = '<div style="color:var(--text3);text-align:center;padding:30px">No data for current year</div>';
+        return;
+      }
+
+      let maxRev = 0;
+      let maxExp = 0;
+      months.forEach(m => {
+        if (m.pnl) {
+          maxRev = Math.max(maxRev, m.pnl.totalIncome || 0);
+          maxExp = Math.max(maxExp, Math.abs(m.pnl.totalExpenses || 0));
+        }
+      });
+      const maxVal = Math.max(maxRev, maxExp);
+
+      let html = `
+        <div class="trend-month header">
+          <div class="month-name">Month</div>
+          <div>Revenue</div>
+          <div>Expenses</div>
+          <div>Net Income</div>
+          <div>Margin</div>
         </div>
       `;
-    }
 
-    function buildWaterfall() {
-      const m = getMonth();
-      if (!m || !m.pnl) return;
-      const rev = m.pnl.totalIncome || 0;
-      const cogs = Math.abs(m.pnl.costOfGoods || 0);
-      const opex = Math.abs(m.pnl.operatingExpenses || 0);
-      const other = Math.abs(m.pnl.otherExpenses || 0);
-      const net = m.pnl.netIncome || 0;
-      const maxVal = Math.max(rev, cogs+opex+other, Math.abs(net));
-      const scale = v => Math.max(4, (v / maxVal * 160));
+      months.forEach(m => {
+        const rev = m.pnl ? (m.pnl.totalIncome || 0) : 0;
+        const exp = Math.abs(m.pnl ? (m.pnl.totalExpenses || 0) : 0);
+        const net = m.pnl ? (m.pnl.netIncome || 0) : 0;
+        const margin = rev > 0 ? (net / rev * 100) : 0;
 
-      $('waterfall-chart').innerHTML = `
-        <div class="waterfall">
-          <div class="waterfall-bar">
-            <div class="val" style="color:var(--green)">${fmtK(rev)}</div>
-            <div class="bar income-bar" style="height:${scale(rev)}px"></div>
-            <div class="lbl">Revenue</div>
+        const revPct = maxVal > 0 ? (rev / maxVal * 100) : 0;
+        const expPct = maxVal > 0 ? (exp / maxVal * 100) : 0;
+
+        html += `
+          <div class="trend-month">
+            <div class="month-name">${m.label.split(' ')[0]}</div>
+            <div style="position:relative;height:20px;margin:4px 0;">
+              <div class="bar-wrapper" style="width:100%;">
+                <div class="bar-fill rev" style="width:${revPct}%"></div>
+              </div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px;">${fmtK(rev)}</div>
+            </div>
+            <div style="position:relative;height:20px;margin:4px 0;">
+              <div class="bar-wrapper" style="width:100%;">
+                <div class="bar-fill exp" style="width:${expPct}%"></div>
+              </div>
+              <div style="font-size:11px;color:var(--text2);margin-top:2px;">${fmtK(exp)}</div>
+            </div>
+            <div class="number" style="color:${net>=0?'var(--green)':'var(--red)'}">${net<0?'-':''}${fmtK(net)}</div>
+            <div class="number">${margin.toFixed(1)}%</div>
           </div>
-          <div class="waterfall-bar">
-            <div class="val" style="color:var(--red)">-${fmtK(cogs)}</div>
-            <div class="bar expense-bar" style="height:${scale(cogs)}px"></div>
-            <div class="lbl">COGS</div>
-          </div>
-          <div class="waterfall-bar">
-            <div class="val" style="color:var(--red)">-${fmtK(opex)}</div>
-            <div class="bar expense-bar" style="height:${scale(opex)}px"></div>
-            <div class="lbl">Operating</div>
-          </div>
-          ${other > 0 ? `<div class="waterfall-bar">
-            <div class="val" style="color:var(--red)">-${fmtK(other)}</div>
-            <div class="bar expense-bar" style="height:${scale(other)}px"></div>
-            <div class="lbl">Other</div>
-          </div>` : ''}
-          <div class="waterfall-bar">
-            <div class="val" style="color:${net>=0?'var(--accent)':'var(--red)'}">${net<0?'-':''}${fmtK(net)}</div>
-            <div class="bar profit-bar" style="height:${scale(Math.abs(net))}px"></div>
-            <div class="lbl">Net Income</div>
-          </div>
-        </div>
-      `;
+        `;
+      });
+
+      $('trend-chart').innerHTML = html;
     }
 
     function buildTopExpenses() {
-      const m = getMonth();
-      if (!m || !m.pnl || !m.pnl.expenseBreakdown) return;
-      const sorted = [...m.pnl.expenseBreakdown].sort((a,b) => b.amount - a.amount).slice(0, 8);
-      const max = sorted[0] ? sorted[0].amount : 1;
+      const ytd = getYTDData(DATA.current_year);
+      if (!ytd) {
+        $('top-expenses').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px">No data</div>';
+        return;
+      }
+
+      const expenses = {};
+      const months = getMonthsByYear(DATA.current_year);
+      months.forEach(m => {
+        if (m.pnl && m.pnl.expenseBreakdown) {
+          m.pnl.expenseBreakdown.forEach(e => {
+            expenses[e.name] = (expenses[e.name] || 0) + (e.amount || 0);
+          });
+        }
+      });
+
+      const sorted = Object.entries(expenses)
+        .map(([name, amount]) => ({name, amount}))
+        .sort((a,b) => b.amount - a.amount)
+        .slice(0, 5);
+
+      if (sorted.length === 0) {
+        $('top-expenses').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px">No expense data</div>';
+        return;
+      }
+
+      const maxAmt = sorted[0].amount;
       let html = '';
       sorted.forEach(e => {
-        const pct = (e.amount / max * 100).toFixed(1);
-        html += `<div class="chart-bar">
-          <div class="label">${e.name}</div>
-          <div class="bar-wrap"><div class="bar-fill expense" style="width:${pct}%"></div></div>
-          <div class="amt">${fmtK(e.amount)}</div>
-        </div>`;
+        const pct = (Math.abs(e.amount) / maxAmt * 100).toFixed(1);
+        const pctOfTotal = ytd.data.totalExpenses ? (Math.abs(e.amount) / Math.abs(ytd.data.totalExpenses) * 100).toFixed(1) : 0;
+        html += `
+          <div class="chart-row">
+            <div class="label">${e.name}</div>
+            <div class="bars">
+              <div class="bar expense" style="width:${pct}%"></div>
+            </div>
+            <div class="amt">${fmtK(e.amount)}<br><span style="font-size:11px;color:var(--text3)">${pctOfTotal}% of total</span></div>
+          </div>
+        `;
       });
-      $('top-expenses').innerHTML = html || '<div style="color:var(--text3);text-align:center;padding:20px">No expense data</div>';
+
+      $('top-expenses').innerHTML = html;
     }
 
     function buildARAgingPreview() {
-      const m = getMonth();
-      if (!m || !m.ar || !m.ar.aging) return;
+      const m = DATA.months && DATA.months.length > 0 ? DATA.months[DATA.months.length-1] : null;
+      if (!m || !m.ar || !m.ar.aging) {
+        $('ar-aging-preview').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px">No AR data</div>';
+        return;
+      }
+
       const aging = m.ar.aging;
       const total = aging.current + aging.days30 + aging.days60 + aging.days90 + aging.over90;
-      if (total === 0) { $('ar-aging-preview').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px">No AR data</div>'; return; }
+      if (total === 0) {
+        $('ar-aging-preview').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px">No AR data</div>';
+        return;
+      }
 
-      const pct = v => (v / total * 100).toFixed(1);
-      $('ar-aging-preview').innerHTML = `
-        <div class="aging-row">
-          ${aging.current > 0 ? `<div class="aging-segment" style="width:${pct(aging.current)}%;background:var(--green);color:#fff">${pct(aging.current)}%</div>` : ''}
-          ${aging.days30 > 0 ? `<div class="aging-segment" style="width:${pct(aging.days30)}%;background:var(--accent);color:#fff">${pct(aging.days30)}%</div>` : ''}
-          ${aging.days60 > 0 ? `<div class="aging-segment" style="width:${pct(aging.days60)}%;background:var(--red);color:#fff">${pct(aging.days60)}%</div>` : ''}
-          ${aging.days90 > 0 ? `<div class="aging-segment" style="width:${pct(aging.days90)}%;background:#C74545;color:#fff">${pct(aging.days90)}%</div>` : ''}
-          ${aging.over90 > 0 ? `<div class="aging-segment" style="width:${pct(aging.over90)}%;background:#8B3333;color:#fff">${pct(aging.over90)}%</div>` : ''}
-        </div>
-        <div class="aging-legend">
-          <span><span class="swatch" style="background:var(--green)"></span>Current: ${fmtWhole(aging.current)}</span>
-          <span><span class="swatch" style="background:var(--accent)"></span>1-30: ${fmtWhole(aging.days30)}</span>
-          <span><span class="swatch" style="background:var(--red)"></span>31-60: ${fmtWhole(aging.days60)}</span>
-          <span><span class="swatch" style="background:#C74545"></span>61-90: ${fmtWhole(aging.days90)}</span>
-          <span><span class="swatch" style="background:#8B3333"></span>90+: ${fmtWhole(aging.over90)}</span>
-        </div>
-        <div style="text-align:center;margin-top:16px;font-size:18px;font-weight:700;color:var(--accent)">
-          Total AR: ${fmtWhole(total)}
-        </div>
-      `;
+      const pct = v => ((v / total) * 100).toFixed(1);
+      let html = `<div class="aging-bar">`;
+      if (aging.current > 0) html += `<div class="aging-segment" style="width:${pct(aging.current)}%;background:var(--green);color:#fff">${pct(aging.current)}%</div>`;
+      if (aging.days30 > 0) html += `<div class="aging-segment" style="width:${pct(aging.days30)}%;background:var(--accent);color:#fff">${pct(aging.days30)}%</div>`;
+      if (aging.days60 > 0) html += `<div class="aging-segment" style="width:${pct(aging.days60)}%;background:var(--red);color:#fff">${pct(aging.days60)}%</div>`;
+      if (aging.days90 > 0) html += `<div class="aging-segment" style="width:${pct(aging.days90)}%;background:#A03848;color:#fff">${pct(aging.days90)}%</div>`;
+      if (aging.over90 > 0) html += `<div class="aging-segment" style="width:${pct(aging.over90)}%;background:#7A2838;color:#fff">${pct(aging.over90)}%</div>`;
+      html += `</div>`;
+
+      html += `<div class="aging-legend">`;
+      if (aging.current > 0) html += `<div class="aging-legend-item"><div class="aging-swatch" style="background:var(--green)"></div><span><strong>Current:</strong> ${fmtWhole(aging.current)}</span></div>`;
+      if (aging.days30 > 0) html += `<div class="aging-legend-item"><div class="aging-swatch" style="background:var(--accent)"></div><span><strong>1-30:</strong> ${fmtWhole(aging.days30)}</span></div>`;
+      if (aging.days60 > 0) html += `<div class="aging-legend-item"><div class="aging-swatch" style="background:var(--red)"></div><span><strong>31-60:</strong> ${fmtWhole(aging.days60)}</span></div>`;
+      if (aging.days90 > 0) html += `<div class="aging-legend-item"><div class="aging-swatch" style="background:#A03848"></div><span><strong>61-90:</strong> ${fmtWhole(aging.days90)}</span></div>`;
+      if (aging.over90 > 0) html += `<div class="aging-legend-item"><div class="aging-swatch" style="background:#7A2838"></div><span><strong>90+:</strong> ${fmtWhole(aging.over90)}</span></div>`;
+      html += `</div>`;
+
+      html += `<div style="text-align:center;margin-top:20px;padding-top:16px;border-top:2px solid var(--border);"><div style="font-size:11px;text-transform:uppercase;color:var(--text3);font-weight:600;margin-bottom:6px;">Total AR</div><div style="font-size:22px;font-weight:700;color:var(--accent)">${fmtWhole(total)}</div></div>`;
+
+      $('ar-aging-preview').innerHTML = html;
+    }
+
+    function buildPnLView() {
+      buildYearSelector();
+      buildMonthSelectorForPnL();
+      buildPnLTable();
     }
 
     function buildPnLTable() {
-      const m = getMonth();
-      if (!m || !m.pnl) return;
-      const pnl = m.pnl;
-      const rows = pnl.lineItems || [];
+      const m = getMonth(selectedMonth);
+      if (!m || !m.pnl) {
+        $('pnl-table').innerHTML = '<div style="color:var(--text3);text-align:center;padding:30px">No data for selected month</div>';
+        return;
+      }
 
-      let html = '<table><thead><tr><th>Account</th><th class="r">Amount</th></tr></thead><tbody>';
+      const rows = m.pnl.lineItems || [];
+      const ytdData = getYTDData(selectedYear);
+
+      let html = '<table><thead><tr><th>Account</th><th class="r">This Month</th>';
+      if (ytdData) html += '<th class="r">YTD</th>';
+      html += '</tr></thead><tbody>';
+
       let lastSection = '';
       rows.forEach(r => {
         if (r.section && r.section !== lastSection) {
-          html += `<tr><td colspan="2" style="padding-top:16px;font-weight:700;color:var(--accent);font-size:14px;border-bottom:2px solid var(--accent-border)">${r.section}</td></tr>`;
+          html += `<tr class="section-row"><td colspan="3">${r.section}</td></tr>`;
           lastSection = r.section;
         }
+        const indent = r.depth ? 'padding-left:'+(r.depth*20+14)+'px;' : '';
         const isTotal = r.isTotal;
-        const indent = r.depth ? 'padding-left:'+(r.depth*20+12)+'px' : '';
         html += `<tr class="${isTotal?'total-row':''}">
           <td style="${indent}">${r.name}</td>
-          <td class="r mono ${isTotal?'bold':''}">${r.amount < 0 ? '-' : ''}$${fmt(Math.abs(r.amount))}</td>
-        </tr>`;
+          <td class="r mono ${isTotal?'bold':''}" style="color:${r.amount<0?'var(--red)':'var(--green)'}">${r.amount<0?'-':''}$${fmt(Math.abs(r.amount))}</td>`;
+        if (ytdData) {
+          const ytdItem = m.pnl.ytdLineItems && m.pnl.ytdLineItems.find(x => x.name === r.name);
+          const ytdAmt = ytdItem ? ytdItem.amount : 0;
+          html += `<td class="r mono ${isTotal?'bold':''}" style="color:${ytdAmt<0?'var(--red)':'var(--green)'}">${ytdAmt<0?'-':''}$${fmt(Math.abs(ytdAmt))}</td>`;
+        }
+        html += '</tr>';
       });
+
       html += '</tbody></table>';
       $('pnl-table').innerHTML = html;
     }
 
-    function buildBalanceTable() {
-      const m = getMonth();
-      if (!m || !m.balance) return;
+    function buildBalanceSheet() {
+      const m = DATA.months && DATA.months.length > 0 ? DATA.months[DATA.months.length-1] : null;
+      if (!m || !m.balance) {
+        $('balance-table').innerHTML = '<div style="color:var(--text3);text-align:center;padding:30px">No balance sheet data</div>';
+        return;
+      }
+
       const rows = m.balance.lineItems || [];
       let html = '<table><thead><tr><th>Account</th><th class="r">Balance</th></tr></thead><tbody>';
       let lastSection = '';
+
       rows.forEach(r => {
         if (r.section && r.section !== lastSection) {
-          html += `<tr><td colspan="2" style="padding-top:16px;font-weight:700;color:var(--blue);font-size:14px;border-bottom:2px solid rgba(91,164,217,0.3)">${r.section}</td></tr>`;
+          html += `<tr class="section-row"><td colspan="2">${r.section}</td></tr>`;
           lastSection = r.section;
         }
+        const indent = r.depth ? 'padding-left:'+(r.depth*20+14)+'px;' : '';
         const isTotal = r.isTotal;
-        const indent = r.depth ? 'padding-left:'+(r.depth*20+12)+'px' : '';
         html += `<tr class="${isTotal?'total-row':''}">
           <td style="${indent}">${r.name}</td>
-          <td class="r mono ${isTotal?'bold':''}">${r.amount < 0 ? '-' : ''}$${fmt(Math.abs(r.amount))}</td>
+          <td class="r mono ${isTotal?'bold':''}" style="color:${r.amount<0?'var(--red)':'var(--green)'}">${r.amount<0?'-':''}$${fmt(Math.abs(r.amount))}</td>
         </tr>`;
       });
+
       html += '</tbody></table>';
       $('balance-table').innerHTML = html;
     }
 
-    function buildCashflowTable() {
-      const m = getMonth();
-      if (!m || !m.cashflow) return;
+    function buildCashFlow() {
+      const m = DATA.months && DATA.months.length > 0 ? DATA.months[DATA.months.length-1] : null;
+      if (!m || !m.cashflow) {
+        $('cashflow-table').innerHTML = '<div style="color:var(--text3);text-align:center;padding:30px">No cash flow data</div>';
+        return;
+      }
+
       const rows = m.cashflow.lineItems || [];
       let html = '<table><thead><tr><th>Category</th><th class="r">Amount</th></tr></thead><tbody>';
       let lastSection = '';
+
       rows.forEach(r => {
         if (r.section && r.section !== lastSection) {
-          html += `<tr><td colspan="2" style="padding-top:16px;font-weight:700;color:var(--accent);font-size:14px;border-bottom:2px solid var(--accent-border)">${r.section}</td></tr>`;
+          html += `<tr class="section-row"><td colspan="2">${r.section}</td></tr>`;
           lastSection = r.section;
         }
+        const indent = r.depth ? 'padding-left:'+(r.depth*20+14)+'px;' : '';
         const isTotal = r.isTotal;
-        const indent = r.depth ? 'padding-left:'+(r.depth*20+12)+'px' : '';
         html += `<tr class="${isTotal?'total-row':''}">
           <td style="${indent}">${r.name}</td>
-          <td class="r mono ${isTotal?'bold':''}" style="color:${r.amount>=0?'var(--green)':'var(--red)'}">${r.amount < 0 ? '-' : ''}$${fmt(Math.abs(r.amount))}</td>
+          <td class="r mono ${isTotal?'bold':''}" style="color:${r.amount>=0?'var(--green)':'var(--red)'}">${r.amount<0?'-':''}$${fmt(Math.abs(r.amount))}</td>
         </tr>`;
       });
+
       html += '</tbody></table>';
       $('cashflow-table').innerHTML = html;
     }
 
     function buildARAPDetail() {
-      const m = getMonth();
-      if (!m) return;
+      const m = DATA.months && DATA.months.length > 0 ? DATA.months[DATA.months.length-1] : null;
 
-      // AR
-      if (m.ar && m.ar.customers) {
-        let html = '<table><thead><tr><th>Customer/Patient</th><th class="r">Balance</th><th class="r">Age</th></tr></thead><tbody>';
-        m.ar.customers.slice(0, 15).forEach(c => {
-          const badgeClass = c.age <= 30 ? 'badge-green' : c.age <= 60 ? 'badge-orange' : 'badge-red';
-          html += `<tr><td>${c.name}</td><td class="r mono">$${fmt(c.balance)}</td><td class="r"><span class="badge ${badgeClass}">${c.age}d</span></td></tr>`;
-        });
-        if (m.ar.total) {
-          html += `<tr class="total-row"><td>Total AR</td><td class="r mono bold">$${fmt(m.ar.total)}</td><td></td></tr>`;
-        }
-        html += '</tbody></table>';
-        $('ar-detail').innerHTML = html;
+      // AR KPIs
+      if (m && m.ar) {
+        const total = m.ar.total || 0;
+        const aging = m.ar.aging || {};
+        const current = aging.current || 0;
+        const overdue = (aging.days30 || 0) + (aging.days60 || 0) + (aging.days90 || 0) + (aging.over90 || 0);
+        const overdueRatio = total > 0 ? (overdue / total * 100).toFixed(1) : 0;
+
+        $('ar-kpis').innerHTML = `
+          <div class="kpi">
+            <div class="kpi-label">Total AR</div>
+            <div class="kpi-value accent-val">${fmtWhole(total)}</div>
+          </div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <div style="font-size:11px;text-transform:uppercase;color:var(--text3);font-weight:600;margin-bottom:12px;">Aging Breakdown</div>
+            <div style="font-size:13px;margin-bottom:8px;"><span style="color:var(--green);font-weight:600;">Current:</span> ${fmtWhole(current)}</div>
+            <div style="font-size:13px;"><span style="color:var(--red);font-weight:600;">Overdue:</span> ${fmtWhole(overdue)} (${overdueRatio}%)</div>
+          </div>
+        `;
       } else {
-        $('ar-detail').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px">AR data will appear after first QBO sync</div>';
+        $('ar-kpis').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px">No AR data</div>';
       }
 
-      // AP
-      if (m.ap && m.ap.vendors) {
-        let html = '<table><thead><tr><th>Vendor</th><th class="r">Balance</th><th class="r">Due</th></tr></thead><tbody>';
+      // AP KPIs
+      if (m && m.ap) {
+        const total = m.ap.total || 0;
+        const overdue = m.ap.vendors ? m.ap.vendors.filter(v => v.overdue).length : 0;
+        const overdueAmt = m.ap.vendors ? m.ap.vendors.filter(v => v.overdue).reduce((s, v) => s + (v.balance || 0), 0) : 0;
+
+        $('ap-kpis').innerHTML = `
+          <div class="kpi">
+            <div class="kpi-label">Total AP</div>
+            <div class="kpi-value accent-val">${fmtWhole(total)}</div>
+          </div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <div style="font-size:11px;text-transform:uppercase;color:var(--text3);font-weight:600;margin-bottom:12px;">Overdue</div>
+            <div style="font-size:13px;margin-bottom:8px;"><span style="color:var(--red);font-weight:600;">${overdue}</span> vendors</div>
+            <div style="font-size:13px;"><span style="color:var(--red);font-weight:600;">${fmtWhole(overdueAmt)}</span> overdue</div>
+          </div>
+        `;
+      } else {
+        $('ap-kpis').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px">No AP data</div>';
+      }
+
+      // AR Aging full
+      if (m && m.ar && m.ar.aging) {
+        const aging = m.ar.aging;
+        const total = aging.current + aging.days30 + aging.days60 + aging.days90 + aging.over90;
+        if (total > 0) {
+          const pct = v => ((v / total) * 100).toFixed(1);
+          let html = `<div class="aging-bar">`;
+          if (aging.current > 0) html += `<div class="aging-segment" style="width:${pct(aging.current)}%;background:var(--green);color:#fff;text-color:#fff">${pct(aging.current)}%</div>`;
+          if (aging.days30 > 0) html += `<div class="aging-segment" style="width:${pct(aging.days30)}%;background:var(--accent);color:#fff">${pct(aging.days30)}%</div>`;
+          if (aging.days60 > 0) html += `<div class="aging-segment" style="width:${pct(aging.days60)}%;background:var(--red);color:#fff">${pct(aging.days60)}%</div>`;
+          if (aging.days90 > 0) html += `<div class="aging-segment" style="width:${pct(aging.days90)}%;background:#A03848;color:#fff">${pct(aging.days90)}%</div>`;
+          if (aging.over90 > 0) html += `<div class="aging-segment" style="width:${pct(aging.over90)}%;background:#7A2838;color:#fff">${pct(aging.over90)}%</div>`;
+          html += `</div>`;
+          html += `<div class="aging-legend">`;
+          html += `<div class="aging-legend-item"><div class="aging-swatch" style="background:var(--green)"></div><span><strong>Current:</strong> ${fmtWhole(aging.current)}</span></div>`;
+          html += `<div class="aging-legend-item"><div class="aging-swatch" style="background:var(--accent)"></div><span><strong>1-30d:</strong> ${fmtWhole(aging.days30)}</span></div>`;
+          html += `<div class="aging-legend-item"><div class="aging-swatch" style="background:var(--red)"></div><span><strong>31-60d:</strong> ${fmtWhole(aging.days60)}</span></div>`;
+          html += `<div class="aging-legend-item"><div class="aging-swatch" style="background:#A03848"></div><span><strong>61-90d:</strong> ${fmtWhole(aging.days90)}</span></div>`;
+          html += `<div class="aging-legend-item"><div class="aging-swatch" style="background:#7A2838"></div><span><strong>90+d:</strong> ${fmtWhole(aging.over90)}</span></div>`;
+          html += `</div>`;
+          $('ar-aging-full').innerHTML = html;
+        } else {
+          $('ar-aging-full').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px">No AR aging data</div>';
+        }
+      } else {
+        $('ar-aging-full').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px">No AR aging data</div>';
+      }
+
+      // AR Customer List
+      if (m && m.ar && m.ar.customers && m.ar.customers.length > 0) {
+        let html = `<div class="customer-item header"><div class="customer-name">Customer</div><div class="customer-balance">Balance</div><div class="customer-age">Age</div></div>`;
+        m.ar.customers.slice(0, 15).forEach(c => {
+          const badgeClass = c.age <= 30 ? 'badge-green' : c.age <= 60 ? 'badge-orange' : 'badge-red';
+          html += `
+            <div class="customer-item">
+              <div class="customer-name">${c.name}</div>
+              <div class="customer-balance mono">${fmtWhole(c.balance)}</div>
+              <div class="customer-age"><span class="badge ${badgeClass}">${c.age}d</span></div>
+            </div>
+          `;
+        });
+        $('ar-detail').innerHTML = html;
+      } else {
+        $('ar-detail').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px">No customer data</div>';
+      }
+
+      // AP Vendor List
+      if (m && m.ap && m.ap.vendors && m.ap.vendors.length > 0) {
+        let html = `<div class="customer-item header"><div class="customer-name">Vendor</div><div class="customer-balance">Balance</div><div class="customer-age">Status</div></div>`;
         m.ap.vendors.slice(0, 15).forEach(v => {
           const badgeClass = v.overdue ? 'badge-red' : 'badge-green';
-          html += `<tr><td>${v.name}</td><td class="r mono">$${fmt(v.balance)}</td><td class="r"><span class="badge ${badgeClass}">${v.overdue ? 'Overdue' : 'Current'}</span></td></tr>`;
+          html += `
+            <div class="customer-item">
+              <div class="customer-name">${v.name}</div>
+              <div class="customer-balance mono">${fmtWhole(v.balance)}</div>
+              <div class="customer-age"><span class="badge ${badgeClass}">${v.overdue ? '⚠ Overdue' : 'Current'}</span></div>
+            </div>
+          `;
         });
-        if (m.ap.total) {
-          html += `<tr class="total-row"><td>Total AP</td><td class="r mono bold">$${fmt(m.ap.total)}</td><td></td></tr>`;
-        }
-        html += '</tbody></table>';
         $('ap-detail').innerHTML = html;
       } else {
-        $('ap-detail').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px">AP data will appear after first QBO sync</div>';
+        $('ap-detail').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px">No vendor data</div>';
       }
     }
 
     function buildAll() {
-      if (!DATA || !DATA.months || DATA.months.length === 0) { showEmpty(); return; }
-      buildKPIs();
-      buildRevenueExpenseChart();
-      buildWaterfall();
+      if (!DATA || !DATA.months || DATA.months.length === 0) {
+        showEmpty();
+        return;
+      }
+
+      if (!selectedYear) {
+        selectedYear = DATA.current_year;
+      }
+      if (!selectedMonth) {
+        selectedMonth = DATA.months[DATA.months.length - 1].key;
+      }
+
+      buildOverviewKPIs();
+      buildTrendChart();
       buildTopExpenses();
       buildARAgingPreview();
-      buildPnLTable();
-      buildBalanceTable();
-      buildCashflowTable();
+      buildBalanceSheet();
+      buildCashFlow();
       buildARAPDetail();
     }
 
-    // Load data from JSON
     (async function loadData() {
       try {
         const resp = await fetch('data/financials.json?t=' + Date.now());
-        if (!resp.ok) { showEmpty(); return; }
+        if (!resp.ok) {
+          showEmpty();
+          return;
+        }
         DATA = await resp.json();
-        if (!DATA.months || DATA.months.length === 0) { showEmpty(); return; }
-        currentMonth = DATA.months[DATA.months.length - 1].key;
-        buildMonthSelector();
+        if (!DATA.months || DATA.months.length === 0) {
+          showEmpty();
+          return;
+        }
         buildAll();
         if (DATA.last_updated) {
           const d = new Date(DATA.last_updated);
           $('last-updated').textContent = 'Data refreshed: ' + d.toLocaleString('en-US', {month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});
         }
       } catch(e) {
+        console.error('Error loading financials:', e);
         showEmpty();
       }
     })();

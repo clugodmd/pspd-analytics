@@ -1,899 +1,434 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PSPD Analytics - Command Center</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --bg-primary: #1E3228;
-            --bg-secondary: #253D32;
-            --bg-card: #2E483A;
-            --bg-card-hover: #3D5E4C;
-            --bg-sidebar: #172A20;
-            --accent: #CD7823;
-            --accent-glow: rgba(205, 120, 35, 0.15);
-            --accent-soft: #A8611B;
-            --text-primary: #F5F5F5;
-            --text-secondary: #94A3B8;
-            --text-muted: #6F8090;
-            --border: rgba(255, 255, 255, 0.08);
-            --border-accent: rgba(205, 120, 35, 0.3);
-            --success: #3D7A4A;
-            --warning: #CD7823;
-            --danger: #B5403E;
-            --cat-production: #CD7823;
-            --cat-patients: #3D7A4A;
-            --cat-operations: #4A7B8C;
-            --cat-payroll: #8B6BB5;
-            --radius: 12px;
-            --sidebar-width: 260px;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-            font-family: 'DM Sans', sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            overflow: hidden;
-        }
-
-        /* LOGIN OVERLAY */
-        .login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-primary);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .login-overlay.hidden {
-            display: none;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        .login-card {
-            background-color: var(--bg-card);
-            padding: 48px 40px;
-            border-radius: var(--radius);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-            max-width: 380px;
-            width: 100%;
-            animation: slideUp 0.4s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(30px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .login-logo {
-            font-family: 'Instrument Serif', Georgia, serif;
-            font-size: 32px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, var(--accent) 0%, #E8943D 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .login-subtitle {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-bottom: 32px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            color: var(--text-secondary);
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-
-        .form-select,
-        .form-input {
-            width: 100%;
-            padding: 12px 14px;
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .form-select:focus,
-        .form-input:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-
-        .form-input[type="password"] {
-            letter-spacing: 0.3em;
-        }
-
-        .login-button {
-            width: 100%;
-            padding: 12px 16px;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-soft) 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 24px;
-        }
-
-        .login-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(205, 120, 35, 0.3);
-        }
-
-        .login-button:active {
-            transform: translateY(0);
-        }
-
-        .error-message {
-            color: var(--danger);
-            font-size: 13px;
-            margin-top: 12px;
-            min-height: 18px;
-        }
-
-        /* MAIN LAYOUT */
-        .main-layout {
-            display: flex;
-            width: 100%;
-            height: 100%;
-        }
-
-        .main-layout.hidden {
-            display: none;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--bg-sidebar);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            transition: width 0.3s ease;
-        }
-
-        .sidebar-logo {
-            padding: 24px 20px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .sidebar-logo-text {
-            font-family: 'Instrument Serif', Georgia, serif;
-            font-size: 18px;
-            font-weight: 600;
-            background: linear-gradient(135deg, var(--accent) 0%, #E8943D 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 4px;
-        }
-
-        .sidebar-subtitle {
-            font-size: 11px;
-            color: var(--text-muted);
-            letter-spacing: 0.3px;
-        }
-
-        .nav-section {
-            padding: 24px 0;
-            border-bottom: 1px solid var(--border);
-            flex: 1;
-        }
-
-        .nav-label {
-            padding: 0 20px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-        }
-
-        .nav-item {
-            padding: 12px 20px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border-left: 3px solid transparent;
-            position: relative;
-            font-size: 14px;
-        }
-
-        .nav-item:hover {
-            color: var(--text-primary);
-            border-left-color: var(--accent);
-        }
-
-        .nav-item.active {
-            color: var(--text-primary);
-            border-left-color: var(--accent);
-            background-color: rgba(205, 120, 35, 0.1);
-        }
-
-        .sidebar-footer {
-            padding: 20px;
-            border-top: 1px solid var(--border);
-        }
-
-        .user-info {
-            margin-bottom: 16px;
-        }
-
-        .user-name {
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-
-        .user-role {
-            font-size: 12px;
-            color: var(--text-muted);
-            text-transform: capitalize;
-        }
-
-        .sign-out-button {
-            width: 100%;
-            padding: 10px 12px;
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .sign-out-button:hover {
-            background-color: rgba(205, 120, 35, 0.1);
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        /* MAIN CONTENT */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .content-header {
-            padding: 32px;
-            background-color: var(--bg-primary);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .content-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .content-subtitle {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-bottom: 24px;
-        }
-
-        .search-bar {
-            width: 100%;
-            max-width: 340px;
-            padding: 10px 14px;
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .search-bar::placeholder {
-            color: var(--text-muted);
-        }
-
-        .search-bar:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-
-        .filter-section {
-            padding: 0 32px 32px 32px;
-            background-color: var(--bg-primary);
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .filter-button {
-            padding: 8px 16px;
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .filter-button:hover {
-            border-color: var(--accent);
-            color: var(--text-primary);
-        }
-
-        .filter-button.active {
-            color: white;
-            border: none;
-        }
-
-        .filter-button.active[data-category="production"] {
-            background-color: var(--cat-production);
-        }
-
-        .filter-button.active[data-category="patients"] {
-            background-color: var(--cat-patients);
-        }
-
-        .filter-button.active[data-category="operations"] {
-            background-color: var(--cat-operations);
-        }
-
-        .filter-button.active[data-category="payroll"] {
-            background-color: var(--cat-payroll);
-        }
-
-        .filter-button.active[data-category="all"] {
-            background-color: var(--accent);
-        }
-
-        /* CARDS CONTAINER */
-        .cards-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0 32px 32px 32px;
-        }
-
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 24px;
-        }
-
-        .report-card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .report-card:hover {
-            background-color: var(--bg-card-hover);
-            transform: translateY(-2px);
-            border-color: var(--border-accent);
-            box-shadow: 0 0 20px var(--accent-glow);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 16px;
-        }
-
-        .card-icon {
-            font-size: 32px;
-            line-height: 1;
-        }
-
-        .card-badge-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .card-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .card-badge.production {
-            background-color: rgba(205, 120, 35, 0.15);
-            color: var(--cat-production);
-        }
-
-        .card-badge.patients {
-            background-color: rgba(61, 122, 74, 0.15);
-            color: var(--cat-patients);
-        }
-
-        .card-badge.operations {
-            background-color: rgba(74, 123, 140, 0.15);
-            color: var(--cat-operations);
-        }
-
-        .card-badge.payroll {
-            background-color: rgba(139, 107, 181, 0.15);
-            color: var(--cat-payroll);
-        }
-
-        .card-badge.coming-soon {
-            border: 1px dashed var(--text-muted);
-            background-color: transparent;
-            color: var(--text-muted);
-            padding: 3px 8px;
-            font-size: 10px;
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 10px;
-            line-height: 1.3;
-        }
-
-        .card-description {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 16px;
-            flex: 1;
-            line-height: 1.5;
-        }
-
-        .card-link {
-            color: var(--accent);
-            font-size: 13px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .card-link:hover {
-            gap: 10px;
-        }
-
-        .card-link.coming-soon {
-            opacity: 0.6;
-            cursor: default;
-            pointer-events: none;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            :root {
-                --sidebar-width: 0;
-            }
-
-            .sidebar {
-                position: fixed;
-                left: -100%;
-                height: 100%;
-                z-index: 100;
-                max-width: 260px;
-                width: 260px;
-                transition: left 0.3s ease;
-            }
-
-            .sidebar.open {
-                left: 0;
-            }
-
-            .content-header {
-                padding: 20px 16px;
-            }
-
-            .content-title {
-                font-size: 24px;
-            }
-
-            .filter-section {
-                padding: 0 16px 16px 16px;
-            }
-
-            .cards-container {
-                padding: 0 16px 16px 16px;
-            }
-
-            .cards-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* SCROLLBAR STYLING */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--bg-secondary);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-muted);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dentrepreneur Control Tower</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #1C3329; --bg2: #243D33; --card: #2E4A3E; --card-hover: #38564A;
+      --accent: #6292A0; --accent-light: #7AAFBD;
+      --accent-glow: rgba(98,146,160,0.15); --accent-border: rgba(98,146,160,0.35);
+      --text: #F7F8F8; --text2: #9AADA2; --text3: #5E7A6E;
+      --border: rgba(247,248,248,0.08);
+      --green: #5DBE8A; --red: #C4485A; --blue: #6292A0; --purple: #8B7BA5; --teal: #7AAFBD;
+      --wood: #7D6652; --wood-glow: rgba(125,102,82,0.12);
+      --radius: 12px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+    /* ── LOGIN SCREEN ── */
+    #login-screen {
+      display:flex; align-items:center; justify-content:center;
+      min-height:100vh; padding:20px;
+    }
+    .login-box {
+      background:var(--card); border:1px solid var(--border); border-radius:16px;
+      padding:48px 40px; width:100%; max-width:400px; text-align:center;
+    }
+    .login-box .logo {
+      font-family:'Instrument Serif',Georgia,serif; font-size:28px; font-weight:600; margin-bottom:4px;
+    }
+    .login-box .logo span { color:var(--accent); }
+    .login-box .logo-sub { font-size:13px; color:var(--text3); margin-bottom:32px; }
+    .login-box label { display:block; text-align:left; font-size:12px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+    .login-box select, .login-box input {
+      width:100%; padding:12px 14px; border-radius:8px; font-size:14px;
+      background:var(--bg2); border:1px solid var(--border); color:var(--text);
+      font-family:'DM Sans',sans-serif; margin-bottom:20px; outline:none;
+    }
+    .login-box select:focus, .login-box input:focus { border-color:var(--accent-border); }
+    .login-box select option { background:var(--bg2); color:var(--text); }
+    .login-btn {
+      width:100%; padding:12px; border:none; border-radius:8px; font-size:14px;
+      font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif;
+      background:var(--accent); color:#fff; transition:all 0.2s;
+    }
+    .login-btn:hover { background:var(--accent-light); }
+    .login-error { color:var(--red); font-size:12px; margin-top:10px; display:none; }
+
+    /* ── APP LAYOUT ── */
+    #app { display:none; }
+    #app.active { display:flex; min-height:100vh; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width:260px; background:var(--bg2); border-right:1px solid var(--border);
+      display:flex; flex-direction:column; flex-shrink:0;
+    }
+    .sidebar-header { padding:24px 20px 16px; }
+    .sidebar-header .brand {
+      font-family:'Instrument Serif',Georgia,serif; font-size:22px; font-weight:600; color:var(--accent);
+    }
+    .sidebar-header .brand-sub { font-size:12px; color:var(--text3); margin-top:2px; }
+
+    .sidebar-nav { flex:1; padding:8px 12px; }
+    .nav-label {
+      font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px;
+      color:var(--text3); padding:16px 8px 8px; margin-top:8px;
+    }
+    .nav-item {
+      display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px;
+      font-size:14px; font-weight:500; color:var(--text2); cursor:pointer;
+      transition:all 0.15s; text-decoration:none;
+    }
+    .nav-item:hover { background:rgba(247,248,248,0.04); color:var(--text); }
+    .nav-item.active { background:var(--accent-glow); color:var(--accent); font-weight:600; }
+    .nav-item .nav-icon { font-size:16px; width:22px; text-align:center; }
+
+    .sidebar-footer {
+      padding:16px 20px; border-top:1px solid var(--border);
+    }
+    .user-info { margin-bottom:12px; }
+    .user-name { font-size:14px; font-weight:600; }
+    .user-role { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; }
+    .signout-btn {
+      width:100%; padding:8px; border:1px solid var(--border); border-radius:8px;
+      background:transparent; color:var(--text2); font-size:13px; cursor:pointer;
+      font-family:'DM Sans',sans-serif; transition:all 0.2s;
+    }
+    .signout-btn:hover { border-color:var(--red); color:var(--red); }
+
+    /* ── MAIN CONTENT ── */
+    .content { flex:1; overflow-y:auto; }
+    .content-header { padding:32px 32px 0; }
+    .content-header h1 { font-family:'Instrument Serif',Georgia,serif; font-size:28px; font-weight:600; margin-bottom:4px; }
+    .content-header .welcome { font-size:14px; color:var(--text3); margin-bottom:24px; }
+
+    .search-bar {
+      width:100%; max-width:500px; padding:10px 16px; border-radius:8px;
+      background:var(--card); border:1px solid var(--border); color:var(--text);
+      font-size:14px; font-family:'DM Sans',sans-serif; outline:none; margin-bottom:24px;
+    }
+    .search-bar:focus { border-color:var(--accent-border); }
+    .search-bar::placeholder { color:var(--text3); }
+
+    /* Filter pills */
+    .filter-row { display:flex; gap:8px; padding:0 32px; margin-bottom:32px; flex-wrap:wrap; }
+    .filter-pill {
+      padding:6px 16px; border-radius:20px; font-size:13px; font-weight:500;
+      cursor:pointer; border:1px solid var(--border); background:transparent;
+      color:var(--text2); font-family:'DM Sans',sans-serif; transition:all 0.2s;
+    }
+    .filter-pill:hover { border-color:var(--accent-border); color:var(--text); }
+    .filter-pill.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+    /* Report cards */
+    .reports { padding:0 32px 40px; display:grid; grid-template-columns:1fr; gap:16px; max-width:900px; }
+    .report-card {
+      background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+      padding:24px 28px; text-decoration:none; color:inherit; transition:all 0.2s;
+      display:block; position:relative;
+    }
+    .report-card:hover { border-color:var(--accent-border); transform:translateY(-1px); box-shadow:0 4px 20px rgba(0,0,0,0.2); }
+    .report-card .rc-icon { font-size:24px; margin-bottom:12px; }
+    .report-card .rc-badge {
+      position:absolute; top:24px; right:28px;
+      font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;
+      padding:3px 10px; border-radius:10px;
+    }
+    .report-card .rc-badge.production { background:rgba(93,190,138,0.15); color:var(--green); }
+    .report-card .rc-badge.operations { background:rgba(98,146,160,0.15); color:var(--accent); }
+    .report-card .rc-badge.payroll { background:rgba(139,123,165,0.15); color:var(--purple); }
+    .report-card .rc-badge.patient { background:rgba(122,175,189,0.15); color:var(--teal); }
+    .report-card .rc-badge.financial { background:rgba(125,102,82,0.15); color:var(--wood); }
+    .report-card .rc-title { font-size:18px; font-weight:700; margin-bottom:6px; }
+    .report-card .rc-desc { font-size:13px; color:var(--text2); line-height:1.5; margin-bottom:12px; }
+    .report-card .rc-link { font-size:13px; font-weight:600; color:var(--accent); }
+    .report-card:hover .rc-link { color:var(--accent-light); }
+
+    .report-card.hidden { display:none; }
+
+    /* Pipeline status badge */
+    .status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:4px; }
+    .status-dot.live { background:var(--green); }
+    .status-dot.setup { background:var(--wood); }
+
+    @media(max-width:800px) {
+      #app.active { flex-direction:column; }
+      .sidebar { width:100%; border-right:none; border-bottom:1px solid var(--border); }
+      .sidebar-nav { display:flex; flex-wrap:wrap; gap:4px; padding:8px 12px; }
+      .nav-label { display:none; }
+      .content-header, .filter-row, .reports { padding-left:20px; padding-right:20px; }
+    }
+  </style>
 </head>
 <body>
-    <!-- LOGIN OVERLAY -->
-    <div class="login-overlay" id="loginOverlay">
-        <div class="login-card">
-            <div class="login-logo">PSPD Analytics</div>
-            <div class="login-subtitle">Command Center — Sign in to continue</div>
 
-            <div class="form-group">
-                <label class="form-label">Select Your Name</label>
-                <select class="form-select" id="profileSelect">
-                    <option value="">Choose your profile...</option>
-                    <option value="christopher">Dr. Lugo</option>
-                    <option value="tanya">Tanya</option>
-                    <option value="jessica">Jessica</option>
-                    <option value="chelsey">Chelsey</option>
-                </select>
-            </div>
+  <!-- ════════════ LOGIN SCREEN ════════════ -->
+  <div id="login-screen">
+    <div class="login-box">
+      <div class="logo">Dentrepreneur <span>Control Tower</span></div>
+      <div class="logo-sub">Practice Intelligence Hub</div>
 
-            <div class="form-group">
-                <label class="form-label">PIN (4 digits)</label>
-                <input type="password" class="form-input" id="pinInput" placeholder="••••" maxlength="4">
-            </div>
+      <label>Select Your Name</label>
+      <select id="login-user">
+        <option value="">— Choose —</option>
+        <option value="drlugo">Dr. Lugo</option>
+        <option value="tanya">Tanya</option>
+        <option value="angela">Angela</option>
+        <option value="staff">Front Desk Staff</option>
+      </select>
 
-            <button class="login-button" id="signInButton">Sign In</button>
-            <div class="error-message" id="errorMessage"></div>
+      <label>PIN</label>
+      <input type="password" id="login-pin" placeholder="Enter 4-digit PIN" maxlength="6">
+
+      <button class="login-btn" onclick="doLogin()">Sign In</button>
+      <div class="login-error" id="login-error">Invalid PIN. Please try again.</div>
+    </div>
+  </div>
+
+  <!-- ════════════ APP (hidden until login) ════════════ -->
+  <div id="app">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">Dentrepreneur</div>
+        <div class="brand-sub">Control Tower</div>
+      </div>
+
+      <div class="sidebar-nav">
+        <div class="nav-label">Navigation</div>
+        <div class="nav-item active" onclick="filterReports('all',this)">
+          <span class="nav-icon">&#9776;</span> All Reports
         </div>
+        <div class="nav-item" data-cat="production" onclick="filterReports('production',this)">
+          <span class="nav-icon">&#128200;</span> Production
+        </div>
+        <div class="nav-item" data-cat="patient" onclick="filterReports('patient',this)">
+          <span class="nav-icon">&#128101;</span> Patient Management
+        </div>
+        <div class="nav-item" data-cat="operations" onclick="filterReports('operations',this)">
+          <span class="nav-icon">&#128202;</span> Operations
+        </div>
+        <div class="nav-item" data-cat="payroll" onclick="filterReports('payroll',this)">
+          <span class="nav-icon">&#128176;</span> Payroll
+        </div>
+        <div class="nav-item" data-cat="financial" onclick="filterReports('financial',this)">
+          <span class="nav-icon">&#128181;</span> Financials
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-name" id="sidebar-name"></div>
+          <div class="user-role" id="sidebar-role"></div>
+        </div>
+        <button class="signout-btn" onclick="doSignOut()">Sign Out</button>
+      </div>
     </div>
 
-    <!-- MAIN LAYOUT -->
-    <div class="main-layout" id="mainLayout">
-        <!-- SIDEBAR -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-logo">
-                <div class="sidebar-logo-text">PSPD Analytics</div>
-                <div class="sidebar-subtitle">Command Center</div>
-            </div>
+    <!-- MAIN CONTENT -->
+    <div class="content">
+      <div class="content-header">
+        <h1>Dashboard</h1>
+        <div class="welcome">Welcome back — here are your practice metrics.</div>
+        <input class="search-bar" type="text" placeholder="Search reports..." oninput="searchReports(this.value)">
+      </div>
 
-            <div class="nav-section">
-                <div class="nav-label">Navigation</div>
-                <div class="nav-item active" data-filter="all">All Reports</div>
-                <div class="nav-item" data-filter="production">📈 Production</div>
-                <div class="nav-item" data-filter="patients">👥 Patient Management</div>
-                <div class="nav-item" data-filter="operations">📊 Operations</div>
-                <div class="nav-item" data-filter="payroll">💰 Payroll</div>
-            </div>
+      <div class="filter-row">
+        <button class="filter-pill active" onclick="filterReports('all',null,this)">All</button>
+        <button class="filter-pill" onclick="filterReports('production',null,this)">Production</button>
+        <button class="filter-pill" onclick="filterReports('patient',null,this)">Patient Management</button>
+        <button class="filter-pill" onclick="filterReports('operations',null,this)">Operations</button>
+        <button class="filter-pill" onclick="filterReports('payroll',null,this)">Payroll</button>
+        <button class="filter-pill" onclick="filterReports('financial',null,this)">Financials</button>
+      </div>
 
-            <div class="sidebar-footer">
-                <div class="user-info">
-                    <div class="user-name" id="userNameDisplay">-</div>
-                    <div class="user-role" id="userRoleDisplay">-</div>
-                </div>
-                <button class="sign-out-button" id="signOutButton">Sign Out</button>
-            </div>
-        </aside>
+      <div class="reports" id="reports">
 
-        <!-- MAIN CONTENT -->
-        <div class="main-content">
-            <div class="content-header">
-                <div class="content-title">Dashboard</div>
-                <div class="content-subtitle">Welcome back — here are your analytics reports.</div>
-                <input type="text" class="search-bar" id="searchInput" placeholder="Search reports...">
-            </div>
+        <!-- PRODUCTION -->
+        <a href="production.html" class="report-card" data-category="production" data-role="admin,tanya,staff">
+          <div class="rc-icon">&#128200;</div>
+          <span class="rc-badge production">Production</span>
+          <div class="rc-title">Doctor Production</div>
+          <div class="rc-desc">Provider payroll and production totals by pay period. Track individual doctor output and revenue.</div>
+          <div class="rc-link">Open Report &rarr;</div>
+        </a>
 
-            <div class="filter-section">
-                <button class="filter-button active" data-category="all">All</button>
-                <button class="filter-button" data-category="production">⚙️ Production</button>
-                <button class="filter-button" data-category="patients">👥 Patient Management</button>
-                <button class="filter-button" data-category="operations">📊 Operations</button>
-                <button class="filter-button" data-category="payroll">💰 Payroll</button>
-            </div>
+        <!-- PATIENT MANAGEMENT — CALL SHEETS -->
+        <a href="callsheets-beta.html" class="report-card" data-category="patient" data-role="admin,tanya,staff">
+          <div class="rc-icon">&#128203;</div>
+          <span class="rc-badge patient">Patient Management</span>
+          <div class="rc-title">Call Sheets <span class="status-dot live"></span> LIVE</div>
+          <div class="rc-desc">Recall families due in 30 days, overdue past-due recalls, and unscheduled treatment plans. Includes contact tracking — log calls, texts, and emails per patient.</div>
+          <div class="rc-link">Open Report &rarr;</div>
+        </a>
 
-            <div class="cards-container">
-                <div class="cards-grid" id="cardsGrid"></div>
-            </div>
-        </div>
+        <a href="callsheets-beta.html#treatment" class="report-card" data-category="patient" data-role="admin,tanya,staff">
+          <div class="rc-icon">&#128196;</div>
+          <span class="rc-badge patient">Patient Management</span>
+          <div class="rc-title">Unscheduled Treatment</div>
+          <div class="rc-desc">Patients with treatment plans that haven't been scheduled. Sorted by fee value with insurance and caries risk info.</div>
+          <div class="rc-link">Open Report &rarr;</div>
+        </a>
+
+        <!-- OPERATIONS -->
+        <a href="callsheets-beta.html#overdue" class="report-card" data-category="operations" data-role="admin,tanya,staff">
+          <div class="rc-icon">&#9888;</div>
+          <span class="rc-badge operations">Operations</span>
+          <div class="rc-title">Overdue Recalls</div>
+          <div class="rc-desc">Households past due for hygiene appointments. Sorted by oldest hygiene date — the longer overdue, the higher priority.</div>
+          <div class="rc-link">Open Report &rarr;</div>
+        </a>
+
+        <!-- PAYROLL -->
+        <a href="payroll.html" class="report-card" data-category="payroll" data-role="admin,tanya">
+          <div class="rc-icon">&#128176;</div>
+          <span class="rc-badge payroll">Payroll</span>
+          <div class="rc-title">Doctor Compensation</div>
+          <div class="rc-desc">Biweekly pay summaries by doctor with production vs collections, rate tracking, and admin tools for rate changes and terminations.</div>
+          <div class="rc-link">Open Report &rarr;</div>
+        </a>
+
+        <a href="payroll.html#hygiene" class="report-card" data-category="payroll" data-role="admin,tanya">
+          <div class="rc-icon">&#129463;</div>
+          <span class="rc-badge payroll">Payroll</span>
+          <div class="rc-title">Hygiene Production</div>
+          <div class="rc-desc">Hygienist production metrics, recare rates, and perio tracking across all five locations.</div>
+          <div class="rc-link">Open Report &rarr;</div>
+        </a>
+
+        <!-- FINANCIALS -->
+        <a href="financials.html" class="report-card" data-category="financial" data-role="admin,tanya,angela">
+          <div class="rc-icon">&#128181;</div>
+          <span class="rc-badge financial">Financial</span>
+          <div class="rc-title">QBO Financials</div>
+          <div class="rc-desc">Profit &amp; Loss, Balance Sheet, Cash Flow, and AR/AP aging — pulled daily from QuickBooks Online.</div>
+          <div class="rc-link">Open Report &rarr;</div>
+        </a>
+
+        <a href="financials.html#receivables" class="report-card" data-category="financial" data-role="admin,tanya,angela">
+          <div class="rc-icon">&#128209;</div>
+          <span class="rc-badge financial">Financial</span>
+          <div class="rc-title">AP / AR Aging</div>
+          <div class="rc-desc">Accounts receivable by patient with aging buckets, plus accounts payable by vendor. Overdue flags and totals.</div>
+          <div class="rc-link">Open Report &rarr;</div>
+        </a>
+
+      </div>
     </div>
+  </div>
 
-    <script>
-        // USER DATA
-        const users = {
-            christopher: { name: 'Dr. Lugo', role: 'admin', pin: '0802' },
-            tanya: { name: 'Tanya', role: 'admin', pin: '1111' },
-            jessica: { name: 'Jessica', role: 'billing', pin: '2222' },
-            chelsey: { name: 'Chelsey', role: 'frontdesk', pin: '3333' }
-        };
+  <script>
+    // ════════════ AUTH SYSTEM ════════════
+    // PINs stored here — change these to whatever you want
+    var USERS = {
+      'drlugo':  { name: 'Dr. Lugo',    role: 'admin',  pin: '1234' },
+      'tanya':   { name: 'Tanya',       role: 'tanya',  pin: '5678' },
+      'angela':  { name: 'Angela',      role: 'angela', pin: '9012' },
+      'staff':   { name: 'Front Desk',  role: 'staff',  pin: '0000' },
+    };
 
-        // REPORTS DATA
-        const reports = [
-            {
-                title: 'Doctor Production',
-                description: 'Provider payroll and production totals by pay period. Track individual doctor output and revenue.',
-                icon: '📈',
-                category: 'production',
-                categoryLabel: 'Production',
-                url: 'https://app.powerbi.com/groups/me/reports/28d67d19-4ea5-4f13-a675-8d39a543a2f3?experience=power-bi'
-            },
-            {
-                title: 'Production Model (2025)',
-                description: 'Locked production model with targets, forecasts, and KPIs for the 2025 fiscal year.',
-                icon: '🎯',
-                category: 'production',
-                categoryLabel: 'Production',
-                url: 'https://app.powerbi.com/groups/me/reports/c98fcc58-247e-42af-8531-0135ed4e7213/56a05638d5e5f18bd9b0?experience=power-bi'
-            },
-            {
-                title: 'Recall Call Lists',
-                description: 'Patient recall tracking — overdue appointments, call priorities, and outreach status.',
-                icon: '📞',
-                category: 'patients',
-                categoryLabel: 'Patient Mgmt',
-                url: 'https://app.powerbi.com/groups/me/reports/ec723259-69be-4b36-a8fd-1e82f4a7fb34/72dc7e008c2161865143?experience=power-bi'
-            },
-            {
-                title: 'Treatment — Unscheduled',
-                description: 'Patients with diagnosed but unscheduled treatment plans. Follow-up tracking and revenue recovery.',
-                icon: '🦷',
-                category: 'patients',
-                categoryLabel: 'Patient Mgmt',
-                url: 'https://app.powerbi.com/groups/me/reports/e271adac-b68e-425d-afaa-a838a1384364/e114c9b44cd606520a5e?experience=power-bi'
-            },
-            {
-                title: 'Doctor Compensation',
-                description: 'Automated associate doctor payroll — collections by provider and office, commission calculations, and pay period tracking.',
-                icon: '💰',
-                category: 'payroll',
-                categoryLabel: 'Payroll',
-                url: 'payroll.html'
-            },
-            {
-                title: 'Payroll Admin (Internal)',
-                description: 'SQL validation dashboard — pay code accuracy, date source breakdown, period trends, and view architecture docs.',
-                icon: '🔧',
-                category: 'payroll',
-                categoryLabel: 'Payroll',
-                url: 'payroll_admin.html'
-            }
-        ];
+    function doLogin() {
+      var uid = document.getElementById('login-user').value;
+      var pin = document.getElementById('login-pin').value;
+      var err = document.getElementById('login-error');
 
-        // STATE
-        let currentUser = null;
-        let currentFilter = 'all';
-        let currentSearch = '';
+      if (!uid || !USERS[uid]) { err.style.display = 'block'; err.textContent = 'Please select a user.'; return; }
+      if (pin !== USERS[uid].pin) { err.style.display = 'block'; err.textContent = 'Invalid PIN. Please try again.'; return; }
 
-        // DOM ELEMENTS
-        const loginOverlay = document.getElementById('loginOverlay');
-        const mainLayout = document.getElementById('mainLayout');
-        const profileSelect = document.getElementById('profileSelect');
-        const pinInput = document.getElementById('pinInput');
-        const signInButton = document.getElementById('signInButton');
-        const errorMessage = document.getElementById('errorMessage');
-        const cardsGrid = document.getElementById('cardsGrid');
-        const searchInput = document.getElementById('searchInput');
-        const filterButtons = document.querySelectorAll('.filter-button');
-        const navItems = document.querySelectorAll('.nav-item');
-        const signOutButton = document.getElementById('signOutButton');
-        const userNameDisplay = document.getElementById('userNameDisplay');
-        const userRoleDisplay = document.getElementById('userRoleDisplay');
+      err.style.display = 'none';
+      localStorage.setItem('pspd_user', uid);
+      showApp(uid);
+    }
 
-        // LOGIN FUNCTIONALITY
-        signInButton.addEventListener('click', handleLogin);
-        pinInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleLogin();
-        });
+    function doSignOut() {
+      localStorage.removeItem('pspd_user');
+      document.getElementById('app').classList.remove('active');
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('login-pin').value = '';
+      document.getElementById('login-user').value = '';
+    }
 
-        function handleLogin() {
-            const userId = profileSelect.value;
-            const pin = pinInput.value;
+    function showApp(uid) {
+      var user = USERS[uid];
+      if (!user) return;
 
-            errorMessage.textContent = '';
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').classList.add('active');
+      document.getElementById('sidebar-name').textContent = user.name;
+      document.getElementById('sidebar-role').textContent = user.role === 'admin' ? 'Admin' : user.role === 'tanya' ? 'Admin' : user.role === 'angela' ? 'Finance' : 'Staff';
 
-            if (!userId) {
-                errorMessage.textContent = 'Please select a profile.';
-                return;
-            }
-
-            if (!pin || pin.length !== 4) {
-                errorMessage.textContent = 'PIN must be 4 digits.';
-                return;
-            }
-
-            const user = users[userId];
-            if (!user || user.pin !== pin) {
-                errorMessage.textContent = 'Invalid PIN. Please try again.';
-                pinInput.value = '';
-                return;
-            }
-
-            // LOGIN SUCCESS
-            currentUser = { ...user, id: userId };
-            userNameDisplay.textContent = user.name;
-            userRoleDisplay.textContent = user.role;
-            loginOverlay.classList.add('hidden');
-            mainLayout.classList.remove('hidden');
-            renderCards();
+      // Show/hide reports based on role
+      var cards = document.querySelectorAll('.report-card');
+      for (var i = 0; i < cards.length; i++) {
+        var allowedRoles = cards[i].getAttribute('data-role') || '';
+        if (allowedRoles.indexOf(user.role) !== -1 || user.role === 'admin') {
+          cards[i].classList.remove('hidden');
+        } else {
+          cards[i].classList.add('hidden');
         }
+      }
 
-        // SEARCH FUNCTIONALITY
-        searchInput.addEventListener('input', (e) => {
-            currentSearch = e.target.value.toLowerCase();
-            renderCards();
-        });
+      // Show/hide sidebar nav items based on visible cards
+      updateSidebarCounts();
+    }
 
-        // FILTER FUNCTIONALITY
-        filterButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                filterButtons.forEach(b => b.classList.remove('active'));
-                button.classList.add('active');
-                currentFilter = button.dataset.category;
-                renderCards();
-            });
-        });
-
-        // SIDEBAR NAV FUNCTIONALITY
-        navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                navItems.forEach(n => n.classList.remove('active'));
-                item.classList.add('active');
-                const filter = item.dataset.filter;
-                currentFilter = filter;
-
-                // Update filter buttons
-                filterButtons.forEach(b => {
-                    b.classList.remove('active');
-                    if (b.dataset.category === filter) {
-                        b.classList.add('active');
-                    }
-                });
-
-                renderCards();
-            });
-        });
-
-        // SIGN OUT FUNCTIONALITY
-        signOutButton.addEventListener('click', () => {
-            location.reload();
-        });
-
-        // RENDER CARDS
-        function renderCards() {
-            let filtered = reports;
-
-            // Filter by category
-            if (currentFilter !== 'all') {
-                filtered = filtered.filter(r => r.category === currentFilter);
-            }
-
-            // Filter by search
-            if (currentSearch) {
-                filtered = filtered.filter(r =>
-                    r.title.toLowerCase().includes(currentSearch) ||
-                    r.description.toLowerCase().includes(currentSearch)
-                );
-            }
-
-            // Clear and render
-            cardsGrid.innerHTML = '';
-
-            if (filtered.length === 0) {
-                cardsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px 20px; color: var(--text-muted);">No reports found.</div>';
-                return;
-            }
-
-            filtered.forEach(report => {
-                const card = document.createElement('div');
-                card.className = 'report-card';
-
-                let badgeHtml = `<div class="card-badge ${report.category}">${report.categoryLabel}</div>`;
-                if (report.comingSoon) {
-                    badgeHtml += `<div class="card-badge coming-soon">Coming Soon</div>`;
-                }
-
-                let linkHtml;
-                if (report.comingSoon) {
-                    linkHtml = `<a class="card-link coming-soon">Open Report →</a>`;
-                } else {
-                    linkHtml = `<a href="${report.url}" target="_blank" class="card-link">Open Report →</a>`;
-                }
-
-                card.innerHTML = `
-                    <div class="card-header">
-                        <div class="card-icon">${report.icon}</div>
-                        <div class="card-badge-group">
-                            ${badgeHtml}
-                        </div>
-                    </div>
-                    <div class="card-title">${report.title}</div>
-                    <div class="card-description">${report.description}</div>
-                    ${linkHtml}
-                `;
-
-                // Handle coming soon click
-                if (report.comingSoon) {
-                    const link = card.querySelector('.card-link');
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        alert('This report will be connected once the Power BI dashboard is published.');
-                    });
-                }
-
-                cardsGrid.appendChild(card);
-            });
+    function updateSidebarCounts() {
+      var cats = ['production', 'patient', 'operations', 'payroll', 'financial'];
+      for (var i = 0; i < cats.length; i++) {
+        var cat = cats[i];
+        var visible = document.querySelectorAll('.report-card[data-category="' + cat + '"]:not(.hidden)');
+        var navItem = document.querySelector('.nav-item[data-cat="' + cat + '"]');
+        if (navItem) {
+          navItem.style.display = visible.length > 0 ? 'flex' : 'none';
         }
+      }
+    }
 
-        // INITIAL STATE
-        loginOverlay.classList.remove('hidden');
-        mainLayout.classList.add('hidden');
-    </script>
+    // ════════════ FILTERING ════════════
+    function filterReports(category, navEl, pillEl) {
+      var cards = document.querySelectorAll('.report-card');
+      for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        if (card.classList.contains('hidden')) continue; // respect role hiding
+        var cat = card.getAttribute('data-category');
+        if (category === 'all' || cat === category) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      }
+
+      // Update sidebar active
+      if (navEl) {
+        var navItems = document.querySelectorAll('.nav-item');
+        for (var j = 0; j < navItems.length; j++) navItems[j].classList.remove('active');
+        navEl.classList.add('active');
+      }
+
+      // Update pill active
+      if (pillEl) {
+        var pills = document.querySelectorAll('.filter-pill');
+        for (var k = 0; k < pills.length; k++) pills[k].classList.remove('active');
+        pillEl.classList.add('active');
+      }
+    }
+
+    function searchReports(query) {
+      var q = query.toLowerCase().trim();
+      var cards = document.querySelectorAll('.report-card');
+      for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        if (card.classList.contains('hidden')) continue;
+        var text = (card.textContent || '').toLowerCase();
+        card.style.display = (!q || text.indexOf(q) !== -1) ? 'block' : 'none';
+      }
+    }
+
+    // ════════════ AUTO-LOGIN CHECK ════════════
+    (function() {
+      var saved = localStorage.getItem('pspd_user');
+      if (saved && USERS[saved]) {
+        showApp(saved);
+      }
+    })();
+  </script>
 </body>
 </html>

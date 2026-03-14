@@ -404,7 +404,7 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
             <th data-sort="household" class="sortable">Family / ID <span class="sort-arrow">↕</span></th>
             <th data-sort="phone" class="sortable">Phone <span class="sort-arrow">↕</span></th>
             <th>Email</th>
-            <th data-sort="risk" class="sortable">Risk <span class="sort-arrow">↕</span></th>
+            <th data-sort="risk" class="sortable" title="Score: Days overdue/plan age + Fee + Kids due + Bad phone + GA. 1=Low, 2-3=Med, 4+=High">Risk <span class="sort-arrow">↕</span></th>
             <th data-sort="kids" class="sortable">Kids Due <span class="sort-arrow">↕</span></th>
             <th>Names</th>
             <th data-sort="suggest_date" class="sortable">Suggest Date <span class="sort-arrow">↕</span></th>
@@ -432,7 +432,7 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
             <th data-sort="household" class="sortable">Family / ID <span class="sort-arrow">↕</span></th>
             <th data-sort="phone" class="sortable">Phone <span class="sort-arrow">↕</span></th>
             <th>Email</th>
-            <th data-sort="risk" class="sortable">Risk <span class="sort-arrow">↕</span></th>
+            <th data-sort="risk" class="sortable" title="Score: Days overdue/plan age + Fee + Kids due + Bad phone + GA. 1=Low, 2-3=Med, 4+=High">Risk <span class="sort-arrow">↕</span></th>
             <th data-sort="kids" class="sortable">Kids Due <span class="sort-arrow">↕</span></th>
             <th>Names</th>
             <th data-sort="overdue" class="sortable">Days Overdue <span class="sort-arrow">↕</span></th>
@@ -461,12 +461,12 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
             <th>Age</th>
             <th data-sort="phone" class="sortable">Phone <span class="sort-arrow">↕</span></th>
             <th>Email</th>
-            <th data-sort="risk" class="sortable">Risk <span class="sort-arrow">↕</span></th>
+            <th data-sort="risk" class="sortable" title="Score: Days overdue/plan age + Fee + Kids due + Bad phone + GA. 1=Low, 2-3=Med, 4+=High">Risk <span class="sort-arrow">↕</span></th>
             <th>Treatment</th>
             <th data-sort="fee" class="sortable">Fee <span class="sort-arrow">↕</span></th>
-            <th data-sort="plan_age" class="sortable">Plan Age <span class="sort-arrow">⇕</span></th>
+            <th data-sort="plan_age" class="sortable">Plan Age <span class="sort-arrow">↕</span></th>
+            <th data-sort="time" class="sortable">Time Needed <span class="sort-arrow">↕</span></th>
             <th data-sort="provider" class="sortable">Tx Doctor <span class="sort-arrow">↕</span></th>
-            <th>History</th>
             <th>Actions</th>
           </tr></thead>
           <tbody id="treatment-body"></tbody>
@@ -520,8 +520,14 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
         <dt>Highlighted Rows</dt>
         <dd>Indicates last hygiene office ≠ last visit office</dd>
 
-        <dt>Risk Factors</dt>
-        <dd>Multiple Missed Appointments, Possible Graduating Soon</dd>
+        <dt>Risk Scoring (Low / Med / High)</dt>
+        <dd>Computed from multiple factors: <strong>Days overdue</strong> (>90d=+1, >180d=+2, >270d=+3), <strong>Treatment plan age</strong> (>30d=+1, >90d=+2, >180d=+3), <strong>Fee</strong> (≥$1k=+1, ≥$3k=+2), <strong>Kids due</strong> (≥2=+1, ≥4=+2), <strong>Bad phone</strong> (+1), <strong>GA/Block</strong> (+1). Score: 1=Low, 2-3=Med, 4+=High.</dd>
+
+        <dt>Time Needed (Treatment tab)</dt>
+        <dd>SDF=30min, Sealants=30min, Single-tooth restorative=45min. GA cases shown separately. "Recall OK" means sealants alone may be done at next recall exam.</dd>
+
+        <dt>Pending Tx (Overdue tab)</dt>
+        <dd>Treatment plans older than 6 months appear in the Overdue tab with a "Pending Tx" tag so parents get ONE call about both overdue hygiene and outstanding treatment.</dd>
       </dl>
     </div>
   </div>
@@ -727,6 +733,11 @@ async function loadData() {
       }
     });
 
+    // Route treatment plans >6 months to overdue tab with "Pending Tx" tag
+    routeOldTreatmentToOverdue();
+    // Route empty tx_summary records to review tab
+    routeEmptyTxToReview();
+
     buildReviewList();
     loadSettings();
     render();
@@ -783,6 +794,65 @@ function showEmpty() {
 }
 
 // ════════════════════════════════════════
+// ── Treatment Routing ──
+// ════════════════════════════════════════
+function routeOldTreatmentToOverdue() {
+  // Treatment plans >6 months old → move to overdue tab with "Pending Tx" tag
+  // so parents get ONE call about both overdue hygiene and outstanding treatment
+  if (!data.treatment) return;
+  const stale = [];
+  const keep = [];
+  data.treatment.forEach(r => {
+    if ((r.days_since_plan || 0) > 180 && (r.tx_summary || '').trim()) {
+      // Create an overdue-style record from the treatment record
+      stale.push({
+        // Overdue fields — use patient info as pseudo-household
+        household_id: 'ptx-' + r.patient_id,
+        household: r.name || (r.lname + ', ' + r.fname),
+        phone: r.phone,
+        email: r.email,
+        kids_due_count: 1,
+        kids_due_names: r.name || (r.fname || ''),
+        days_overdue: r.days_since_plan || 0,
+        last_office: r.office || '',
+        last_provider: r.diagnosing_provider || '',
+        // Preserve original treatment info
+        tx_summary: r.tx_summary,
+        total_fee: r.total_fee,
+        days_since_plan: r.days_since_plan,
+        patient_id: r.patient_id,
+        _pending_tx: true,  // flag for "Pending Tx" badge
+        _source: 'treatment'
+      });
+    } else {
+      keep.push(r);
+    }
+  });
+  data.treatment = keep;
+  if (!data.overdue) data.overdue = [];
+  data.overdue = [...data.overdue, ...stale];
+}
+
+function routeEmptyTxToReview() {
+  // Treatment records with no active tx_summary → move to Review tab
+  if (!data.treatment) return;
+  const keep = [];
+  data.treatment.forEach(r => {
+    const tx = (r.tx_summary || '').trim();
+    if (!tx) {
+      // Will be picked up by buildReviewList instead
+      r._empty_tx = true;
+    }
+    keep.push(r);
+  });
+  // Don't remove from treatment array — buildReviewList will flag them
+  // but we DO want to remove them from the treatment view
+  data.treatment = keep.filter(r => !r._empty_tx);
+  // Store them separately so buildReviewList can access them
+  data._empty_tx_records = keep.filter(r => r._empty_tx);
+}
+
+// ════════════════════════════════════════
 // ── Review List Builder ──
 // ════════════════════════════════════════
 function buildReviewList() {
@@ -830,6 +900,26 @@ function buildReviewList() {
       });
     }
   });
+
+  // Add empty treatment plan records (no tx_summary) — needs chart review
+  if (data._empty_tx_records) {
+    data._empty_tx_records.forEach(r => {
+      const name = r.name || (r.lname + ', ' + r.fname);
+      const rowId = 'tx-' + r.patient_id;
+      // Skip if already flagged as reviewed
+      if (reviewedSet && reviewedSet.has(rowId)) return;
+      reviewItems.push({
+        name,
+        phone: r.phone || '(none)',
+        issue: 'No Active Treatment Listed — Review Chart',
+        source: 'treatment',
+        office: r.office || '',
+        row_id: rowId,
+        last_attempt: '-',
+        issue_class: 'badge-yellow'
+      });
+    });
+  }
 }
 
 function getLastAttempt(rowId) {
@@ -867,6 +957,12 @@ function getFilteredData() {
   const sort = document.getElementById('sortSelect').value;
 
   let items = [...(data[currentView] || [])];
+
+  // Filter out test patients (patient names starting with "Test,")
+  items = items.filter(r => {
+    const name = (r.name || r.fname || '').toLowerCase();
+    return !name.startsWith('test,') && !name.startsWith('test ');
+  });
 
   // Overdue tab: limit to within 1 year overdue (matches PowerBI filter)
   if (currentView === 'overdue') {
@@ -923,11 +1019,6 @@ function getFilteredData() {
     });
   }
 
-  // Filter out test patients
-  items = items.filter(r => {
-    const name = (r.name || r.fname || '').toLowerCase();
-    return !name.startsWith('test,') && !name.startsWith('test ');
-  });
   return items;
 }
 
@@ -1008,11 +1099,14 @@ function columnSortCompare(a, b) {
       va = (a.last_provider || a.diagnosing_provider || '').toLowerCase();
       vb = (b.last_provider || b.diagnosing_provider || '').toLowerCase();
       return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
-        case 'plan_age':
-          va = a.days_since_plan || 0; vb = b.days_since_plan || 0;
-          return columnSortDir === 'asc' ? va - vb : vb - va;
     case 'fee':
       va = a.total_fee || 0; vb = b.total_fee || 0;
+      return columnSortDir === 'asc' ? va - vb : vb - va;
+    case 'plan_age':
+      va = a.days_since_plan || 0; vb = b.days_since_plan || 0;
+      return columnSortDir === 'asc' ? va - vb : vb - va;
+    case 'time':
+      va = parseInt(a.booking_slot) || 0; vb = parseInt(b.booking_slot) || 0;
       return columnSortDir === 'asc' ? va - vb : vb - va;
     default: return 0;
   }
@@ -1070,27 +1164,40 @@ function riskBadge(r) {
 
 function computeRiskBadge(r) {
   let score = 0;
+
+  // Factor 1: Days overdue (overdue/recall tabs)
   const daysOverdue = r.days_overdue || 0;
   if (daysOverdue > 270) score += 3;
   else if (daysOverdue > 180) score += 2;
   else if (daysOverdue > 90) score += 1;
+
+  // Factor 2: Treatment plan age (treatment tab) — days_since_plan
   const daysSincePlan = r.days_since_plan || 0;
   if (daysSincePlan > 180) score += 3;
   else if (daysSincePlan > 90) score += 2;
   else if (daysSincePlan > 30) score += 1;
+
+  // Factor 3: Fee size (higher fee = higher urgency for treatment)
   const fee = r.total_fee || 0;
   if (fee >= 3000) score += 2;
   else if (fee >= 1000) score += 1;
+
+  // Factor 4: Number of kids due (more kids = more urgency)
   const kids = r.kids_due_count || 0;
   if (kids >= 4) score += 2;
   else if (kids >= 2) score += 1;
+
+  // Factor 5: Bad phone (can't reach them)
   if (isBadPhone(r.phone)) score += 1;
+
+  // Factor 6: GA/block cases are inherently higher urgency
   const tx = (r.tx_summary || '').toLowerCase();
   if (/\bga\b|\bblock\b/.test(tx)) score += 1;
+
   if (score >= 4) return '<span class="risk-badge risk-high">High</span>';
   if (score >= 2) return '<span class="risk-badge risk-medium">Med</span>';
   if (score >= 1) return '<span class="risk-badge risk-low">Low</span>';
-  return '<span style="color:var(--text3);font-size:0.7rem;">\u2014</span>';
+  return '<span style="color:var(--text3);font-size:0.7rem;">—</span>';
 }
 
 function riskScore(r) {
@@ -1098,6 +1205,8 @@ function riskScore(r) {
   if (risk === 'high' || risk === '3') return 3;
   if (risk === 'medium' || risk === 'moderate' || risk === '2') return 2;
   if (risk === 'low' || risk === '1') return 1;
+
+  // Compute from available data
   let score = 0;
   const daysOverdue = r.days_overdue || 0;
   if (daysOverdue > 270) score += 3;
@@ -1116,6 +1225,7 @@ function riskScore(r) {
   if (isBadPhone(r.phone)) score += 1;
   const tx = (r.tx_summary || '').toLowerCase();
   if (/\bga\b|\bblock\b/.test(tx)) score += 1;
+
   if (score >= 4) return 3;
   if (score >= 2) return 2;
   if (score >= 1) return 1;
@@ -1153,14 +1263,24 @@ function phoneCell(phone, name, office, kids, rowId) {
 function contactHistoryCell(rowId, record) {
   // Build a combined history: dental visit info + contact log
   let parts = [];
+  const isTxRow = rowId && rowId.startsWith('tx-');
 
-  // Show dental/hygiene history from the data record
-  if (record) {
+  // Show dental/hygiene history from the data record (skip for treatment rows — they have dedicated columns)
+  if (record && !isTxRow) {
     if (record.most_recent_hygiene) {
       parts.push(`<span style="font-size:0.68rem;color:var(--text2);">Last hyg: ${record.most_recent_hygiene}</span>`);
     }
     if (record.last_visit_date && record.last_visit_date !== record.most_recent_hygiene) {
       parts.push(`<span style="font-size:0.68rem;color:var(--text3);">Last visit: ${record.last_visit_date}</span>`);
+    }
+    // Next appointment info
+    if (record.next_appt_date) {
+      const typeLabel = record.next_appt_type || '';
+      const isTxAppt = /treatment|tx|restor|ga|block|sdf/i.test(typeLabel);
+      const apptColor = isTxAppt ? 'var(--green)' : 'var(--text3)';
+      parts.push(`<span style="font-size:0.65rem;color:${apptColor};">Next: ${record.next_appt_date} (${typeLabel})</span>`);
+    } else if (record.next_appt_type === 'No Future Appt') {
+      parts.push(`<span style="font-size:0.65rem;color:var(--red);">No future appt</span>`);
     }
   }
 
@@ -1183,25 +1303,6 @@ function contactHistoryCell(rowId, record) {
     parts.push(`<button class="btn-log" onclick="showHistory('${rowId}')" title="View full history" style="padding:0.15rem 0.4rem;">...</button>`);
   } else if (!parts.length) {
     return '<span style="color:var(--text3);font-size:0.7rem;">No history</span>';
-  }
-
-  
-  // Treatment plan age (treatment tab)
-  if (record.days_since_plan != null && record.days_since_plan > 0) {
-    const d = record.days_since_plan;
-    let ageColor = 'var(--text3)';
-    let ageLabel = d + 'd since plan';
-    if (d >= 180) { ageColor = 'var(--red)'; ageLabel = Math.round(d/30) + 'mo \u2014 needs review'; }
-    else if (d >= 90) { ageColor = 'var(--yellow)'; ageLabel = Math.round(d/30) + 'mo \u2014 may need review'; }
-    parts.push('<span style="font-size:0.68rem;color:' + ageColor + ';">Tx plan: ' + ageLabel + '</span>');
-  }
-  if (record.next_appt_date) {
-    const typeLabel = record.next_appt_type || '';
-    const isTxAppt = /treatment|tx|restor|ga|block|sdf/i.test(typeLabel);
-    const apptColor = isTxAppt ? 'var(--green)' : 'var(--text3)';
-    parts.push('<span style="font-size:0.65rem;color:' + apptColor + ';">Next: ' + record.next_appt_date + ' (' + typeLabel + ')</span>');
-  } else if (record.next_appt_type === 'No Future Appt') {
-    parts.push('<span style="font-size:0.65rem;color:var(--red);">No future appt</span>');
   }
 
   return `<div class="contact-history-row">${parts.join('<br>')}</div>`;
@@ -1249,7 +1350,7 @@ function loadMoreRows() {
 }
 
 function loadMoreHtml(remaining) {
-  const cols = 11;
+  const cols = currentView === 'treatment' ? 12 : 11;
   return `<tr class="load-more-row"><td colspan="${cols}" style="text-align:center;padding:1rem;">
     <button onclick="loadMoreRows()" style="background:var(--green);color:#fff;border:none;padding:0.5rem 2rem;border-radius:6px;cursor:pointer;font-size:0.9rem;">
       Show Next ${Math.min(PAGE_SIZE, remaining)} of ${remaining} Remaining
@@ -1308,13 +1409,15 @@ function renderOverdueRow(r) {
   const id = 'overdue-' + r.household_id;
   const cls = contactedSet.has(id) ? 'row-contacted' : skippedSet.has(id) ? 'row-skipped' : isBadPhone(r.phone) ? 'row-bad-phone' : '';
   const daysClass = (r.days_overdue || 0) > 180 ? 'badge-red' : (r.days_overdue || 0) > 90 ? 'badge-orange' : 'badge-yellow';
+  const pendingTxTag = r._pending_tx ? '<span class="badge badge-yellow" style="font-size:0.55rem;margin-left:0.3rem;" title="Treatment plan >6mo — call about both hygiene and treatment">Pending Tx</span>' : '';
+  const txInfo = r._pending_tx && r.tx_summary ? `<br><span style="font-size:0.65rem;color:var(--text3);">Tx: ${esc(r.tx_summary.substring(0, 40))}${r.tx_summary.length > 40 ? '…' : ''}</span>` : '';
   return `<tr class="${cls}" id="${id}">
-    <td class="patient-name">${formatHousehold(r)}</td>
+    <td class="patient-name">${formatHousehold(r)}${pendingTxTag}</td>
     <td>${phoneCell(r.phone, r.household, r.last_office, r.kids_due_names, id)}</td>
     <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
     <td>${riskBadge(r)}</td>
     <td><span class="badge badge-blue">${r.kids_due_count || 0}</span></td>
-    <td style="font-size:0.78rem;">${esc(r.kids_due_names || '-')}</td>
+    <td style="font-size:0.78rem;">${esc(r.kids_due_names || '-')}${txInfo}</td>
     <td><span class="badge ${daysClass}">${r.days_overdue || 0} days</span></td>
     <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span></td>
     <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}</td>
@@ -1337,17 +1440,19 @@ function renderOverdue(items) {
 function renderTreatmentRow(r) {
   const id = 'tx-' + r.patient_id;
   const cls = contactedSet.has(id) ? 'row-contacted' : skippedSet.has(id) ? 'row-skipped' : isBadPhone(r.phone) ? 'row-bad-phone' : '';
+  // Show Pending Tx tag if this was merged from overdue logic
+  const pendingTag = r._pending_tx ? '<span class="badge badge-yellow" style="font-size:0.55rem;margin-left:0.3rem;">Pending Tx</span>' : '';
   return `<tr class="${cls}" id="${id}">
     <td class="patient-name">${esc(r.name || (r.lname + ', ' + r.fname))}</td>
     <td class="patient-age">${r.age || '-'}</td>
     <td>${phoneCell(r.phone, r.name || r.fname, '', '', id)}</td>
     <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
     <td>${riskBadge(r)}</td>
-    <td>${renderTxTags(r.tx_summary || r.treatment || '')}</td>
+    <td>${renderTxTags(r.tx_summary || r.treatment || '')}${pendingTag}</td>
     <td class="fee">${r.total_fee ? '$' + Number(r.total_fee).toLocaleString() : '-'}</td>
     <td>${planAgeCell(r)}</td>
+    <td>${timeNeededCell(r)}</td>
     <td style="font-size:0.78rem;color:var(--text2);">${esc(r.diagnosing_provider || '-')}</td>
-    <td>${contactHistoryCell(id, r)}</td>
     <td>${actionBtns(id, r.phone)}</td>
   </tr>`;
 }
@@ -1355,7 +1460,7 @@ function renderTreatmentRow(r) {
 function renderTreatment(items) {
   const body = document.getElementById('treatment-body');
   document.getElementById('treatment-count').textContent = items.length + ' patients';
-  if (!items.length) { body.innerHTML = emptyRow(11); return; }
+  if (!items.length) { body.innerHTML = emptyRow(12); return; }
   const page = items.slice(0, PAGE_SIZE);
   body.innerHTML = page.map(r => renderTreatmentRow(r)).join('');
   if (items.length > PAGE_SIZE) {
@@ -1389,11 +1494,8 @@ function renderReview() {
 function bookingSlotCell(r) {
   const tx = (r.tx_summary || r.treatment || '').toLowerCase();
   let slot = r.booking_slot || '';
-  // SDF or sealant-only treatments are 30 min, not 60
   const isSdfOrSealant = /\bsdf\b|\bseal/.test(tx) && !/\bga\b|\bblock\b|\bssc\b|\bcrown\b|\bext/.test(tx);
-  if (isSdfOrSealant && (slot === '60' || slot === 60)) {
-    slot = '30';
-  }
+  if (isSdfOrSealant && (slot === '60' || slot === 60)) slot = '30';
   const isGA = String(slot).toUpperCase() === 'GA' || /\bga\b|\bblock\b/.test(tx);
   if (isGA) return `<span class="badge badge-red">GA</span>`;
   return `<span class="badge badge-blue">${esc(String(slot) || '-')}</span>`;
@@ -1401,30 +1503,51 @@ function bookingSlotCell(r) {
 
 function planAgeCell(r) {
   const days = r.days_since_plan || 0;
-  const tx = (r.tx_summary || r.treatment || '').toLowerCase();
-  const isGA = /\bga\b|\bblock\b/.test(tx);
-  let slot = r.booking_slot || '';
-  let ageBadge = '';
   if (days >= 180) {
     const mo = Math.round(days / 30);
-    ageBadge = '<span class="risk-badge risk-high" style="font-size:0.6rem;">' + mo + 'mo</span>';
+    return `<span class="risk-badge risk-high" style="font-size:0.6rem;">${mo}mo</span>`;
   } else if (days >= 90) {
     const mo = Math.round(days / 30);
-    ageBadge = '<span class="risk-badge risk-medium" style="font-size:0.6rem;">' + mo + 'mo</span>';
+    return `<span class="risk-badge risk-medium" style="font-size:0.6rem;">${mo}mo</span>`;
   } else {
-    ageBadge = '<span style="font-size:0.72rem;color:var(--text2);">' + days + 'd</span>';
+    return `<span style="font-size:0.72rem;color:var(--text2);">${days}d</span>`;
   }
-  let bookingBadge = '';
-  if (isGA) {
-    bookingBadge = '<span class="badge badge-red" style="font-size:0.55rem;padding:0.1rem 0.3rem;">GA</span>';
-  } else if (slot) {
-    bookingBadge = '<span style="font-size:0.6rem;color:var(--text3);">' + slot + 'min</span>';
+}
+
+function timeNeededCell(r) {
+  const tx = (r.tx_summary || r.treatment || '').toLowerCase();
+  const isGA = /\bga\b|\bblock\b/.test(tx);
+  if (isGA) return `<span class="badge badge-red">GA</span>`;
+
+  // Determine time needed based on treatment type
+  const isSdfOnly = /\bsdf\b/.test(tx) && !/\bssc\b|\bcrown\b|\bext|\bga\b|\bblock\b/.test(tx);
+  const isSealantOnly = /\bseal/.test(tx) && !/\bssc\b|\bcrown\b|\bext|\bga\b|\bblock\b|\bsdf\b/.test(tx);
+  const isSdfAndSealant = /\bsdf\b/.test(tx) && /\bseal/.test(tx) && !/\bssc\b|\bcrown\b|\bext|\bga\b|\bblock\b/.test(tx);
+  const isSingleRestorative = /\b(ssc|crown|rest|comp|pulp)\b/.test(tx) && !/\bga\b|\bblock\b/.test(tx);
+
+  let minutes = r.booking_slot || '';
+  if (isSdfOnly || isSealantOnly || isSdfAndSealant) {
+    minutes = '30';
+  } else if (isSingleRestorative && (!minutes || minutes === '60' || Number(minutes) === 60)) {
+    minutes = '45';
   }
-  return '<div style="text-align:center;line-height:1.4;">' + ageBadge + (bookingBadge ? '<br>' + bookingBadge : '') + '</div>';
+
+  // Sealant-only flag
+  if (isSealantOnly) {
+    return `<div style="text-align:center;line-height:1.4;">
+      <span class="badge badge-blue">${minutes}min</span><br>
+      <span class="badge badge-yellow" style="font-size:0.55rem;padding:0.1rem 0.3rem;" title="Sealants alone — may be done at next recall exam">Recall OK</span>
+    </div>`;
+  }
+
+  if (minutes) {
+    return `<span class="badge badge-blue">${minutes}min</span>`;
+  }
+  return `<span style="color:var(--text3);font-size:0.7rem;">—</span>`;
 }
 
 function renderTxTags(summary) {
-  if (!summary) return '<span class="risk-badge risk-medium" style="font-size:0.6rem;cursor:help;" title="Treatment plan exists but no procedures listed \u2014 review charting">No Tx Listed</span>';
+  if (!summary) return '<span class="risk-badge risk-medium" style="font-size:0.6rem;cursor:help;" title="Treatment plan exists but no procedures listed — review charting">No Tx Listed</span>';
   const tags = summary.split(/[,;]+/).map(s => s.trim()).filter(Boolean);
   return '<div class="tx-summary">' + tags.map(t => {
     const tl = t.toLowerCase();

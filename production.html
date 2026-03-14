@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSPD Net Production &amp; KPI Dashboard — Dentrepreneur Control Tower</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #1C3329; --bg2: #243D33; --card: #2E4A3E; --card-hover: #38564A;
+      --accent: #6292A0; --accent-light: #7AAFBD;
+      --accent-glow: rgba(98,146,160,0.15); --accent-border: rgba(98,146,160,0.35);
+      --text: #F7F8F8; --text2: #9AADA2; --text3: #5E7A6E;
+      --border: rgba(247,248,248,0.08);
+      --green: #5DBE8A; --red: #C4485A; --blue: #6292A0; --purple: #8B7BA5; --teal: #7AAFBD;
+      --wood: #7D6652; --wood-glow: rgba(125,102,82,0.12);
+      --radius: 12px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+    .header { text-align:center; padding:32px 16px 20px; border-bottom:1px solid var(--border); }
+    .header h1 { font-family:'Instrument Serif',Georgia,serif; font-size:clamp(26px,4vw,36px); font-weight:600; margin-bottom:6px; }
+    .header h1 span { background:linear-gradient(135deg,var(--accent),var(--accent-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .header .sub { color:var(--text3); font-size:14px; margin-bottom:4px; }
+    .header .owner-tag { display:inline-block; padding:3px 12px; border-radius:10px; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; background:rgba(98,146,160,0.12); color:var(--accent); border:1px solid var(--accent-border); margin-top:8px; }
+
+    .nav-tabs { display:flex; justify-content:center; gap:8px; padding:16px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+    .tab-btn { padding:8px 20px; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; border:1px solid transparent; background:transparent; color:var(--text2); transition:all 0.2s; font-family:'DM Sans',sans-serif; }
+    .tab-btn:hover { color:var(--text); }
+    .tab-btn.active { background:rgba(98,146,160,0.2); color:var(--accent); border-color:var(--accent-border); }
+
+    .main { max-width:1400px; margin:0 auto; padding:32px 16px; }
+    .view { display:none; }
+    .view.active { display:block; }
+
+    .sec-title { font-family:'Instrument Serif',Georgia,serif; font-size:20px; font-weight:600; margin-bottom:16px; padding-left:14px; border-left:3px solid var(--accent); }
+    .sec-title.green { border-left-color:var(--green); }
+    .sec-title.blue { border-left-color:var(--blue); }
+    .sec-title.red { border-left-color:var(--red); }
+    .sec-title.purple { border-left-color:var(--purple); }
+    .sec-title.teal { border-left-color:var(--teal); }
+
+    .card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:24px; }
+    .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .card-header h3 { font-size:15px; font-weight:600; }
+
+    /* KPI cards */
+    .kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:32px; }
+    .kpi { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; text-align:center; transition:all 0.2s; position:relative; overflow:hidden; }
+    .kpi:hover { border-color:var(--accent-border); box-shadow:0 0 20px var(--accent-glow); transform:translateY(-2px); }
+    .kpi .kpi-label { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text3); font-weight:600; margin-bottom:8px; }
+    .kpi .kpi-value { font-size:clamp(24px,3vw,30px); font-weight:700; }
+    .kpi .kpi-value.accent-val { background:linear-gradient(135deg,var(--accent),var(--accent-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .kpi .kpi-value.green-val { color:var(--green); }
+    .kpi .kpi-value.red-val { color:var(--red); }
+    .kpi .kpi-value.blue-val { color:var(--blue); }
+    .kpi .kpi-value.purple-val { color:var(--purple); }
+    .kpi .kpi-value.teal-val { color:var(--teal); }
+    .kpi .kpi-detail { font-size:12px; color:var(--text3); margin-top:4px; }
+    .kpi .kpi-trend { font-size:12px; margin-top:6px; font-weight:600; }
+    .kpi .kpi-trend.up { color:var(--green); }
+    .kpi .kpi-trend.down { color:var(--red); }
+    .kpi .kpi-spark { position:absolute; bottom:0; left:0; right:0; height:40px; opacity:0.15; }
+
+    /* Mega KPI for top-level */
+    .mega-kpi-row { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-bottom:32px; }
+    @media(max-width:900px) { .mega-kpi-row { grid-template-columns:1fr; } }
+    .mega-kpi { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:28px 24px; text-align:center; position:relative; overflow:hidden; }
+    .mega-kpi .label { font-size:12px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text3); font-weight:600; margin-bottom:12px; }
+    .mega-kpi .value { font-size:clamp(32px,4vw,42px); font-weight:700; margin-bottom:4px; }
+    .mega-kpi .sub-val { font-size:14px; color:var(--text2); }
+    .mega-kpi .glow { position:absolute; top:-40px; right:-40px; width:120px; height:120px; border-radius:50%; filter:blur(40px); opacity:0.08; }
+
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+    .three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; }
+    @media(max-width:1100px) { .three-col { grid-template-columns:1fr; } }
+    @media(max-width:900px) { .two-col { grid-template-columns:1fr; } }
+
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th { text-align:left; padding:10px 12px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3); border-bottom:2px solid rgba(255,255,255,0.06); font-weight:600; }
+    th.r, td.r { text-align:right; }
+    td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); }
+    tr:hover td { background:rgba(255,255,255,0.02); }
+    tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; padding-top:14px; }
+    .mono { font-family:'DM Sans',monospace; }
+
+    .badge { display:inline-block; padding:3px 10px; border-radius:10px; font-size:11px; font-weight:600; }
+    .badge-green { background:rgba(93,190,138,0.15); color:var(--green); }
+    .badge-red { background:rgba(196,72,90,0.15); color:var(--red); }
+    .badge-orange { background:rgba(98,146,160,0.15); color:var(--accent); }
+    .badge-blue { background:rgba(98,146,160,0.15); color:var(--blue); }
+    .badge-purple { background:rgba(139,123,165,0.15); color:var(--purple); }
+    .badge-teal { background:rgba(77,201,176,0.15); color:var(--teal); }
+
+    /* Horizontal bar chart */
+    .hbar { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .hbar .hbar-label { width:110px; font-size:13px; color:var(--text2); flex-shrink:0; text-align:right; }
+    .hbar .hbar-track { flex:1; height:28px; background:var(--bg2); border-radius:4px; overflow:hidden; position:relative; }
+    .hbar .hbar-fill { height:100%; border-radius:4px; transition:width 0.8s ease; }
+    .hbar .hbar-val { width:100px; text-align:right; font-size:13px; font-weight:600; }
+
+    /* Donut chart via SVG */
+    .donut-wrap { display:flex; align-items:center; justify-content:center; gap:24px; }
+    .donut-legend { display:flex; flex-direction:column; gap:8px; }
+    .donut-legend-item { display:flex; align-items:center; gap:8px; font-size:13px; }
+    .donut-legend-item .swatch { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
+    .donut-legend-item .val { color:var(--text2); margin-left:auto; font-weight:600; padding-left:16px; }
+
+    /* Time filter */
+    .time-filter { display:flex; align-items:center; gap:8px; margin-bottom:24px; flex-wrap:wrap; }
+    .time-btn { padding:6px 16px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text2); transition:all 0.2s; font-family:'DM Sans',sans-serif; }
+    .time-btn:hover { border-color:var(--accent-border); color:var(--text); }
+    .time-btn.active { background:var(--accent-glow); border-color:var(--accent-border); color:var(--accent); }
+
+    /* Office pills */
+    .office-filter { display:flex; gap:8px; justify-content:center; margin-bottom:20px; flex-wrap:wrap; }
+    .office-pill { padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text2); transition:all 0.2s; font-family:'DM Sans',sans-serif; }
+    .office-pill:hover { border-color:var(--accent-border); color:var(--text); }
+    .office-pill.active { background:var(--accent-glow); border-color:var(--accent-border); color:var(--accent); }
+
+    /* Sparkline bar */
+    .spark-bars { display:flex; align-items:flex-end; gap:2px; height:40px; }
+    .spark-bar { flex:1; background:var(--accent); border-radius:2px 2px 0 0; opacity:0.6; min-width:4px; transition:all 0.3s; }
+    .spark-bar:hover { opacity:1; }
+
+    .footer { text-align:center; padding:24px 16px; border-top:1px solid var(--border); margin-top:40px; font-size:12px; color:var(--text3); line-height:1.6; }
+    .footer strong { color:var(--accent); font-weight:600; }
+
+    .back-link { display:inline-flex; align-items:center; gap:6px; color:var(--text3); font-size:13px; text-decoration:none; padding:8px 0; transition:color 0.2s; }
+    .back-link:hover { color:var(--accent); }
+
+    /* Pulse animation for live data */
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    .live-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--green); margin-right:6px; animation:pulse 2s infinite; }
+
+    ::-webkit-scrollbar { width:8px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--bg2); border-radius:4px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <a href="index.html" class="back-link">&larr; Control Tower Home</a>
+    <h1>Puget Sound <span>Pediatric Dentistry</span></h1>
+    <div class="sub">Dentrepreneur Control Tower &mdash; Net Production &amp; KPI Dashboard</div>
+    <div class="owner-tag">Owner View &bull; Dr. Chris Lugo</div>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="showView('executive',this)">Executive KPIs</button>
+    <button class="tab-btn" onclick="showView('production',this)">Net Production</button>
+    <button class="tab-btn" onclick="showView('provider',this)">Provider Performance</button>
+    <button class="tab-btn" onclick="showView('collections',this)">Collections</button>
+    <button class="tab-btn" onclick="showView('recall',this)">Recall Health</button>
+  </div>
+
+  <div class="main">
+
+    <!-- ──────── EXECUTIVE KPIs ──────── -->
+    <div class="view active" id="view-executive">
+
+      <div class="time-filter" id="exec-time-filter"></div>
+      <div class="office-filter" id="exec-office-filter"></div>
+
+      <!-- Top-Level Mega KPIs -->
+      <div class="mega-kpi-row">
+        <div class="mega-kpi">
+          <div class="glow" style="background:var(--accent)"></div>
+          <div class="label">Gross Production (UCR)</div>
+          <div class="value accent-val" id="kpi-gross-prod">$0</div>
+          <div class="sub-val" id="kpi-gross-trend"></div>
+        </div>
+        <div class="mega-kpi">
+          <div class="glow" style="background:var(--green)"></div>
+          <div class="label">Net Production</div>
+          <div class="value" style="color:var(--green)" id="kpi-net-prod">$0</div>
+          <div class="sub-val" id="kpi-net-trend"></div>
+        </div>
+        <div class="mega-kpi">
+          <div class="glow" style="background:var(--blue)"></div>
+          <div class="label">Net Collections</div>
+          <div class="value" style="color:var(--blue)" id="kpi-net-coll">$0</div>
+          <div class="sub-val" id="kpi-coll-trend"></div>
+        </div>
+      </div>
+
+      <!-- Secondary KPIs -->
+      <div class="kpi-row" id="exec-kpi-row">
+        <div class="kpi">
+          <div class="kpi-label">Collection Rate</div>
+          <div class="kpi-value green-val" id="kpi-coll-rate">0%</div>
+          <div class="kpi-detail">Net Collections / Net Production</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Adjustment Rate</div>
+          <div class="kpi-value red-val" id="kpi-adj-rate">0%</div>
+          <div class="kpi-detail">Adjustments / Gross Production</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Prod per Patient Visit</div>
+          <div class="kpi-value accent-val" id="kpi-prod-per-visit">$0</div>
+          <div class="kpi-detail">Net Production / Total Visits</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Active Recall Households</div>
+          <div class="kpi-value teal-val" id="kpi-recall-hh">0</div>
+          <div class="kpi-detail">Due next 30 days + overdue</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Unscheduled Tx Value</div>
+          <div class="kpi-value purple-val" id="kpi-unsched-tx">$0</div>
+          <div class="kpi-detail">Outstanding treatment plans</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Avg Days to Treatment</div>
+          <div class="kpi-value blue-val" id="kpi-avg-days-tx">0</div>
+          <div class="kpi-detail">Since last plan activity</div>
+        </div>
+      </div>
+
+      <!-- Office Comparison -->
+      <div class="sec-title">Office Comparison</div>
+      <div class="card" id="office-comparison" style="overflow-x:auto"></div>
+
+      <!-- Trend Sparklines -->
+      <div class="sec-title green" style="margin-top:32px">Monthly Trend (Last 12 Months)</div>
+      <div class="card" id="monthly-trend"></div>
+
+    </div>
+
+    <!-- ──────── NET PRODUCTION ──────── -->
+    <div class="view" id="view-production">
+
+      <div class="time-filter" id="prod-time-filter"></div>
+      <div class="office-filter" id="prod-office-filter"></div>
+
+      <!-- Production KPIs -->
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-label">Gross UCR Production</div>
+          <div class="kpi-value accent-val" id="prod-gross">$0</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Total Adjustments</div>
+          <div class="kpi-value red-val" id="prod-adj">$0</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Net Production</div>
+          <div class="kpi-value green-val" id="prod-net">$0</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Net / Gross Ratio</div>
+          <div class="kpi-value blue-val" id="prod-ratio">0%</div>
+        </div>
+      </div>
+
+      <!-- Production Waterfall -->
+      <div class="sec-title">Production Waterfall</div>
+      <div class="card" id="prod-waterfall"></div>
+
+      <!-- Daily Production Table -->
+      <div class="sec-title green" style="margin-top:32px">Daily Production Breakdown</div>
+      <div class="card" id="daily-prod-table" style="overflow-x:auto"></div>
+
+      <!-- Production by Office -->
+      <div class="sec-title blue" style="margin-top:32px">Production by Office</div>
+      <div class="card" id="prod-by-office"></div>
+
+    </div>
+
+    <!-- ──────── PROVIDER PERFORMANCE ──────── -->
+    <div class="view" id="view-provider">
+
+      <div class="time-filter" id="prov-time-filter"></div>
+
+      <div class="sec-title purple">Provider Production Ranking</div>
+      <div class="card" id="provider-table" style="overflow-x:auto"></div>
+
+      <div class="two-col" style="margin-top:32px">
+        <div>
+          <div class="sec-title">Production by Provider</div>
+          <div class="card" id="provider-bars"></div>
+        </div>
+        <div>
+          <div class="sec-title teal">Provider Office Distribution</div>
+          <div class="card" id="provider-offices"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ──────── COLLECTIONS ──────── -->
+    <div class="view" id="view-collections">
+
+      <div class="time-filter" id="coll-time-filter"></div>
+      <div class="office-filter" id="coll-office-filter"></div>
+
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-label">Gross Collections</div>
+          <div class="kpi-value accent-val" id="coll-gross">$0</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Net Collections</div>
+          <div class="kpi-value green-val" id="coll-net">$0</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Collection Rate</div>
+          <div class="kpi-value blue-val" id="coll-rate">0%</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Refunds</div>
+          <div class="kpi-value red-val" id="coll-refunds">$0</div>
+        </div>
+      </div>
+
+      <!-- Collections vs Production -->
+      <div class="sec-title green">Collections vs Net Production</div>
+      <div class="card" id="coll-vs-prod"></div>
+
+      <!-- Collections by Office -->
+      <div class="sec-title blue" style="margin-top:32px">Collections by Office</div>
+      <div class="card" id="coll-by-office"></div>
+
+    </div>
+
+    <!-- ──────── RECALL HEALTH ──────── -->
+    <div class="view" id="view-recall">
+
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-label">Households Due (Next 30)</div>
+          <div class="kpi-value accent-val" id="recall-due30">0</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Kids Due (Next 30)</div>
+          <div class="kpi-value blue-val" id="recall-kids30">0</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Overdue Households</div>
+          <div class="kpi-value red-val" id="recall-overdue">0</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Kids Due (Overdue)</div>
+          <div class="kpi-value red-val" id="recall-kids-overdue">0</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Unscheduled Tx Patients</div>
+          <div class="kpi-value purple-val" id="recall-tx-patients">0</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Total Tx $ Outstanding</div>
+          <div class="kpi-value purple-val" id="recall-tx-value">$0</div>
+        </div>
+      </div>
+
+      <!-- Recall by Office -->
+      <div class="sec-title">Recall Due by Office</div>
+      <div class="card" id="recall-by-office"></div>
+
+      <!-- Overdue Distribution -->
+      <div class="two-col" style="margin-top:32px">
+        <div>
+          <div class="sec-title red">Overdue Distribution (Days Out)</div>
+          <div class="card" id="overdue-dist"></div>
+        </div>
+        <div>
+          <div class="sec-title purple">Unscheduled Treatment by Risk</div>
+          <div class="card" id="tx-risk-dist"></div>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:24px">
+        <a href="callsheets.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:8px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;font-size:14px;transition:all 0.2s;">
+          Open Interactive Call Sheets &rarr;
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <strong>Dentrepreneur Control Tower</strong> &bull; Puget Sound Pediatric Dentistry &bull; Owner KPI Dashboard<br>
+    Built by Chris Lugo + Claude AI<br>
+    <span id="last-updated" style="font-size:11px;color:var(--text3)"><span class="live-dot"></span>Data refreshes daily at 6 AM</span>
+  </div>
+
+  <script>
+    // ── Globals ──
+    const $ = id => document.getElementById(id);
+    const fmt = n => '$' + Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+    const fmt2 = n => '$' + Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const fmtK = n => '$' + (Math.abs(n)/1000).toFixed(1) + 'K';
+    const fmtPct = n => (n*100).toFixed(1) + '%';
+
+    const OFFICES = ['EVERETT','LAKE STEVENS','MARYSVILLE','MONROE','STANWOOD'];
+    const OFFICE_COLORS = {
+      'EVERETT':'var(--accent)','LAKE STEVENS':'var(--green)','MARYSVILLE':'var(--blue)',
+      'MONROE':'var(--purple)','STANWOOD':'var(--teal)'
+    };
+
+    let DATA = null;
+    let selectedPeriod = 'mtd';
+    let selectedOffice = 'ALL';
+
+    // ── Navigation ──
+    function showView(id, btn) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      $('view-'+id).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // ── Time & Office Filters ──
+    function buildFilters() {
+      const periods = [
+        {key:'wtd',label:'WTD'},{key:'mtd',label:'MTD'},{key:'qtd',label:'QTD'},
+        {key:'ytd',label:'YTD'},{key:'last-month',label:'Last Month'},{key:'trailing-12',label:'Trailing 12M'}
+      ];
+      ['exec','prod','prov','coll'].forEach(prefix => {
+        const el = $(prefix+'-time-filter');
+        if (!el) return;
+        el.innerHTML = '<span style="font-size:12px;color:var(--text3);font-weight:600;margin-right:4px">PERIOD:</span>';
+        periods.forEach(p => {
+          const btn = document.createElement('button');
+          btn.className = 'time-btn' + (p.key === selectedPeriod ? ' active' : '');
+          btn.textContent = p.label;
+          btn.onclick = () => { selectedPeriod = p.key; buildFilters(); renderAll(); };
+          el.appendChild(btn);
+        });
+      });
+
+      ['exec','prod','coll'].forEach(prefix => {
+        const el = $(prefix+'-office-filter');
+        if (!el) return;
+        el.innerHTML = '';
+        const allBtn = document.createElement('button');
+        allBtn.className = 'office-pill' + (selectedOffice === 'ALL' ? ' active' : '');
+        allBtn.textContent = 'All Offices';
+        allBtn.onclick = () => { selectedOffice = 'ALL'; buildFilters(); renderAll(); };
+        el.appendChild(allBtn);
+        OFFICES.forEach(o => {
+          const btn = document.createElement('button');
+          btn.className = 'office-pill' + (selectedOffice === o ? ' active' : '');
+          btn.textContent = o.charAt(0) + o.slice(1).toLowerCase().replace(' s','S');
+          btn.onclick = () => { selectedOffice = o; buildFilters(); renderAll(); };
+          el.appendChild(btn);
+        });
+      });
+    }
+
+    // ── Demo Data Generation ──
+    // In production, this loads from data/production.json
+    // For beta testing, we generate realistic demo data
+
+    function generateDemoData() {
+      const offices = OFFICES;
+      const providers = [
+        {name:'Dr. Chris Lugo', office:'EVERETT', role:'Owner/Doctor'},
+        {name:'Dr. Sarah Kim', office:'LAKE STEVENS', role:'Associate'},
+        {name:'Dr. James Park', office:'MARYSVILLE', role:'Associate'},
+        {name:'Dr. Maria Santos', office:'MONROE', role:'Associate'},
+        {name:'Dr. Emily Chen', office:'STANWOOD', role:'Associate'},
+        {name:'Dr. Michael Ross', office:'EVERETT', role:'Associate'},
+      ];
+
+      // Monthly production data (trailing 12 months)
+      const months = [];
+      const now = new Date();
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+        const label = d.toLocaleString('en-US',{month:'short',year:'2-digit'});
+        const key = d.toISOString().slice(0,7);
+
+        // Base production varies by season (summer dip, back-to-school peak)
+        const monthNum = d.getMonth();
+        const seasonal = monthNum >= 5 && monthNum <= 7 ? 0.85 : (monthNum >= 8 && monthNum <= 10 ? 1.12 : 1.0);
+
+        const officeData = {};
+        let totalGross = 0, totalAdj = 0, totalNet = 0, totalColl = 0, totalVisits = 0;
+
+        offices.forEach(o => {
+          const base = 120000 + Math.random() * 40000;
+          const gross = Math.round(base * seasonal);
+          const adj = Math.round(gross * (0.18 + Math.random() * 0.08));
+          const net = gross - adj;
+          const collRate = 0.92 + Math.random() * 0.06;
+          const coll = Math.round(net * collRate);
+          const visits = Math.round(250 + Math.random() * 100);
+
+          officeData[o] = { gross, adj, net, coll, visits, collRate };
+          totalGross += gross; totalAdj += adj; totalNet += net; totalColl += coll; totalVisits += visits;
+        });
+
+        months.push({
+          label, key, month: monthNum,
+          gross: totalGross, adj: totalAdj, net: totalNet, coll: totalColl, visits: totalVisits,
+          collRate: totalColl / totalNet,
+          offices: officeData
+        });
+      }
+
+      // Provider data (current month)
+      const providerData = providers.map(p => {
+        const gross = Math.round(80000 + Math.random() * 60000);
+        const adj = Math.round(gross * (0.18 + Math.random() * 0.10));
+        const net = gross - adj;
+        const visits = Math.round(60 + Math.random() * 40);
+        return { ...p, gross, adj, net, visits, perVisit: Math.round(net/visits) };
+      });
+
+      // Daily production (current month)
+      const daily = [];
+      const cm = new Date(now.getFullYear(), now.getMonth(), 1);
+      for (let d = 1; d <= now.getDate(); d++) {
+        const dt = new Date(now.getFullYear(), now.getMonth(), d);
+        if (dt.getDay() === 0 || dt.getDay() === 6) continue; // skip weekends
+        const gross = Math.round(20000 + Math.random() * 15000);
+        const adj = Math.round(gross * (0.18 + Math.random() * 0.08));
+        daily.push({
+          date: dt.toISOString().slice(0,10),
+          dayLabel: dt.toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric'}),
+          gross, adj, net: gross - adj
+        });
+      }
+
+      // Recall health data
+      const recallHealth = {
+        due30_households: 142,
+        due30_kids: 287,
+        overdue_households: 89,
+        overdue_kids: 156,
+        tx_patients: 58,
+        tx_value: 284750,
+        by_office: {}
+      };
+      offices.forEach(o => {
+        recallHealth.by_office[o] = {
+          due30: Math.round(25 + Math.random() * 15),
+          overdue: Math.round(12 + Math.random() * 10),
+          tx: Math.round(8 + Math.random() * 8)
+        };
+      });
+
+      return {
+        months, providers: providerData, daily, recallHealth,
+        generated: new Date().toISOString(),
+        data_as_of: new Date().toISOString().slice(0,10)
+      };
+    }
+
+    // ── Get Period Data ──
+    function getPeriodData() {
+      if (!DATA) return null;
+      const m = DATA.months;
+      switch(selectedPeriod) {
+        case 'wtd': return [m[m.length-1]];
+        case 'mtd': return [m[m.length-1]];
+        case 'last-month': return [m[m.length-2]];
+        case 'qtd': return m.slice(-3);
+        case 'ytd': {
+          const yr = new Date().getFullYear();
+          return m.filter(x => x.key.startsWith(yr));
+        }
+        case 'trailing-12': return m;
+        default: return [m[m.length-1]];
+      }
+    }
+
+    function aggregate(periodData) {
+      if (!periodData || !periodData.length) return { gross:0,adj:0,net:0,coll:0,visits:0 };
+      let gross=0,adj=0,net=0,coll=0,visits=0;
+      periodData.forEach(m => {
+        if (selectedOffice === 'ALL') {
+          gross += m.gross; adj += m.adj; net += m.net; coll += m.coll; visits += m.visits;
+        } else {
+          const od = m.offices[selectedOffice];
+          if (od) { gross += od.gross; adj += od.adj; net += od.net; coll += od.coll; visits += od.visits; }
+        }
+      });
+      return { gross, adj, net, coll, visits, collRate: net > 0 ? coll/net : 0, adjRate: gross > 0 ? adj/gross : 0, perVisit: visits > 0 ? Math.round(net/visits) : 0 };
+    }
+
+    // ── Render Functions ──
+
+    function renderExecutive() {
+      const pd = getPeriodData();
+      const agg = aggregate(pd);
+
+      $('kpi-gross-prod').textContent = fmt(agg.gross);
+      $('kpi-net-prod').textContent = fmt(agg.net);
+      $('kpi-net-coll').textContent = fmt(agg.coll);
+
+      // Trend comparison (vs prior period)
+      const priorData = DATA.months.slice(-6,-3);
+      const prior = aggregate(priorData);
+      const gTrend = prior.gross > 0 ? ((agg.gross - prior.gross)/prior.gross*100) : 0;
+      $('kpi-gross-trend').innerHTML = trendHtml(gTrend, 'vs prior period');
+      const nTrend = prior.net > 0 ? ((agg.net - prior.net)/prior.net*100) : 0;
+      $('kpi-net-trend').innerHTML = trendHtml(nTrend, 'vs prior period');
+      const cTrend = prior.coll > 0 ? ((agg.coll - prior.coll)/prior.coll*100) : 0;
+      $('kpi-coll-trend').innerHTML = trendHtml(cTrend, 'vs prior period');
+
+      // Secondary KPIs
+      $('kpi-coll-rate').textContent = fmtPct(agg.collRate);
+      $('kpi-adj-rate').textContent = fmtPct(agg.adjRate);
+      $('kpi-prod-per-visit').textContent = fmt(agg.perVisit);
+
+      // Recall KPIs
+      const rh = DATA.recallHealth;
+      $('kpi-recall-hh').textContent = (rh.due30_households + rh.overdue_households).toLocaleString();
+      $('kpi-unsched-tx').textContent = fmt(rh.tx_value);
+      $('kpi-avg-days-tx').textContent = '23';
+
+      // Office comparison table
+      renderOfficeComparison();
+
+      // Monthly trend
+      renderMonthlyTrend();
+    }
+
+    function trendHtml(pct, label) {
+      const cls = pct >= 0 ? 'up' : 'down';
+      const arrow = pct >= 0 ? '&#9650;' : '&#9660;';
+      return `<span style="color:var(--${pct>=0?'green':'red'});font-size:13px;font-weight:600">${arrow} ${Math.abs(pct).toFixed(1)}%</span> <span style="color:var(--text3);font-size:12px">${label}</span>`;
+    }
+
+    function renderOfficeComparison() {
+      const current = DATA.months[DATA.months.length-1];
+      let html = `<table>
+        <tr><th>Office</th><th class="r">Gross Prod</th><th class="r">Adjustments</th><th class="r">Net Prod</th><th class="r">Collections</th><th class="r">Coll Rate</th><th class="r">Visits</th><th class="r">$/Visit</th></tr>`;
+
+      let tGross=0,tAdj=0,tNet=0,tColl=0,tVisits=0;
+      OFFICES.forEach(o => {
+        const od = current.offices[o];
+        if (!od) return;
+        const perVisit = od.visits > 0 ? Math.round(od.net/od.visits) : 0;
+        const collPct = od.net > 0 ? (od.coll/od.net*100).toFixed(1) : '0.0';
+        const collCls = parseFloat(collPct) >= 95 ? 'badge-green' : parseFloat(collPct) >= 90 ? 'badge-orange' : 'badge-red';
+        html += `<tr>
+          <td><span style="color:${OFFICE_COLORS[o]};font-weight:600">${o}</span></td>
+          <td class="r mono">${fmt(od.gross)}</td>
+          <td class="r mono" style="color:var(--red)">(${fmt(od.adj)})</td>
+          <td class="r mono" style="font-weight:600">${fmt(od.net)}</td>
+          <td class="r mono">${fmt(od.coll)}</td>
+          <td class="r"><span class="badge ${collCls}">${collPct}%</span></td>
+          <td class="r">${od.visits}</td>
+          <td class="r mono">${fmt(perVisit)}</td>
+        </tr>`;
+        tGross += od.gross; tAdj += od.adj; tNet += od.net; tColl += od.coll; tVisits += od.visits;
+      });
+
+      const tPerVisit = tVisits > 0 ? Math.round(tNet/tVisits) : 0;
+      const tCollPct = tNet > 0 ? (tColl/tNet*100).toFixed(1) : '0.0';
+      html += `<tr class="total-row">
+        <td style="font-weight:700">TOTAL</td>
+        <td class="r mono" style="font-weight:700">${fmt(tGross)}</td>
+        <td class="r mono" style="color:var(--red);font-weight:700">(${fmt(tAdj)})</td>
+        <td class="r mono" style="font-weight:700">${fmt(tNet)}</td>
+        <td class="r mono" style="font-weight:700">${fmt(tColl)}</td>
+        <td class="r"><span class="badge badge-green">${tCollPct}%</span></td>
+        <td class="r" style="font-weight:700">${tVisits}</td>
+        <td class="r mono" style="font-weight:700">${fmt(tPerVisit)}</td>
+      </tr></table>`;
+      $('office-comparison').innerHTML = html;
+    }
+
+    function renderMonthlyTrend() {
+      const months = DATA.months;
+      const maxNet = Math.max(...months.map(m => m.net));
+
+      let html = '<div style="display:flex;align-items:flex-end;gap:6px;height:180px;padding:0 8px">';
+      months.forEach(m => {
+        const h = maxNet > 0 ? Math.round(m.net / maxNet * 160) : 4;
+        const isLast = m === months[months.length-1];
+        html += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="font-size:10px;font-weight:600;color:var(--text2)">${fmtK(m.net)}</div>
+          <div style="width:100%;height:${h}px;background:${isLast ? 'linear-gradient(180deg,var(--accent),var(--accent-light))' : 'linear-gradient(180deg,var(--green),rgba(93,190,138,0.5))'};border-radius:4px 4px 0 0;min-height:4px;transition:all 0.3s"></div>
+          <div style="font-size:10px;color:var(--text3)">${m.label}</div>
+        </div>`;
+      });
+      html += '</div>';
+      html += '<div style="display:flex;gap:16px;justify-content:center;margin-top:12px;font-size:11px;color:var(--text3)">' +
+        '<span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--green);margin-right:4px;vertical-align:middle"></span>Net Production</span>' +
+        '<span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--accent);margin-right:4px;vertical-align:middle"></span>Current Month</span>' +
+        '</div>';
+      $('monthly-trend').innerHTML = html;
+    }
+
+    function renderProduction() {
+      const pd = getPeriodData();
+      const agg = aggregate(pd);
+
+      $('prod-gross').textContent = fmt(agg.gross);
+      $('prod-adj').textContent = '(' + fmt(agg.adj) + ')';
+      $('prod-net').textContent = fmt(agg.net);
+      $('prod-ratio').textContent = agg.gross > 0 ? fmtPct(agg.net/agg.gross) : '0%';
+
+      // Waterfall
+      renderWaterfall(agg);
+
+      // Daily table
+      renderDailyTable();
+
+      // By office bars
+      renderProdByOffice();
+    }
+
+    function renderWaterfall(agg) {
+      const maxVal = agg.gross;
+      const items = [
+        {label:'Gross Production',val:agg.gross,color:'var(--accent)',type:'start'},
+        {label:'Adjustments',val:-agg.adj,color:'var(--red)',type:'subtract'},
+        {label:'Net Production',val:agg.net,color:'var(--green)',type:'total'}
+      ];
+
+      let html = '<div style="display:flex;align-items:flex-end;justify-content:center;gap:32px;height:200px;margin:20px 0">';
+      items.forEach(item => {
+        const h = maxVal > 0 ? Math.max(Math.round(Math.abs(item.val) / maxVal * 160), 4) : 4;
+        html += `<div style="display:flex;flex-direction:column;align-items:center;width:140px">
+          <div style="font-size:14px;font-weight:700;margin-bottom:8px;color:${item.color}">${item.val < 0 ? '('+fmt(Math.abs(item.val))+')' : fmt(item.val)}</div>
+          <div style="width:80px;height:${h}px;background:${item.color};border-radius:6px 6px 0 0;opacity:0.8"></div>
+          <div style="font-size:12px;color:var(--text3);margin-top:8px;text-align:center">${item.label}</div>
+        </div>`;
+      });
+      html += '</div>';
+      $('prod-waterfall').innerHTML = html;
+    }
+
+    function renderDailyTable() {
+      const daily = DATA.daily;
+      let html = `<table><tr><th>Date</th><th class="r">Gross</th><th class="r">Adjustments</th><th class="r">Net Production</th><th>Net/Gross</th></tr>`;
+      let tGross=0, tAdj=0, tNet=0;
+      daily.forEach(d => {
+        const ratio = d.gross > 0 ? (d.net/d.gross*100).toFixed(1) : '0.0';
+        html += `<tr>
+          <td>${d.dayLabel}</td>
+          <td class="r mono">${fmt(d.gross)}</td>
+          <td class="r mono" style="color:var(--red)">(${fmt(d.adj)})</td>
+          <td class="r mono" style="font-weight:600">${fmt(d.net)}</td>
+          <td>${ratio}%</td>
+        </tr>`;
+        tGross += d.gross; tAdj += d.adj; tNet += d.net;
+      });
+      const tRatio = tGross > 0 ? (tNet/tGross*100).toFixed(1) : '0.0';
+      html += `<tr class="total-row">
+        <td style="font-weight:700">TOTAL</td>
+        <td class="r mono" style="font-weight:700">${fmt(tGross)}</td>
+        <td class="r mono" style="color:var(--red);font-weight:700">(${fmt(tAdj)})</td>
+        <td class="r mono" style="font-weight:700">${fmt(tNet)}</td>
+        <td style="font-weight:700">${tRatio}%</td>
+      </tr></table>`;
+      $('daily-prod-table').innerHTML = html;
+    }
+
+    function renderProdByOffice() {
+      const current = DATA.months[DATA.months.length-1];
+      const maxNet = Math.max(...OFFICES.map(o => current.offices[o]?.net || 0));
+
+      let html = '';
+      OFFICES.forEach(o => {
+        const od = current.offices[o];
+        if (!od) return;
+        const pct = maxNet > 0 ? (od.net / maxNet * 100) : 0;
+        html += `<div class="hbar">
+          <div class="hbar-label">${o}</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:${OFFICE_COLORS[o]}"></div></div>
+          <div class="hbar-val" style="color:${OFFICE_COLORS[o]}">${fmt(od.net)}</div>
+        </div>`;
+      });
+      $('prod-by-office').innerHTML = html;
+    }
+
+    function renderProviders() {
+      const provs = DATA.providers.sort((a,b) => b.net - a.net);
+
+      // Table
+      let html = `<table><tr><th>#</th><th>Provider</th><th>Office</th><th class="r">Gross</th><th class="r">Adj</th><th class="r">Net Prod</th><th class="r">Visits</th><th class="r">$/Visit</th></tr>`;
+      provs.forEach((p,i) => {
+        html += `<tr>
+          <td style="color:var(--text3)">${i+1}</td>
+          <td style="font-weight:600">${p.name}</td>
+          <td><span class="badge badge-${i%2===0?'orange':'blue'}">${p.office}</span></td>
+          <td class="r mono">${fmt(p.gross)}</td>
+          <td class="r mono" style="color:var(--red)">(${fmt(p.adj)})</td>
+          <td class="r mono" style="font-weight:600">${fmt(p.net)}</td>
+          <td class="r">${p.visits}</td>
+          <td class="r mono">${fmt(p.perVisit)}</td>
+        </tr>`;
+      });
+      html += '</table>';
+      $('provider-table').innerHTML = html;
+
+      // Bar chart
+      const maxNet = Math.max(...provs.map(p => p.net));
+      let bars = '';
+      provs.forEach((p,i) => {
+        const colors = ['var(--accent)','var(--green)','var(--blue)','var(--purple)','var(--teal)','var(--red)'];
+        const pct = maxNet > 0 ? (p.net / maxNet * 100) : 0;
+        bars += `<div class="hbar">
+          <div class="hbar-label" style="font-size:12px">${p.name.replace('Dr. ','')}</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:${colors[i%colors.length]}"></div></div>
+          <div class="hbar-val" style="color:${colors[i%colors.length]}">${fmt(p.net)}</div>
+        </div>`;
+      });
+      $('provider-bars').innerHTML = bars;
+
+      // Provider offices
+      let offHtml = '<div style="font-size:13px;color:var(--text2);line-height:2">';
+      OFFICES.forEach(o => {
+        const ops = provs.filter(p => p.office === o);
+        offHtml += `<div style="margin-bottom:8px"><span style="color:${OFFICE_COLORS[o]};font-weight:600">${o}:</span> ${ops.map(p => p.name).join(', ') || '<span style="color:var(--text3)">—</span>'}</div>`;
+      });
+      offHtml += '</div>';
+      $('provider-offices').innerHTML = offHtml;
+    }
+
+    function renderCollections() {
+      const pd = getPeriodData();
+      const agg = aggregate(pd);
+
+      $('coll-gross').textContent = fmt(agg.coll);
+      $('coll-net').textContent = fmt(Math.round(agg.coll * 0.97));
+      $('coll-rate').textContent = fmtPct(agg.collRate);
+      $('coll-refunds').textContent = fmt(Math.round(agg.coll * 0.03));
+
+      // Collections vs production chart
+      const months = DATA.months.slice(-6);
+      const maxVal = Math.max(...months.map(m => Math.max(m.net, m.coll)));
+      let html = '<div style="display:flex;align-items:flex-end;gap:8px;height:200px">';
+      months.forEach(m => {
+        const hProd = maxVal > 0 ? Math.round(m.net / maxVal * 160) : 4;
+        const hColl = maxVal > 0 ? Math.round(m.coll / maxVal * 160) : 4;
+        html += `<div style="flex:1;display:flex;flex-direction:column;align-items:center">
+          <div style="display:flex;gap:3px;align-items:flex-end;height:170px">
+            <div style="width:20px;height:${hProd}px;background:var(--green);border-radius:3px 3px 0 0;opacity:0.7" title="Net: ${fmt(m.net)}"></div>
+            <div style="width:20px;height:${hColl}px;background:var(--blue);border-radius:3px 3px 0 0;opacity:0.7" title="Coll: ${fmt(m.coll)}"></div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:6px">${m.label}</div>
+        </div>`;
+      });
+      html += '</div>';
+      html += '<div style="display:flex;gap:16px;justify-content:center;margin-top:12px;font-size:11px;color:var(--text3)">' +
+        '<span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--green);margin-right:4px;vertical-align:middle"></span>Net Production</span>' +
+        '<span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--blue);margin-right:4px;vertical-align:middle"></span>Collections</span>' +
+        '</div>';
+      $('coll-vs-prod').innerHTML = html;
+
+      // Collections by office
+      const current = DATA.months[DATA.months.length-1];
+      const maxColl = Math.max(...OFFICES.map(o => current.offices[o]?.coll || 0));
+      let bars = '';
+      OFFICES.forEach(o => {
+        const od = current.offices[o];
+        if (!od) return;
+        const pct = maxColl > 0 ? (od.coll / maxColl * 100) : 0;
+        bars += `<div class="hbar">
+          <div class="hbar-label">${o}</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:${OFFICE_COLORS[o]}"></div></div>
+          <div class="hbar-val" style="color:${OFFICE_COLORS[o]}">${fmt(od.coll)}</div>
+        </div>`;
+      });
+      $('coll-by-office').innerHTML = bars;
+    }
+
+    function renderRecallHealth() {
+      const rh = DATA.recallHealth;
+      $('recall-due30').textContent = rh.due30_households.toLocaleString();
+      $('recall-kids30').textContent = rh.due30_kids.toLocaleString();
+      $('recall-overdue').textContent = rh.overdue_households.toLocaleString();
+      $('recall-kids-overdue').textContent = rh.overdue_kids.toLocaleString();
+      $('recall-tx-patients').textContent = rh.tx_patients.toLocaleString();
+      $('recall-tx-value').textContent = fmt(rh.tx_value);
+
+      // By office
+      let html = '';
+      const maxDue = Math.max(...OFFICES.map(o => (rh.by_office[o]?.due30 || 0) + (rh.by_office[o]?.overdue || 0)));
+      OFFICES.forEach(o => {
+        const od = rh.by_office[o] || {};
+        const total = (od.due30 || 0) + (od.overdue || 0);
+        const pctDue = maxDue > 0 ? (od.due30 || 0) / maxDue * 100 : 0;
+        const pctOver = maxDue > 0 ? (od.overdue || 0) / maxDue * 100 : 0;
+        html += `<div class="hbar">
+          <div class="hbar-label">${o}</div>
+          <div class="hbar-track" style="display:flex;gap:0">
+            <div class="hbar-fill" style="width:${pctDue}%;background:var(--blue);border-radius:4px 0 0 4px"></div>
+            <div class="hbar-fill" style="width:${pctOver}%;background:var(--red);border-radius:0 4px 4px 0"></div>
+          </div>
+          <div class="hbar-val">${total}</div>
+        </div>`;
+      });
+      html += '<div style="display:flex;gap:16px;justify-content:center;margin-top:12px;font-size:11px;color:var(--text3)">' +
+        '<span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--blue);margin-right:4px;vertical-align:middle"></span>Due Next 30</span>' +
+        '<span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--red);margin-right:4px;vertical-align:middle"></span>Overdue</span>' +
+        '</div>';
+      $('recall-by-office').innerHTML = html;
+
+      // Overdue distribution
+      const buckets = [
+        {label:'6-8 months', pct:35, color:'var(--accent)'},
+        {label:'8-10 months', pct:28, color:'var(--red)'},
+        {label:'10-12 months', pct:22, color:'#A03848'},
+        {label:'12+ months', pct:15, color:'#8B2020'}
+      ];
+      let distHtml = '';
+      buckets.forEach(b => {
+        distHtml += `<div class="hbar">
+          <div class="hbar-label">${b.label}</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:${b.pct}%;background:${b.color}"></div></div>
+          <div class="hbar-val">${b.pct}%</div>
+        </div>`;
+      });
+      $('overdue-dist').innerHTML = distHtml;
+
+      // Treatment by risk
+      const risks = [
+        {label:'High Risk', count:12, color:'var(--red)'},
+        {label:'Medium Risk', count:24, color:'var(--accent)'},
+        {label:'Low Risk', count:22, color:'var(--green)'}
+      ];
+      const maxRisk = Math.max(...risks.map(r => r.count));
+      let riskHtml = '';
+      risks.forEach(r => {
+        const pct = maxRisk > 0 ? (r.count / maxRisk * 100) : 0;
+        riskHtml += `<div class="hbar">
+          <div class="hbar-label">${r.label}</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:${r.color}"></div></div>
+          <div class="hbar-val" style="color:${r.color}">${r.count} patients</div>
+        </div>`;
+      });
+      $('tx-risk-dist').innerHTML = riskHtml;
+    }
+
+    // ── Render All ──
+    function renderAll() {
+      if (!DATA) return;
+      renderExecutive();
+      renderProduction();
+      renderProviders();
+      renderCollections();
+      renderRecallHealth();
+    }
+
+    // ── Init ──
+    async function init() {
+      // Try to load production data from JSON; fall back to demo data
+      try {
+        const resp = await fetch('data/production.json');
+        if (resp.ok) {
+          DATA = await resp.json();
+          console.log('Loaded production data from JSON');
+        } else {
+          throw new Error('No production data file');
+        }
+      } catch(e) {
+        console.log('Using demo data (data/production.json not found)');
+        DATA = generateDemoData();
+      }
+
+      buildFilters();
+      renderAll();
+    }
+
+    init();
+  </script>
+</body>
+</html>
