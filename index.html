@@ -148,12 +148,56 @@
     .status-dot.live { background:var(--green); }
     .status-dot.setup { background:var(--wood); }
 
+    /* Admin Panel */
+    .admin-view { display:none; padding:0 32px 40px; max-width:1000px; }
+    .admin-view.active { display:block; }
+    .admin-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .admin-table th { text-align:left; padding:10px 12px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3); border-bottom:2px solid rgba(255,255,255,0.06); font-weight:600; }
+    .admin-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); }
+    .admin-table tr:hover td { background:rgba(98,146,160,0.05); }
+    .role-badge { display:inline-block; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:600; }
+    .office-tag { display:inline-block; padding:1px 6px; border-radius:4px; font-size:10px; font-weight:600; background:rgba(98,146,160,0.15); color:var(--accent); margin:1px; }
+    .perm-tag { display:inline-block; padding:1px 6px; border-radius:4px; font-size:10px; font-weight:600; background:rgba(93,190,138,0.12); color:var(--green); margin:1px; }
+    .btn-sm { padding:5px 12px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text2); font-family:'DM Sans',sans-serif; transition:all 0.2s; margin:2px; }
+    .btn-sm:hover { border-color:var(--accent-border); color:var(--text); }
+    .btn-sm.btn-edit { color:var(--accent); }
+    .btn-sm.btn-delete { color:var(--red); }
+    .btn-sm.btn-add { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .btn-sm.btn-add:hover { background:var(--accent-light); }
+    .admin-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:24px; }
+    .admin-sec-title { font-family:'Instrument Serif',Georgia,serif; font-size:20px; font-weight:600; margin-bottom:16px; padding-left:14px; border-left:3px solid var(--accent); }
+    .admin-alert { padding:12px 16px; border-radius:8px; font-size:13px; margin-bottom:16px; display:none; }
+    .admin-alert.success { display:block; background:rgba(93,190,138,0.12); border:1px solid rgba(93,190,138,0.3); color:var(--green); }
+    .admin-alert.error { display:block; background:rgba(196,72,90,0.12); border:1px solid rgba(196,72,90,0.3); color:var(--red); }
+    .admin-alert.info { display:block; background:rgba(98,146,160,0.12); border:1px solid rgba(98,146,160,0.3); color:var(--accent); }
+
+    /* Modal */
+    .modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:100; align-items:center; justify-content:center; }
+    .modal-overlay.show { display:flex; }
+    .modal { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:32px; width:100%; max-width:480px; }
+    .modal h3 { font-family:'Instrument Serif',Georgia,serif; font-size:22px; margin-bottom:20px; }
+    .modal-field { margin-bottom:16px; }
+    .modal-field label { display:block; font-size:12px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+    .modal-field input, .modal-field select, .modal-field textarea { width:100%; padding:10px 14px; border-radius:8px; font-size:14px; background:var(--bg2); border:1px solid var(--border); color:var(--text); font-family:'DM Sans',sans-serif; outline:none; }
+    .modal-field input:focus, .modal-field select:focus { border-color:var(--accent-border); }
+    .modal-field select option { background:var(--bg2); color:var(--text); }
+    .modal-field .checkbox-group { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+    .modal-field .checkbox-group label { display:flex; align-items:center; gap:4px; font-size:12px; color:var(--text2); text-transform:none; letter-spacing:0; cursor:pointer; }
+    .modal-field .checkbox-group input[type="checkbox"] { width:auto; margin:0; accent-color:var(--accent); }
+    .modal-actions { display:flex; gap:12px; justify-content:flex-end; margin-top:24px; }
+    .modal-actions button { padding:10px 24px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; border:none; }
+    .btn-secondary { background:transparent; border:1px solid var(--border) !important; color:var(--text2); }
+    .btn-primary { background:var(--accent); color:#fff; }
+
+    .status-active { color:var(--green); }
+    .status-inactive { color:var(--red); }
+
     @media(max-width:800px) {
       #app.active { flex-direction:column; }
       .sidebar { width:100%; border-right:none; border-bottom:1px solid var(--border); }
       .sidebar-nav { display:flex; flex-wrap:wrap; gap:4px; padding:8px 12px; }
       .nav-label { display:none; }
-      .content-header, .filter-row, .reports { padding-left:20px; padding-right:20px; }
+      .content-header, .filter-row, .reports, .admin-view { padding-left:20px; padding-right:20px; }
     }
   </style>
 </head>
@@ -167,11 +211,7 @@
 
       <label>Select Your Name</label>
       <select id="login-user">
-        <option value="">— Choose —</option>
-        <option value="drlugo">Dr. Lugo</option>
-        <option value="tanya">Tanya</option>
-        <option value="angela">Angela</option>
-        <option value="staff">Front Desk Staff</option>
+        <option value="">— Loading users... —</option>
       </select>
 
       <label>PIN</label>
@@ -212,6 +252,9 @@
         <div class="nav-item" data-cat="financial" onclick="filterReports('financial',this)">
           <span class="nav-icon">&#128181;</span> Financials
         </div>
+        <div class="nav-item" id="nav-admin" data-cat="admin" onclick="showAdminPanel(this)" style="display:none">
+          <span class="nav-icon">&#9881;</span> User Admin
+        </div>
       </div>
 
       <div class="sidebar-footer">
@@ -243,24 +286,24 @@
       <div class="reports" id="reports">
 
         <!-- PRODUCTION -->
-        <a href="production.html" class="report-card" data-category="production" data-role="admin,tanya,staff">
+        <a href="production.html" class="report-card" data-category="production" data-perm="production">
           <div class="rc-icon">&#128200;</div>
           <span class="rc-badge production">Production</span>
           <div class="rc-title">Doctor Production</div>
-          <div class="rc-desc">Provider payroll and production totals by pay period. Track individual doctor output and revenue.</div>
+          <div class="rc-desc">Net production by provider and office. Track gross, adjustments, net, visits, and $/visit across all locations.</div>
           <div class="rc-link">Open Report &rarr;</div>
         </a>
 
         <!-- PATIENT MANAGEMENT — CALL SHEETS -->
-        <a href="callsheets-beta.html" class="report-card" data-category="patient" data-role="admin,tanya,staff">
+        <a href="callsheets-beta.html" class="report-card" data-category="patient" data-perm="patient">
           <div class="rc-icon">&#128203;</div>
           <span class="rc-badge patient">Patient Management</span>
           <div class="rc-title">Call Sheets <span class="status-dot live"></span> LIVE</div>
-          <div class="rc-desc">Recall families due in 30 days, overdue past-due recalls, and unscheduled treatment plans. Includes contact tracking — log calls, texts, and emails per patient.</div>
+          <div class="rc-desc">Recall families due in 30 days, overdue past-due recalls, and unscheduled treatment plans. Includes contact tracking.</div>
           <div class="rc-link">Open Report &rarr;</div>
         </a>
 
-        <a href="callsheets-beta.html#treatment" class="report-card" data-category="patient" data-role="admin,tanya,staff">
+        <a href="callsheets-beta.html#treatment" class="report-card" data-category="patient" data-perm="patient">
           <div class="rc-icon">&#128196;</div>
           <span class="rc-badge patient">Patient Management</span>
           <div class="rc-title">Unscheduled Treatment</div>
@@ -269,7 +312,7 @@
         </a>
 
         <!-- OPERATIONS -->
-        <a href="callsheets-beta.html#overdue" class="report-card" data-category="operations" data-role="admin,tanya,staff">
+        <a href="callsheets-beta.html#overdue" class="report-card" data-category="operations" data-perm="operations">
           <div class="rc-icon">&#9888;</div>
           <span class="rc-badge operations">Operations</span>
           <div class="rc-title">Overdue Recalls</div>
@@ -278,15 +321,15 @@
         </a>
 
         <!-- PAYROLL -->
-        <a href="payroll.html" class="report-card" data-category="payroll" data-role="admin,tanya">
+        <a href="payroll.html" class="report-card" data-category="payroll" data-perm="payroll">
           <div class="rc-icon">&#128176;</div>
           <span class="rc-badge payroll">Payroll</span>
           <div class="rc-title">Doctor Compensation</div>
-          <div class="rc-desc">Biweekly pay summaries by doctor with production vs collections, rate tracking, and admin tools for rate changes and terminations.</div>
+          <div class="rc-desc">Biweekly pay summaries by doctor with production vs collections, rate tracking, and admin tools.</div>
           <div class="rc-link">Open Report &rarr;</div>
         </a>
 
-        <a href="payroll.html#hygiene" class="report-card" data-category="payroll" data-role="admin,tanya">
+        <a href="payroll.html#hygiene" class="report-card" data-category="payroll" data-perm="payroll">
           <div class="rc-icon">&#129463;</div>
           <span class="rc-badge payroll">Payroll</span>
           <div class="rc-title">Hygiene Production</div>
@@ -295,7 +338,7 @@
         </a>
 
         <!-- FINANCIALS -->
-        <a href="financials.html" class="report-card" data-category="financial" data-role="admin,tanya,angela">
+        <a href="financials.html" class="report-card" data-category="financial" data-perm="financial">
           <div class="rc-icon">&#128181;</div>
           <span class="rc-badge financial">Financial</span>
           <div class="rc-title">QBO Financials</div>
@@ -303,36 +346,153 @@
           <div class="rc-link">Open Report &rarr;</div>
         </a>
 
-        <a href="financials.html#receivables" class="report-card" data-category="financial" data-role="admin,tanya,angela">
+        <a href="financials.html#receivables" class="report-card" data-category="financial" data-perm="financial">
           <div class="rc-icon">&#128209;</div>
           <span class="rc-badge financial">Financial</span>
           <div class="rc-title">AP / AR Aging</div>
-          <div class="rc-desc">Accounts receivable by patient with aging buckets, plus accounts payable by vendor. Overdue flags and totals.</div>
+          <div class="rc-desc">Accounts receivable by patient with aging buckets, plus accounts payable by vendor.</div>
           <div class="rc-link">Open Report &rarr;</div>
         </a>
 
+      </div>
+
+      <!-- ADMIN PANEL (visible only to admin role) -->
+      <div class="admin-view" id="admin-view">
+        <div class="admin-sec-title">User Management</div>
+        <div id="admin-alert-area"></div>
+        <div style="margin-bottom:16px;text-align:right">
+          <button class="btn-sm btn-add" onclick="openAddUserModal()">+ Add User</button>
+        </div>
+        <div class="admin-card" style="overflow-x:auto">
+          <table class="admin-table">
+            <thead><tr>
+              <th>Name</th>
+              <th>Username</th>
+              <th>Role</th>
+              <th>PIN</th>
+              <th>Permissions</th>
+              <th>Offices</th>
+              <th>Status</th>
+              <th style="text-align:center">Actions</th>
+            </tr></thead>
+            <tbody id="admin-users-table"></tbody>
+          </table>
+        </div>
+        <div class="admin-sec-title" style="margin-top:32px">Roles Reference</div>
+        <div class="admin-card" id="roles-reference"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD/EDIT USER MODAL -->
+  <div class="modal-overlay" id="modal-user">
+    <div class="modal">
+      <h3 id="modal-user-title">Add User</h3>
+      <input type="hidden" id="user-edit-id">
+      <div class="modal-field">
+        <label>Display Name</label>
+        <input type="text" id="user-name" placeholder="e.g. Jessica">
+      </div>
+      <div class="modal-field">
+        <label>Username (login ID)</label>
+        <input type="text" id="user-username" placeholder="e.g. jessica">
+      </div>
+      <div class="modal-field">
+        <label>PIN</label>
+        <input type="text" id="user-pin" placeholder="4-6 digit PIN" maxlength="6">
+      </div>
+      <div class="modal-field">
+        <label>Role</label>
+        <select id="user-role"></select>
+      </div>
+      <div class="modal-field">
+        <label>Permissions</label>
+        <div class="checkbox-group" id="user-perms">
+          <label><input type="checkbox" value="production"> Production</label>
+          <label><input type="checkbox" value="patient"> Patient Mgmt</label>
+          <label><input type="checkbox" value="operations"> Operations</label>
+          <label><input type="checkbox" value="payroll"> Payroll</label>
+          <label><input type="checkbox" value="financial"> Financial</label>
+          <label><input type="checkbox" value="admin"> Admin</label>
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Offices (leave unchecked for all)</label>
+        <div class="checkbox-group" id="user-offices">
+          <label><input type="checkbox" value="EV"> Everett</label>
+          <label><input type="checkbox" value="LS"> Lake Stevens</label>
+          <label><input type="checkbox" value="MV"> Marysville</label>
+          <label><input type="checkbox" value="MO"> Monroe</label>
+          <label><input type="checkbox" value="SW"> Stanwood</label>
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Notes</label>
+        <input type="text" id="user-notes" placeholder="Optional notes">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeUserModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveUser()">Save User</button>
       </div>
     </div>
   </div>
 
   <script>
-    // ════════════ AUTH SYSTEM ════════════
-    // PINs stored here — change these to whatever you want
-    var USERS = {
-      'drlugo':  { name: 'Dr. Lugo',    role: 'admin',  pin: '1234' },
-      'tanya':   { name: 'Tanya',       role: 'tanya',  pin: '5678' },
-      'angela':  { name: 'Angela',      role: 'angela', pin: '9012' },
-      'staff':   { name: 'Front Desk',  role: 'staff',  pin: '0000' },
+    // ════════════ USERS.JSON-BASED AUTH ════════════
+    var USERS = {};
+    var ROLES = {};
+    var currentUser = null;
+    var currentUserId = null;
+
+    // GitHub config for admin save
+    var GH_OWNER = 'clugodmd';
+    var GH_REPO = 'pspd-analytics';
+
+    // Fallback users if users.json fails to load
+    var FALLBACK_USERS = {
+      'drlugo': { name: 'Dr. Lugo', role: 'admin', pin: '1234', status: 'active',
+        permissions: ['production','patient','operations','payroll','financial','admin'], offices: ['all'], notes: 'Owner' }
     };
+
+    async function loadUsers() {
+      try {
+        var resp = await fetch('data/users.json?' + Date.now());
+        if (!resp.ok) throw new Error(resp.status);
+        var data = await resp.json();
+        USERS = data.users || {};
+        ROLES = data.roles || {};
+      } catch(e) {
+        console.warn('Could not load users.json, using fallback:', e);
+        USERS = FALLBACK_USERS;
+      }
+      populateLoginDropdown();
+      // Check auto-login
+      var saved = localStorage.getItem('pspd_user');
+      if (saved && USERS[saved] && USERS[saved].status === 'active') {
+        showApp(saved);
+      }
+    }
+
+    function populateLoginDropdown() {
+      var sel = document.getElementById('login-user');
+      sel.innerHTML = '<option value="">— Choose —</option>';
+      var sorted = Object.keys(USERS).filter(function(k) { return USERS[k].status === 'active'; });
+      sorted.sort(function(a,b) { return (USERS[a].name || '').localeCompare(USERS[b].name || ''); });
+      sorted.forEach(function(uid) {
+        var opt = document.createElement('option');
+        opt.value = uid;
+        opt.textContent = USERS[uid].name;
+        sel.appendChild(opt);
+      });
+    }
 
     function doLogin() {
       var uid = document.getElementById('login-user').value;
       var pin = document.getElementById('login-pin').value;
       var err = document.getElementById('login-error');
-
       if (!uid || !USERS[uid]) { err.style.display = 'block'; err.textContent = 'Please select a user.'; return; }
+      if (USERS[uid].status !== 'active') { err.style.display = 'block'; err.textContent = 'Account is inactive.'; return; }
       if (pin !== USERS[uid].pin) { err.style.display = 'block'; err.textContent = 'Invalid PIN. Please try again.'; return; }
-
       err.style.display = 'none';
       localStorage.setItem('pspd_user', uid);
       showApp(uid);
@@ -340,6 +500,7 @@
 
     function doSignOut() {
       localStorage.removeItem('pspd_user');
+      currentUser = null; currentUserId = null;
       document.getElementById('app').classList.remove('active');
       document.getElementById('login-screen').style.display = 'flex';
       document.getElementById('login-pin').value = '';
@@ -349,25 +510,37 @@
     function showApp(uid) {
       var user = USERS[uid];
       if (!user) return;
+      currentUser = user;
+      currentUserId = uid;
 
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').classList.add('active');
       document.getElementById('sidebar-name').textContent = user.name;
-      document.getElementById('sidebar-role').textContent = user.role === 'admin' ? 'Admin' : user.role === 'tanya' ? 'Admin' : user.role === 'angela' ? 'Finance' : 'Staff';
+      var roleInfo = ROLES[user.role] || {};
+      document.getElementById('sidebar-role').textContent = roleInfo.label || user.role;
 
-      // Show/hide reports based on role
+      var perms = user.permissions || [];
+      var isAdmin = perms.indexOf('admin') !== -1;
+
+      // Show/hide reports based on permissions
       var cards = document.querySelectorAll('.report-card');
       for (var i = 0; i < cards.length; i++) {
-        var allowedRoles = cards[i].getAttribute('data-role') || '';
-        if (allowedRoles.indexOf(user.role) !== -1 || user.role === 'admin') {
+        var requiredPerm = cards[i].getAttribute('data-perm') || '';
+        if (isAdmin || perms.indexOf(requiredPerm) !== -1) {
           cards[i].classList.remove('hidden');
         } else {
           cards[i].classList.add('hidden');
         }
       }
 
-      // Show/hide sidebar nav items based on visible cards
+      // Show/hide admin nav
+      var adminNav = document.getElementById('nav-admin');
+      adminNav.style.display = isAdmin ? 'flex' : 'none';
+
       updateSidebarCounts();
+
+      // If admin, build admin tables
+      if (isAdmin) buildAdminTables();
     }
 
     function updateSidebarCounts() {
@@ -384,31 +557,36 @@
 
     // ════════════ FILTERING ════════════
     function filterReports(category, navEl, pillEl) {
+      // Hide admin panel, show reports
+      document.getElementById('admin-view').classList.remove('active');
+      document.querySelector('.reports').style.display = 'grid';
+      document.querySelector('.filter-row').style.display = 'flex';
+
       var cards = document.querySelectorAll('.report-card');
       for (var i = 0; i < cards.length; i++) {
         var card = cards[i];
-        if (card.classList.contains('hidden')) continue; // respect role hiding
+        if (card.classList.contains('hidden')) continue;
         var cat = card.getAttribute('data-category');
-        if (category === 'all' || cat === category) {
-          card.style.display = 'block';
-        } else {
-          card.style.display = 'none';
-        }
+        card.style.display = (category === 'all' || cat === category) ? 'block' : 'none';
       }
-
       // Update sidebar active
-      if (navEl) {
-        var navItems = document.querySelectorAll('.nav-item');
-        for (var j = 0; j < navItems.length; j++) navItems[j].classList.remove('active');
-        navEl.classList.add('active');
-      }
-
+      document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+      if (navEl) { navEl.classList.add('active'); }
+      else { document.querySelector('.nav-item').classList.add('active'); }
       // Update pill active
       if (pillEl) {
-        var pills = document.querySelectorAll('.filter-pill');
-        for (var k = 0; k < pills.length; k++) pills[k].classList.remove('active');
+        document.querySelectorAll('.filter-pill').forEach(function(p) { p.classList.remove('active'); });
         pillEl.classList.add('active');
       }
+    }
+
+    function showAdminPanel(navEl) {
+      document.querySelector('.reports').style.display = 'none';
+      document.querySelector('.filter-row').style.display = 'none';
+      document.getElementById('admin-view').classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+      if (navEl) navEl.classList.add('active');
+      buildAdminTables();
     }
 
     function searchReports(query) {
@@ -422,13 +600,185 @@
       }
     }
 
-    // ════════════ AUTO-LOGIN CHECK ════════════
-    (function() {
-      var saved = localStorage.getItem('pspd_user');
-      if (saved && USERS[saved]) {
-        showApp(saved);
+    // ════════════ ADMIN PANEL ════════════
+    function buildAdminTables() {
+      var tbody = document.getElementById('admin-users-table');
+      if (!tbody) return;
+      var html = '';
+      var keys = Object.keys(USERS).sort(function(a,b) { return (USERS[a].name||'').localeCompare(USERS[b].name||''); });
+      keys.forEach(function(uid) {
+        var u = USERS[uid];
+        var roleInfo = ROLES[u.role] || {};
+        var roleColor = roleInfo.color || 'var(--text3)';
+        var perms = (u.permissions || []).map(function(p) { return '<span class="perm-tag">' + p + '</span>'; }).join(' ');
+        var offices = (u.offices || []).map(function(o) { return '<span class="office-tag">' + o + '</span>'; }).join(' ');
+        var statusClass = u.status === 'active' ? 'status-active' : 'status-inactive';
+        var safeUid = uid.replace(/'/g, "\\'");
+        html += '<tr>'
+          + '<td style="font-weight:600">' + (u.name||'') + '</td>'
+          + '<td style="font-size:12px;color:var(--text3)">' + uid + '</td>'
+          + '<td><span class="role-badge" style="background:' + roleColor + '22;color:' + roleColor + '">' + (roleInfo.label || u.role) + '</span></td>'
+          + '<td style="font-family:monospace;font-size:12px">' + (u.pin||'') + '</td>'
+          + '<td>' + perms + '</td>'
+          + '<td>' + offices + '</td>'
+          + '<td class="' + statusClass + '" style="font-size:12px;font-weight:600;text-transform:uppercase">' + (u.status||'active') + '</td>'
+          + '<td style="text-align:center;white-space:nowrap">'
+          + '<button class="btn-sm btn-edit" onclick="openEditUserModal(\'' + safeUid + '\')">Edit</button>'
+          + (uid !== 'drlugo' ? '<button class="btn-sm btn-delete" onclick="toggleUserStatus(\'' + safeUid + '\')">' + (u.status === 'active' ? 'Deactivate' : 'Activate') + '</button>' : '')
+          + '</td></tr>';
+      });
+      tbody.innerHTML = html || '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px">No users found</td></tr>';
+
+      // Roles reference
+      var rolesHtml = '';
+      Object.keys(ROLES).forEach(function(rk) {
+        var r = ROLES[rk];
+        rolesHtml += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">'
+          + '<span class="role-badge" style="background:' + r.color + '22;color:' + r.color + ';min-width:100px;text-align:center">' + r.label + '</span>'
+          + '<span style="font-size:13px;color:var(--text2)">' + r.description + '</span></div>';
+      });
+      document.getElementById('roles-reference').innerHTML = rolesHtml;
+    }
+
+    function openAddUserModal() {
+      document.getElementById('modal-user-title').textContent = 'Add User';
+      document.getElementById('user-edit-id').value = '';
+      document.getElementById('user-name').value = '';
+      document.getElementById('user-username').value = '';
+      document.getElementById('user-username').disabled = false;
+      document.getElementById('user-pin').value = '';
+      document.getElementById('user-notes').value = '';
+      populateRoleSelect();
+      clearCheckboxes('user-perms');
+      clearCheckboxes('user-offices');
+      document.getElementById('modal-user').classList.add('show');
+    }
+
+    function openEditUserModal(uid) {
+      var u = USERS[uid];
+      if (!u) return;
+      document.getElementById('modal-user-title').textContent = 'Edit User';
+      document.getElementById('user-edit-id').value = uid;
+      document.getElementById('user-name').value = u.name || '';
+      document.getElementById('user-username').value = uid;
+      document.getElementById('user-username').disabled = true;
+      document.getElementById('user-pin').value = u.pin || '';
+      document.getElementById('user-notes').value = u.notes || '';
+      populateRoleSelect(u.role);
+      setCheckboxes('user-perms', u.permissions || []);
+      setCheckboxes('user-offices', (u.offices||[]).indexOf('all') !== -1 ? [] : u.offices || []);
+      document.getElementById('modal-user').classList.add('show');
+    }
+
+    function closeUserModal() { document.getElementById('modal-user').classList.remove('show'); }
+
+    function populateRoleSelect(selected) {
+      var sel = document.getElementById('user-role');
+      sel.innerHTML = '';
+      Object.keys(ROLES).forEach(function(rk) {
+        var opt = document.createElement('option');
+        opt.value = rk; opt.textContent = ROLES[rk].label;
+        if (rk === selected) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+
+    function clearCheckboxes(containerId) {
+      document.querySelectorAll('#' + containerId + ' input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
+    }
+
+    function setCheckboxes(containerId, values) {
+      document.querySelectorAll('#' + containerId + ' input[type="checkbox"]').forEach(function(cb) {
+        cb.checked = values.indexOf(cb.value) !== -1;
+      });
+    }
+
+    function getCheckedValues(containerId) {
+      var vals = [];
+      document.querySelectorAll('#' + containerId + ' input[type="checkbox"]:checked').forEach(function(cb) { vals.push(cb.value); });
+      return vals;
+    }
+
+    function saveUser() {
+      var editId = document.getElementById('user-edit-id').value;
+      var name = document.getElementById('user-name').value.trim();
+      var username = document.getElementById('user-username').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+      var pin = document.getElementById('user-pin').value.trim();
+      var role = document.getElementById('user-role').value;
+      var perms = getCheckedValues('user-perms');
+      var offices = getCheckedValues('user-offices');
+      var notes = document.getElementById('user-notes').value.trim();
+
+      if (!name) { showAdminAlert('error', 'Name is required'); return; }
+      if (!username) { showAdminAlert('error', 'Username is required'); return; }
+      if (!pin || pin.length < 4) { showAdminAlert('error', 'PIN must be at least 4 digits'); return; }
+      if (!editId && USERS[username]) { showAdminAlert('error', 'Username "' + username + '" already exists'); return; }
+
+      var uid = editId || username;
+      USERS[uid] = {
+        name: name, role: role, pin: pin, status: (USERS[uid] && USERS[uid].status) || 'active',
+        permissions: perms.length > 0 ? perms : ['patient','operations'],
+        offices: offices.length > 0 ? offices : ['all'],
+        notes: notes
+      };
+
+      closeUserModal();
+      buildAdminTables();
+      populateLoginDropdown();
+      saveUsersToGitHub();
+      showAdminAlert('success', (editId ? 'Updated' : 'Added') + ' user: ' + name);
+    }
+
+    function toggleUserStatus(uid) {
+      if (!USERS[uid]) return;
+      USERS[uid].status = USERS[uid].status === 'active' ? 'inactive' : 'active';
+      buildAdminTables();
+      populateLoginDropdown();
+      saveUsersToGitHub();
+      showAdminAlert('info', USERS[uid].name + ' is now ' + USERS[uid].status);
+    }
+
+    function showAdminAlert(type, msg) {
+      var el = document.getElementById('admin-alert-area');
+      el.className = 'admin-alert ' + type;
+      el.innerHTML = msg;
+      setTimeout(function() { el.className = 'admin-alert'; }, 5000);
+    }
+
+    async function saveUsersToGitHub() {
+      var pat = '';
+      try { pat = localStorage.getItem('pspd_admin_pat') || ''; } catch(e) {}
+      if (!pat) {
+        // Save locally only — will be pushed next time files are uploaded
+        console.log('No GitHub PAT — users saved in memory only');
+        return;
       }
-    })();
+      try {
+        var data = { users: USERS, roles: ROLES, last_updated: new Date().toISOString(), updated_by: currentUserId || 'admin' };
+        var content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+        // Get current file SHA
+        var shaResp = await fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/data/users.json', {
+          headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github+json' }
+        });
+        var sha = '';
+        if (shaResp.ok) { sha = (await shaResp.json()).sha; }
+        // Update file
+        var putResp = await fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/data/users.json', {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: 'Admin: update users — ' + (currentUserId || 'system'), content: content, sha: sha || undefined })
+        });
+        if (putResp.ok) { console.log('Users saved to GitHub'); }
+      } catch(e) { console.warn('Could not save users to GitHub:', e); }
+    }
+
+    // Close modals on overlay click
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('show');
+    });
+
+    // ════════════ INIT ════════════
+    loadUsers();
   </script>
 </body>
 </html>
