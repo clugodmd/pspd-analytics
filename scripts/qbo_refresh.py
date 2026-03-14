@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """
-QBO Financial Refresh — Pulls financial reports from QuickBooks Online
+QBO Financial Refresh — Pulls comprehensive financial reports from QuickBooks Online
 and writes data/financials.json for the PSPD Control Tower dashboard.
 
 Reports pulled:
-  - Profit & Loss (current month + 2 prior months)
-  - Balance Sheet (current)
-  - Cash Flow Statement (current month)
-  - Accounts Receivable Aging
-  - Accounts Payable Aging
+  - Profit & Loss (every month of current year + every month of prior year)
+  - Year-to-Date (YTD) aggregated P&L for current year and prior year
+  - Balance Sheet (current month only)
+  - Cash Flow Statement (current month only)
+  - Accounts Receivable Aging (current month only)
+  - Accounts Payable Aging (current month only)
 
 Tokens:
   Uses OAuth 2.0 refresh token flow. The refresh token is rotated each run
@@ -20,7 +21,9 @@ import sys
 import json
 import base64
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, date
+from dateutil.relativedelta import relativedelta
+from calendar import monthrange
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 CLIENT_ID     = os.environ.get("QBO_CLIENT_ID", "")
@@ -330,40 +333,139 @@ def fetch_ap_aging(token):
     return {"vendors": vendors, "total": total}
 
 
+def get_month_boundaries(year, month):
+    """
+    Get the first and last day of a given month using proper calendar boundaries.
+
+    Args:
+        year: Calendar year (e.g., 2026)
+        month: Calendar month (1-12)
+
+    Returns:
+        tuple: (first_day, last_day) as date objects
+    """
+    first = date(year, month, 1)
+    _, last_day = monthrange(year, month)
+    last = date(year, month, last_day)
+    return first, last
+
+
+def aggregate_pnl(pnl_entries):
+    """
+    Aggregate multiple P&L reports into a single YTD summary.
+
+    Args:
+        pnl_entries: List of P&L dictionaries from fetch_pnl()
+
+    Returns:
+        dict: Aggregated totals
+    """
+    if not pnl_entries:
+        return {
+            "totalIncome": 0,
+            "totalExpenses": 0,
+            "costOfGoods": 0,
+            "operatingExpenses": 0,
+            "otherExpenses": 0,
+            "netIncome": 0,
+        }
+
+    agg = {
+        "totalIncome": 0,
+        "totalExpenses": 0,
+        "costOfGoods": 0,
+        "operatingExpenses": 0,
+        "otherExpenses": 0,
+        "netIncome": 0,
+    }
+
+    for pnl in pnl_entries:
+        if pnl:
+            agg["totalIncome"] += pnl.get("totalIncome", 0)
+            agg["totalExpenses"] += pnl.get("totalExpenses", 0)
+            agg["costOfGoods"] += pnl.get("costOfGoods", 0)
+            agg["operatingExpenses"] += pnl.get("operatingExpenses", 0)
+            agg["otherExpenses"] += pnl.get("otherExpenses", 0)
+            agg["netIncome"] += pnl.get("netIncome", 0)
+
+    return agg
+
+
 def main():
     if not REALM_ID:
         print("ERROR: QBO_REALM_ID not set. Complete the OAuth flow first.")
         sys.exit(1)
 
     token = get_access_token()
-    today = datetime.utcnow()
+    today = date.today()
+    current_year = today.year
+    current_month = today.month
+    prior_year = current_year - 1
 
     months_data = []
-    for months_ago in range(2, -1, -1):
-        dt = today.replace(day=1) - timedelta(days=months_ago * 30)
-        first_day = dt.replace(day=1)
-        if months_ago == 0:
-            last_day = today
-        else:
-            next_month = first_day.replace(day=28) + timedelta(days=4)
-            last_day = next_month - timedelta(days=next_month.day)
+    pnl_by_month = {}  # For YTD aggregation
 
-        start_str = first_day.strftime("%Y-%m-%d")
-        end_str = last_day.strftime("%Y-%m-%d")
-        label = first_day.strftime("%b %Y")
-        key = first_day.strftime("%Y-%m")
+    # Fetch every month of prior year (Jan 2025 - Dec 2025)
+    print(f"\n╔════ {prior_year} FINANCIAL DATA ════╗")
+    for month in range(1, 13):
+        first, last = get_month_boundaries(prior_year, month)
+        start_str = first.strftime("%Y-%m-%d")
+        end_str = last.strftime("%Y-%m-%d")
+        label = first.strftime("%b %Y")
+        key = first.strftime("%Y-%m")
 
         print(f"\n── {label} ({start_str} to {end_str}) ──")
 
         pnl = fetch_pnl(token, start_str, end_str)
-        balance = fetch_balance_sheet(token, end_str)
-        cashflow = fetch_cashflow(token, start_str, end_str)
-        ar = fetch_ar_aging(token) if months_ago == 0 else None
-        ap = fetch_ap_aging(token) if months_ago == 0 else None
+        pnl_by_month[key] = pnl
 
         month_entry = {
             "key": key,
             "label": label,
+            "year": prior_year,
+            "month": month,
+            "startDate": start_str,
+            "endDate": end_str,
+        }
+        if pnl:
+            month_entry["pnl"] = pnl
+            print(f"  P&L: Revenue=${pnl['totalIncome']:,.0f}, Net=${pnl['netIncome']:,.0f}")
+
+        months_data.append(month_entry)
+
+    # Fetch every month of current year (Jan 2026 - current month)
+    print(f"\n╔════ {current_year} FINANCIAL DATA ════╗")
+    current_year_pnl = []  # For YTD aggregation
+    prior_year_ytd_pnl = []  # For YTD comparison (same months as current year)
+
+    for month in range(1, current_month + 1):
+        first, last = get_month_boundaries(current_year, month)
+        start_str = first.strftime("%Y-%m-%d")
+        end_str = last.strftime("%Y-%m-%d")
+        label = first.strftime("%b %Y")
+        key = first.strftime("%Y-%m")
+        is_current = (month == current_month)
+
+        print(f"\n── {label} ({start_str} to {end_str}) ──")
+
+        pnl = fetch_pnl(token, start_str, end_str)
+        current_year_pnl.append(pnl)
+
+        # Also collect prior year same month for YTD comparison
+        prior_key = f"{prior_year}-{month:02d}"
+        if prior_key in pnl_by_month:
+            prior_year_ytd_pnl.append(pnl_by_month[prior_key])
+
+        balance = fetch_balance_sheet(token, end_str) if is_current else None
+        cashflow = fetch_cashflow(token, start_str, end_str) if is_current else None
+        ar = fetch_ar_aging(token) if is_current else None
+        ap = fetch_ap_aging(token) if is_current else None
+
+        month_entry = {
+            "key": key,
+            "label": label,
+            "year": current_year,
+            "month": month,
             "startDate": start_str,
             "endDate": end_str,
         }
@@ -385,9 +487,30 @@ def main():
 
         months_data.append(month_entry)
 
+    # Compute YTD aggregations
+    print(f"\n╔════ YEAR-TO-DATE SUMMARY ════╗")
+    ytd_current = aggregate_pnl(current_year_pnl)
+    ytd_prior = aggregate_pnl(prior_year_ytd_pnl)
+
+    print(f"\n{current_year} YTD (Jan-{date(current_year, current_month, 1).strftime('%b')})")
+    print(f"  Revenue: ${ytd_current['totalIncome']:,.0f}")
+    print(f"  Expenses: ${ytd_current['totalExpenses']:,.0f}")
+    print(f"  Net Income: ${ytd_current['netIncome']:,.0f}")
+
+    print(f"\n{prior_year} YTD (Jan-{date(prior_year, current_month, 1).strftime('%b')})")
+    print(f"  Revenue: ${ytd_prior['totalIncome']:,.0f}")
+    print(f"  Expenses: ${ytd_prior['totalExpenses']:,.0f}")
+    print(f"  Net Income: ${ytd_prior['netIncome']:,.0f}")
+
     output = {
         "last_updated": datetime.utcnow().isoformat() + "Z",
         "realm_id": REALM_ID,
+        "current_year": current_year,
+        "prior_year": prior_year,
+        "ytd": {
+            "current": ytd_current,
+            "prior": ytd_prior,
+        },
         "months": months_data,
     }
 
@@ -395,7 +518,7 @@ def main():
     with open(OUTPUT_FILE, "w") as f:
         json.dump(output, f, indent=2)
 
-    print(f"\n✓ Wrote {len(months_data)} months to {OUTPUT_FILE}")
+    print(f"\n✓ Wrote {len(months_data)} months + YTD to {OUTPUT_FILE}")
 
 
 if __name__ == "__main__":
