@@ -1,0 +1,137 @@
+{
+  "users": {
+    "drlugo": {
+      "name": "Dr. Lugo",
+      "role": "admin",
+      "pin": "0802",
+      "status": "active",
+      "permissions": ["production", "patient", "operations", "payroll", "financial", "admin"],
+      "offices": ["all"],
+      "notes": "Owner — full access"
+    },
+    "tanya": {
+      "name": "Tanya",
+      "role": "manager",
+      "pin": "5678",
+      "status": "active",
+      "permissions": ["production", "patient", "operations", "payroll", "financial"],
+      "offices": ["all"],
+      "notes": "Office manager — all reports, no admin"
+    },
+    "chelsey": {
+      "name": "Chelsey",
+      "role": "scheduler",
+      "pin": "2345",
+      "status": "active",
+      "permissions": ["patient", "operations", "production"],
+      "offices": ["all"],
+      "notes": "Scheduling coordinator"
+    },
+    "jessica": {
+      "name": "Jessica",
+      "role": "scheduler",
+      "pin": "3456",
+      "status": "active",
+      "permissions": ["patient", "operations", "production"],
+      "offices": ["all"],
+      "notes": "Scheduling coordinator"
+    },
+    "fd_everett": {
+      "name": "Front Desk — Everett",
+      "role": "front_desk",
+      "pin": "1001",
+      "status": "active",
+      "permissions": ["patient", "operations"],
+      "offices": ["EV"],
+      "notes": "Everett office front desk"
+    },
+    "fd_lakestevens": {
+      "name": "Front Desk — Lake Stevens",
+      "role": "front_desk",
+      "pin": "1002",
+      "status": "active",
+      "permissions": ["patient", "operations"],
+      "offices": ["LS"],
+      "notes": "Lake Stevens office front desk"
+    },
+    "fd_marysville": {
+      "name": "Front Desk — Marysville",
+      "role": "front_desk",
+      "pin": "1003",
+      "status": "active",
+      "permissions": ["patient", "operations"],
+      "offices": ["MV"],
+      "notes": "Marysville office front desk"
+    },
+    "fd_monroe": {
+      "name": "Front Desk — Monroe",
+      "role": "front_desk",
+      "pin": "1004",
+      "status": "active",
+      "permissions": ["patient", "operations"],
+      "offices": ["MO"],
+      "notes": "Monroe office front desk"
+    },
+    "fd_stanwood": {
+      "name": "Front Desk — Stanwood",
+      "role": "front_desk",
+      "pin": "1005",
+      "status": "active",
+      "permissions": ["patient", "operations"],
+      "offices": ["SW"],
+      "notes": "Stanwood office front desk"
+    },
+    "billing": {
+      "name": "AP/AR Team",
+      "role": "billing",
+      "pin": "4567",
+      "status": "active",
+      "permissions": ["financial", "patient"],
+      "offices": ["all"],
+      "notes": "Accounts payable and receivable"
+    },
+    "bookkeeping": {
+      "name": "Bookkeeping",
+      "role": "bookkeeping",
+      "pin": "6789",
+      "status": "active",
+      "permissions": ["financial"],
+      "offices": ["all"],
+      "notes": "Financial reports only"
+    }
+  },
+  "roles": {
+    "admin": {
+      "label": "Admin",
+      "description": "Full access to all reports and admin panel",
+      "color": "#C4485A"
+    },
+    "manager": {
+      "label": "Manager",
+      "description": "All reports, no admin panel",
+      "color": "#8B7BA5"
+    },
+    "scheduler": {
+      "label": "Scheduler",
+      "description": "Call sheets, operations, production",
+      "color": "#6292A0"
+    },
+    "front_desk": {
+      "label": "Front Desk",
+      "description": "Call sheets and operations — office-specific",
+      "color": "#7AAFBD"
+    },
+    "billing": {
+      "label": "AP/AR",
+      "description": "Financials and patient AR",
+      "color": "#7D6652"
+    },
+    "bookkeeping": {
+      "label": "Bookkeeping",
+      "description": "Financial reports only",
+      "color": "#5DBE8A"
+    }
+  },
+  "last_updated": "2026-03-14T12:00:00Z",
+  "updated_by": "system"
+}
