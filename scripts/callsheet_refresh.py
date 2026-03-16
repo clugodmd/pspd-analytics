@@ -472,6 +472,157 @@ def query_doctor_leaderboard(conn):
     }
 
 
+# ── Daily Production by Location ────────────────────────────────────────────
+# Provides daily Gross/Net production by office for the production dashboard.
+# Uses rpt.vw_income_allocation which is the same view PowerBI used.
+
+def query_daily_production(conn):
+    """Pull daily production by office for current month + prior month."""
+    cursor = conn.cursor()
+    result = {
+        'by_date': [],
+        'by_office_daily': [],
+        'by_provider_mtd': [],
+        'monthly_summary': [],
+    }
+
+    # Daily production by office — current month
+    try:
+        cursor.execute("""
+            SELECT
+                CAST(service_date AS DATE)   AS prod_date,
+                office_name                  AS office,
+                SUM(gross_production)        AS gross_production,
+                SUM(net_production)          AS net_production,
+                SUM(net_collections)         AS net_collections,
+                SUM(adjustments)             AS adjustments,
+                COUNT(DISTINCT patient_id)   AS patients_seen
+            FROM rpt.vw_income_allocation
+            WHERE service_date >= DATEADD(month, -1, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
+              AND office_name IS NOT NULL
+              AND office_name <> ''
+            GROUP BY CAST(service_date AS DATE), office_name
+            ORDER BY CAST(service_date AS DATE), office_name
+        """)
+        for row in rows_to_dicts(cursor):
+            result['by_office_daily'].append({
+                'date': str(row.get('prod_date', '')),
+                'office': normalize_office(str(row.get('office', ''))),
+                'gross': round(float(row.get('gross_production', 0) or 0), 2),
+                'net': round(float(row.get('net_production', 0) or 0), 2),
+                'collections': round(float(row.get('net_collections', 0) or 0), 2),
+                'adjustments': round(float(row.get('adjustments', 0) or 0), 2),
+                'patients': int(row.get('patients_seen', 0)),
+            })
+        print(f"  Daily production: {len(result['by_office_daily'])} office-day records")
+    except Exception as e:
+        print(f"  ⚠ Daily production by office failed: {e}")
+
+    # Daily production totals (all offices combined)
+    try:
+        cursor.execute("""
+            SELECT
+                CAST(service_date AS DATE)   AS prod_date,
+                SUM(gross_production)        AS gross_production,
+                SUM(net_production)          AS net_production,
+                SUM(net_collections)         AS net_collections,
+                SUM(adjustments)             AS adjustments,
+                COUNT(DISTINCT patient_id)   AS patients_seen,
+                COUNT(DISTINCT provider_name) AS providers_active
+            FROM rpt.vw_income_allocation
+            WHERE service_date >= DATEADD(month, -1, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
+              AND provider_name IS NOT NULL
+              AND provider_name <> ''
+            GROUP BY CAST(service_date AS DATE)
+            ORDER BY CAST(service_date AS DATE)
+        """)
+        for row in rows_to_dicts(cursor):
+            result['by_date'].append({
+                'date': str(row.get('prod_date', '')),
+                'gross': round(float(row.get('gross_production', 0) or 0), 2),
+                'net': round(float(row.get('net_production', 0) or 0), 2),
+                'collections': round(float(row.get('net_collections', 0) or 0), 2),
+                'adjustments': round(float(row.get('adjustments', 0) or 0), 2),
+                'patients': int(row.get('patients_seen', 0)),
+                'providers': int(row.get('providers_active', 0)),
+            })
+        print(f"  Daily totals: {len(result['by_date'])} days")
+    except Exception as e:
+        print(f"  ⚠ Daily production totals failed: {e}")
+
+    # MTD by provider (for provider ranking)
+    try:
+        cursor.execute("""
+            SELECT
+                provider_name                AS provider,
+                office_name                  AS office,
+                SUM(gross_production)        AS gross_production,
+                SUM(net_production)          AS net_production,
+                SUM(net_collections)         AS net_collections,
+                SUM(adjustments)             AS adjustments,
+                COUNT(DISTINCT patient_id)   AS patients_seen,
+                COUNT(DISTINCT CAST(service_date AS DATE)) AS days_worked
+            FROM rpt.vw_income_allocation
+            WHERE service_date >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
+              AND provider_name IS NOT NULL
+              AND provider_name <> ''
+            GROUP BY provider_name, office_name
+            ORDER BY SUM(net_production) DESC
+        """)
+        for row in rows_to_dicts(cursor):
+            result['by_provider_mtd'].append({
+                'provider': str(row.get('provider', '')).strip(),
+                'office': normalize_office(str(row.get('office', ''))),
+                'gross': round(float(row.get('gross_production', 0) or 0), 2),
+                'net': round(float(row.get('net_production', 0) or 0), 2),
+                'collections': round(float(row.get('net_collections', 0) or 0), 2),
+                'adjustments': round(float(row.get('adjustments', 0) or 0), 2),
+                'patients': int(row.get('patients_seen', 0)),
+                'days_worked': int(row.get('days_worked', 0)),
+            })
+        print(f"  MTD by provider: {len(result['by_provider_mtd'])} provider-office combos")
+    except Exception as e:
+        print(f"  ⚠ MTD by provider failed: {e}")
+
+    # Monthly summary (last 12 months)
+    try:
+        cursor.execute("""
+            SELECT
+                YEAR(service_date)           AS yr,
+                MONTH(service_date)          AS mo,
+                SUM(gross_production)        AS gross_production,
+                SUM(net_production)          AS net_production,
+                SUM(net_collections)         AS net_collections,
+                SUM(adjustments)             AS adjustments,
+                COUNT(DISTINCT patient_id)   AS patients_seen
+            FROM rpt.vw_income_allocation
+            WHERE service_date >= DATEADD(month, -12, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
+              AND provider_name IS NOT NULL
+            GROUP BY YEAR(service_date), MONTH(service_date)
+            ORDER BY YEAR(service_date), MONTH(service_date)
+        """)
+        month_names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        for row in rows_to_dicts(cursor):
+            yr = int(row.get('yr', 0))
+            mo = int(row.get('mo', 0))
+            result['monthly_summary'].append({
+                'year': yr,
+                'month': mo,
+                'label': f"{month_names[mo]} {yr}" if 1 <= mo <= 12 else f"{mo}/{yr}",
+                'gross': round(float(row.get('gross_production', 0) or 0), 2),
+                'net': round(float(row.get('net_production', 0) or 0), 2),
+                'collections': round(float(row.get('net_collections', 0) or 0), 2),
+                'adjustments': round(float(row.get('adjustments', 0) or 0), 2),
+                'patients': int(row.get('patients_seen', 0)),
+            })
+        print(f"  Monthly summary: {len(result['monthly_summary'])} months")
+    except Exception as e:
+        print(f"  ⚠ Monthly summary failed: {e}")
+
+    return result
+
+
 # ── Data Processing ─────────────────────────────────────────────────────────
 
 def normalize_office(name):
@@ -607,6 +758,10 @@ def main():
     print("\nQuerying doctor leaderboard...")
     leaderboard = query_doctor_leaderboard(conn)
 
+    # Pull daily production by location for production dashboard
+    print("\nQuerying daily production by location...")
+    daily_production = query_daily_production(conn)
+
     conn.close()
     print("\n✓ Connection closed")
 
@@ -651,10 +806,27 @@ def main():
         },
     }
 
-    # Write output
+    # Write call sheet output
     os.makedirs(os.path.dirname(OUTPUT_FILE) or "data", exist_ok=True)
     with open(OUTPUT_FILE, "w") as f:
         json.dump(output, f, indent=2, default=json_serial)
+
+    # Write production dashboard data (separate file for production.html)
+    production_output = {
+        "generated_at": datetime.utcnow().isoformat() + "Z",
+        "by_date": daily_production.get('by_date', []),
+        "by_office_daily": daily_production.get('by_office_daily', []),
+        "by_provider_mtd": daily_production.get('by_provider_mtd', []),
+        "monthly_summary": daily_production.get('monthly_summary', []),
+        "stats": {
+            "daily_records": len(daily_production.get('by_date', [])),
+            "office_daily_records": len(daily_production.get('by_office_daily', [])),
+            "provider_count": len(daily_production.get('by_provider_mtd', [])),
+        },
+    }
+    prod_file = os.path.join(os.path.dirname(OUTPUT_FILE) or "data", "production.json")
+    with open(prod_file, "w") as f:
+        json.dump(production_output, f, indent=2, default=json_serial)
 
     print(f"\n{'=' * 60}")
     print(f"✓ Wrote {OUTPUT_FILE}")
@@ -664,6 +836,9 @@ def main():
     print(f"  Tx Value:  ${output['stats']['total_tx_value']:,.2f}")
     if high_risk:
         print(f"  High Risk: {high_risk} patients")
+    print(f"✓ Wrote {prod_file}")
+    print(f"  Daily production: {len(daily_production.get('by_date', []))} days")
+    print(f"  Office breakdown: {len(daily_production.get('by_office_daily', []))} records")
     print(f"\nDone: {datetime.utcnow().isoformat()}Z")
     print(f"{'=' * 60}")
 
