@@ -322,6 +322,7 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
 <div class="header">
   <div class="header-top">
     <div>
+      <a href="index.html" style="color:var(--text3);font-size:0.8rem;text-decoration:none;display:inline-flex;align-items:center;gap:0.3rem;margin-bottom:0.3rem;">&larr; Control Tower</a>
       <h1>Call Sheets</h1>
       <div class="subtitle">Interactive Recall & Treatment Action Dashboard</div>
     </div>
@@ -338,7 +339,6 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
     <button class="tab-btn active" data-view="recall" onclick="switchView('recall')">Due Next 30</button>
     <button class="tab-btn" data-view="overdue" onclick="switchView('overdue')">Past Due</button>
     <button class="tab-btn" data-view="treatment" onclick="switchView('treatment')">Unscheduled Tx</button>
-    <button class="tab-btn" data-view="leaderboard" onclick="switchView('leaderboard')">Dr. Leaderboard</button>
     <button class="tab-btn" data-view="review" onclick="switchView('review')">Needs Review</button>
   </div>
   <select class="office-select" id="officeFilter" onchange="applyFilters()">
@@ -959,7 +959,8 @@ function buildReviewList() {
       });
     }
 
-    // Bad phone: known bad, or missing/too short
+    // Bad phone: only flag KNOWN bad (SMS failed) and truly empty phones
+    // Only flag for recall/overdue (where phone outreach is primary action)
     if (badPhoneSet.has(r.phone) || badPhoneSet.has(phone)) {
       reviewItems.push({
         name, phone: r.phone, issue: 'Bad Number — SMS Failed',
@@ -967,15 +968,14 @@ function buildReviewList() {
         last_attempt: getLastAttempt(r.row_id),
         issue_class: 'badge-red'
       });
-    } else if (!phone || phone.length < 10) {
+    } else if ((!phone || phone.length < 7) && (r.source === 'recall' || r.source === 'overdue')) {
+      // Only flag completely missing phones for recall/overdue — not every treatment record
       reviewItems.push({
-        name, phone: r.phone || '(none)', issue: 'Missing or Invalid Phone',
+        name, phone: r.phone || '(none)', issue: 'No Phone on File',
         source: r.source, office, row_id: r.row_id,
         last_attempt: '-',
         issue_class: 'badge-yellow'
       });
-    } else if (!r.email || r.email === '-' || r.email === '') {
-      // Only flag if also no phone
     }
 
     // Failed sends from log
@@ -2463,6 +2463,18 @@ function esc(str) {
 loadSettings();
 loadData();
 initColumnSort();
+
+// ── Hash Routing — support deep links like #overdue, #treatment, #review, #leaderboard ──
+function handleHash() {
+  const hash = (location.hash || '').replace('#', '').toLowerCase();
+  const validViews = ['recall', 'overdue', 'treatment', 'review', 'leaderboard'];
+  if (hash && validViews.includes(hash)) {
+    switchView(hash);
+  }
+}
+window.addEventListener('hashchange', handleHash);
+// Run on initial load too
+handleHash();
 </script>
 </body>
 </html>

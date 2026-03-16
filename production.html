@@ -946,20 +946,167 @@
       renderRecallHealth();
     }
 
+    // ── Transform Pipeline Data ──
+    // The pipeline writes data/production.json with by_date, by_office_daily,
+    // by_provider_mtd, and monthly_summary. Transform into the shape the
+    // rendering code expects: { months[], providers[], daily[], recallHealth }
+
+    function transformPipelineData(raw) {
+      // Build monthly summary with per-office breakdown
+      const months = (raw.monthly_summary || []).map(m => {
+        const label = m.label || '';
+        const key = `${m.year}-${String(m.month).padStart(2,'0')}`;
+
+        // Aggregate office-level data for this month from by_office_daily
+        const officeData = {};
+        OFFICES.forEach(o => { officeData[o] = { gross:0, adj:0, net:0, coll:0, visits:0, collRate:0 }; });
+
+        (raw.by_office_daily || []).forEach(d => {
+          const dMonth = d.date ? d.date.slice(0,7) : '';
+          if (dMonth === key) {
+            const oName = d.office;
+            if (officeData[oName]) {
+              officeData[oName].gross += d.gross || 0;
+              officeData[oName].adj += Math.abs(d.adjustments || 0);
+              officeData[oName].net += d.net || 0;
+              officeData[oName].coll += d.collections || 0;
+              officeData[oName].visits += d.patients || 0;
+            }
+          }
+        });
+        // Calculate collection rates
+        OFFICES.forEach(o => {
+          officeData[o].collRate = officeData[o].net > 0 ? officeData[o].coll / officeData[o].net : 0;
+        });
+
+        return {
+          label: label.split(' ')[0] + ' ' + String(m.year).slice(2),
+          key, month: m.month,
+          gross: m.gross || 0,
+          adj: Math.abs(m.adjustments || 0),
+          net: m.net || 0,
+          coll: m.collections || 0,
+          visits: m.patients || 0,
+          collRate: (m.net > 0) ? (m.collections / m.net) : 0,
+          offices: officeData,
+        };
+      });
+
+      // Build provider data from by_provider_mtd
+      const providerMap = {};
+      (raw.by_provider_mtd || []).forEach(p => {
+        const name = p.provider;
+        if (!providerMap[name]) {
+          providerMap[name] = {
+            name, office: p.office || '', role: 'Doctor',
+            gross: 0, adj: 0, net: 0, visits: 0, perVisit: 0,
+          };
+        }
+        providerMap[name].gross += p.gross || 0;
+        providerMap[name].adj += Math.abs(p.adjustments || 0);
+        providerMap[name].net += p.net || 0;
+        providerMap[name].visits += p.patients || 0;
+      });
+      const providers = Object.values(providerMap).map(p => ({
+        ...p, perVisit: p.visits > 0 ? Math.round(p.net / p.visits) : 0,
+      }));
+
+      // Build daily data from by_date (current month only)
+      const now = new Date();
+      const curKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+      const daily = (raw.by_date || [])
+        .filter(d => d.date && d.date.startsWith(curKey))
+        .map(d => {
+          const dt = new Date(d.date + 'T12:00:00');
+          return {
+            date: d.date,
+            dayLabel: dt.toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric' }),
+            gross: d.gross || 0,
+            adj: Math.abs(d.adjustments || 0),
+            net: d.net || 0,
+          };
+        });
+
+      // Stub recall health (comes from callsheets.json, not production.json)
+      const recallHealth = {
+        due30_households: 0, due30_kids: 0,
+        overdue_households: 0, overdue_kids: 0,
+        tx_patients: 0, tx_value: 0,
+        by_office: {},
+      };
+      OFFICES.forEach(o => { recallHealth.by_office[o] = { due30:0, overdue:0, tx:0 }; });
+
+      return {
+        months, providers, daily, recallHealth,
+        generated: raw.generated_at || new Date().toISOString(),
+        data_as_of: raw.generated_at ? raw.generated_at.slice(0,10) : '',
+      };
+    }
+
+    // Try to enrich recall health from callsheets.json
+    async function enrichRecallHealth() {
+      try {
+        const resp = await fetch('data/callsheets.json?t=' + Date.now());
+        if (!resp.ok) return;
+        const cs = await resp.json();
+        const rh = DATA.recallHealth;
+        rh.due30_households = cs.stats?.recall_households || 0;
+        rh.overdue_households = cs.stats?.overdue_households || 0;
+        rh.tx_patients = cs.stats?.treatment_patients || 0;
+        rh.tx_value = cs.stats?.total_tx_value || 0;
+        // Count kids from recall data
+        let kids30 = 0, kidsOverdue = 0;
+        (cs.recall || []).forEach(r => kids30 += (r.kids_due_count || 0));
+        (cs.overdue || []).forEach(r => kidsOverdue += (r.kids_due_count || 0));
+        rh.due30_kids = kids30;
+        rh.overdue_kids = kidsOverdue;
+        // By office
+        (cs.recall || []).forEach(r => {
+          const o = r.last_office || r.most_frequent_office || '';
+          if (rh.by_office[o]) rh.by_office[o].due30++;
+        });
+        (cs.overdue || []).forEach(r => {
+          const o = r.last_office || r.most_frequent_office || '';
+          if (rh.by_office[o]) rh.by_office[o].overdue++;
+        });
+        (cs.treatment || []).forEach(r => {
+          const o = r.last_office || r.most_frequent_office || '';
+          if (rh.by_office[o]) rh.by_office[o].tx++;
+        });
+        console.log('Enriched recall health from callsheets.json');
+      } catch(e) {
+        console.log('Could not enrich recall health:', e.message);
+      }
+    }
+
     // ── Init ──
     async function init() {
-      // Try to load production data from JSON; fall back to demo data
+      // Try to load real production data from pipeline
       try {
-        const resp = await fetch('data/production.json');
+        const resp = await fetch('data/production.json?t=' + Date.now());
         if (resp.ok) {
-          DATA = await resp.json();
-          console.log('Loaded production data from JSON');
+          const raw = await resp.json();
+          // Check if it has real pipeline data (has by_date field)
+          if (raw.by_date || raw.by_office_daily || raw.monthly_summary) {
+            DATA = transformPipelineData(raw);
+            console.log('Loaded production data from pipeline');
+            await enrichRecallHealth();
+          } else {
+            throw new Error('No pipeline data fields');
+          }
         } else {
           throw new Error('No production data file');
         }
       } catch(e) {
-        console.log('Using demo data (data/production.json not found)');
+        console.log('Using demo data (data/production.json not found or empty):', e.message);
         DATA = generateDemoData();
+      }
+
+      // Update last-updated timestamp
+      if (DATA.generated) {
+        const d = new Date(DATA.generated);
+        const ts = d.toLocaleString('en-US', {month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+        $('last-updated').innerHTML = `<span class="live-dot"></span>Data as of ${ts}`;
       }
 
       buildFilters();

@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Leaderboard - Dentrepreneur Control Tower</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #1C3329;
+            --bg2: #243D33;
+            --card: #2E4A3E;
+            --card-hover: #38564A;
+            --accent: #6292A0;
+            --accent-light: #7AAFBD;
+            --accent-glow: rgba(98,146,160,0.15);
+            --accent-border: rgba(98,146,160,0.35);
+            --text: #F7F8F8;
+            --text2: #9AADA2;
+            --text3: #5E7A6E;
+            --border: rgba(247,248,248,0.08);
+            --green: #5DBE8A;
+            --red: #C4485A;
+            --blue: #6292A0;
+            --purple: #8B7BA5;
+            --teal: #7AAFBD;
+            --wood: #7D6652;
+            --wood-glow: rgba(125,102,82,0.12);
+            --radius: 12px;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-light);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--text);
+        }
+
+        .back-link svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        h1 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 42px;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .subtitle {
+            color: var(--text2);
+            font-size: 14px;
+        }
+
+        /* KPI Summary */
+        .kpi-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, var(--card) 0%, var(--bg2) 100%);
+            border: 1px solid var(--accent-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--accent-glow);
+            pointer-events: none;
+        }
+
+        .kpi-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-label {
+            color: var(--text2);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-light);
+            line-height: 1.2;
+        }
+
+        /* Leaderboard Table */
+        .leaderboard-wrapper {
+            background: var(--card);
+            border: 1px solid var(--accent-border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leaderboard-table thead {
+            background: linear-gradient(90deg, var(--bg2) 0%, rgba(98,146,160,0.08) 100%);
+            border-bottom: 2px solid var(--accent-border);
+        }
+
+        .leaderboard-table th {
+            padding: 16px 20px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--accent-light);
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .leaderboard-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .leaderboard-table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .leaderboard-table tbody tr:hover {
+            background-color: var(--card-hover);
+        }
+
+        .leaderboard-table tbody tr.departed {
+            opacity: 0.7;
+        }
+
+        .rank {
+            font-weight: 700;
+            color: var(--accent-light);
+            font-size: 16px;
+            width: 40px;
+        }
+
+        .provider-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .provider-name {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .badge-departed {
+            background-color: rgba(196, 72, 90, 0.15);
+            color: var(--red);
+            border: 1px solid rgba(196, 72, 90, 0.3);
+        }
+
+        .currency {
+            font-weight: 600;
+            color: var(--accent-light);
+        }
+
+        .scheduling-rate {
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .scheduling-rate.excellent {
+            color: var(--green);
+        }
+
+        .scheduling-rate.good {
+            color: var(--accent-light);
+        }
+
+        .scheduling-rate.poor {
+            color: var(--red);
+        }
+
+        .rate-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .rate-indicator.excellent {
+            background-color: var(--green);
+        }
+
+        .rate-indicator.good {
+            background-color: var(--accent-light);
+        }
+
+        .rate-indicator.poor {
+            background-color: var(--red);
+        }
+
+        .bar-comparison {
+            display: flex;
+            gap: 4px;
+            align-items: flex-end;
+            height: 32px;
+            min-width: 60px;
+        }
+
+        .bar {
+            flex-grow: 1;
+            border-radius: 3px;
+            position: relative;
+            min-width: 6px;
+            transition: opacity 0.2s ease;
+        }
+
+        .bar-production {
+            background-color: var(--accent-light);
+        }
+
+        .bar-collections {
+            background-color: var(--green);
+        }
+
+        .bar-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg);
+            color: var(--text);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            border: 1px solid var(--accent-border);
+            margin-bottom: 4px;
+            z-index: 10;
+        }
+
+        .bar:hover .bar-tooltip {
+            opacity: 1;
+        }
+
+        .unscheduled {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .unscheduled-count {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .unscheduled-value {
+            font-size: 12px;
+            color: var(--text2);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--card);
+            border: 2px dashed var(--accent-border);
+            border-radius: var(--radius);
+            margin-bottom: 40px;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-text {
+            color: var(--text2);
+            font-size: 16px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px 0;
+            border-top: 1px solid var(--border);
+            color: var(--text3);
+            font-size: 12px;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text2);
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent-border);
+            border-top-color: var(--accent-light);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 12px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .kpi-summary {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 12px;
+            }
+
+            .kpi-card {
+                padding: 16px;
+            }
+
+            .kpi-value {
+                font-size: 20px;
+            }
+
+            .leaderboard-table {
+                font-size: 12px;
+            }
+
+            .leaderboard-table th,
+            .leaderboard-table td {
+                padding: 12px 8px;
+            }
+
+            .badge {
+                padding: 3px 8px;
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <a href="index.html" class="back-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Control Tower
+            </a>
+            <h1>Doctor Leaderboard</h1>
+            <p class="subtitle">MTD production, collections, and scheduling performance across providers</p>
+        </div>
+
+        <!-- KPI Summary -->
+        <div class="kpi-summary" id="kpiSummary">
+            <div class="kpi-card">
+                <div class="kpi-label">Total Providers</div>
+                <div class="kpi-value" id="totalProviders">—</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Total Unscheduled Value</div>
+                <div class="kpi-value" id="totalUnscheduled">—</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Avg Scheduling Rate</div>
+                <div class="kpi-value" id="avgSchedulingRate">—</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">MTD Production Total</div>
+                <div class="kpi-value" id="totalProduction">—</div>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div id="leaderboardContainer">
+            <div class="loading">Loading leaderboard data...</div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            Dentrepreneur Control Tower • Doctor Leaderboard • Data from Denticon via Azure SQL
+        </div>
+    </div>
+
+    <script>
+        const BASE_PATH = './data/';
+
+        async function loadData() {
+            try {
+                // Load both data files
+                const [callsheetsRes, doctorsRes] = await Promise.all([
+                    fetch(BASE_PATH + 'callsheets.json'),
+                    fetch(BASE_PATH + 'doctors.json')
+                ]);
+
+                if (!callsheetsRes.ok || !doctorsRes.ok) {
+                    throw new Error('Failed to load data files');
+                }
+
+                const callsheetsData = await callsheetsRes.json();
+                const doctorsData = await doctorsRes.json();
+
+                const leaderboard = callsheetsData.doctor_leaderboard;
+
+                if (!leaderboard || !leaderboard.providers || leaderboard.providers.length === 0) {
+                    renderEmptyState();
+                    return;
+                }
+
+                renderLeaderboard(leaderboard, doctorsData);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                renderErrorState(error.message);
+            }
+        }
+
+        function renderEmptyState() {
+            document.getElementById('leaderboardContainer').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📊</div>
+                    <div class="empty-state-text">Leaderboard will populate after the call sheet pipeline runs</div>
+                </div>
+            `;
+        }
+
+        function renderErrorState(message) {
+            document.getElementById('leaderboardContainer').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚠️</div>
+                    <div class="empty-state-text">Unable to load leaderboard data: ${message}</div>
+                </div>
+            `;
+        }
+
+        function formatCurrency(value) {
+            if (value === null || value === undefined) return '$0';
+            return '$' + value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        function getSchedulingRateClass(rate) {
+            if (rate >= 80) return 'excellent';
+            if (rate >= 60) return 'good';
+            return 'poor';
+        }
+
+        function isTerminatedDoctor(providerName, doctorsData) {
+            if (!doctorsData.terminated) return false;
+
+            // Check if provider name matches a terminated doctor (exact match or partial)
+            for (const key in doctorsData.terminated) {
+                const display = doctorsData.terminated[key].display || '';
+                if (providerName === key || providerName === display || display.includes(providerName.split(',')[0])) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function renderLeaderboard(leaderboard, doctorsData) {
+            const providers = leaderboard.providers || [];
+
+            // Separate active and departed doctors
+            const active = [];
+            const departed = [];
+
+            providers.forEach((provider, index) => {
+                const isTerminated = isTerminatedDoctor(provider.provider, doctorsData);
+                if (isTerminated) {
+                    departed.push({ ...provider, originalIndex: index });
+                } else {
+                    active.push({ ...provider, originalIndex: index });
+                }
+            });
+
+            // Sort active by MTD production (highest first)
+            active.sort((a, b) => (b.mtd_production || 0) - (a.mtd_production || 0));
+
+            // Combine: active first, then departed
+            const sortedProviders = [...active, ...departed];
+
+            // Calculate KPIs
+            const totalProviders = active.length;
+            const totalUnscheduledValue = sortedProviders.reduce((sum, p) => sum + (p.unscheduled_value || 0), 0);
+            const avgSchedulingRate = totalProviders > 0
+                ? sortedProviders.reduce((sum, p) => sum + (p.scheduling_rate || 0), 0) / totalProviders
+                : 0;
+            const totalProduction = sortedProviders.reduce((sum, p) => sum + (p.mtd_production || 0), 0);
+
+            // Update KPIs
+            document.getElementById('totalProviders').textContent = totalProviders;
+            document.getElementById('totalUnscheduled').textContent = formatCurrency(totalUnscheduledValue);
+            document.getElementById('avgSchedulingRate').textContent = avgSchedulingRate.toFixed(1) + '%';
+            document.getElementById('totalProduction').textContent = formatCurrency(totalProduction);
+
+            // Render table
+            let tableHTML = `
+                <div class="leaderboard-wrapper">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Provider</th>
+                                <th>MTD Production</th>
+                                <th>MTD Collections</th>
+                                <th>Patients Seen</th>
+                                <th>Unscheduled Tx</th>
+                                <th>Scheduling Rate</th>
+                                <th>Production vs Collections</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            sortedProviders.forEach((provider, index) => {
+                const isTerminated = isTerminatedDoctor(provider.provider, doctorsData);
+                const rank = index + 1;
+                const rateClass = getSchedulingRateClass(provider.scheduling_rate || 0);
+
+                // Calculate bar heights (relative to max production for this view)
+                const maxProd = Math.max(...sortedProviders.map(p => p.mtd_production || 0), 1);
+                const prodHeight = (provider.mtd_production / maxProd) * 100;
+                const collHeight = (provider.mtd_collections / maxProd) * 100;
+
+                tableHTML += `
+                    <tr class="${isTerminated ? 'departed' : ''}">
+                        <td class="rank">${rank}</td>
+                        <td>
+                            <div class="provider-cell">
+                                <span class="provider-name">${escapeHtml(provider.provider)}</span>
+                                ${isTerminated ? '<span class="badge badge-departed">Doctor Left</span>' : ''}
+                            </div>
+                        </td>
+                        <td class="currency">${formatCurrency(provider.mtd_production)}</td>
+                        <td class="currency">${formatCurrency(provider.mtd_collections)}</td>
+                        <td>${provider.patients_seen_mtd || 0}</td>
+                        <td>
+                            <div class="unscheduled">
+                                <span class="unscheduled-count">${provider.unscheduled_count || 0}</span>
+                                <span class="unscheduled-value">${formatCurrency(provider.unscheduled_value)}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="scheduling-rate ${rateClass}">
+                                <span class="rate-indicator ${rateClass}"></span>
+                                ${(provider.scheduling_rate || 0).toFixed(1)}%
+                            </span>
+                        </td>
+                        <td>
+                            <div class="bar-comparison">
+                                <div class="bar bar-production" style="height: ${prodHeight}%">
+                                    <div class="bar-tooltip">Prod: ${formatCurrency(provider.mtd_production)}</div>
+                                </div>
+                                <div class="bar bar-collections" style="height: ${collHeight}%">
+                                    <div class="bar-tooltip">Coll: ${formatCurrency(provider.mtd_collections)}</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('leaderboardContainer').innerHTML = tableHTML;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load data when page is ready
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

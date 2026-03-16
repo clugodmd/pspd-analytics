@@ -162,7 +162,7 @@
       <div class="kpi-row" id="kpi-overview"></div>
 
       <div class="card">
-        <div class="sec-title green">Revenue vs Expenses Trend — Year to Date</div>
+        <div class="sec-title green">Collections vs Expenses Trend — Year to Date</div>
         <div id="trend-chart" style="margin-top:20px;"></div>
       </div>
 
@@ -202,6 +202,7 @@
     <!-- CASH FLOW -->
     <div class="view" id="view-cashflow">
       <div class="sec-title">Cash Flow Statement</div>
+      <div id="cashflow-period" style="font-size:13px;color:var(--text3);margin-bottom:16px;padding-left:17px;"></div>
       <div class="card" id="cashflow-table" style="overflow-x:auto;"></div>
     </div>
 
@@ -236,7 +237,8 @@
   </div>
 
   <div class="footer">
-    <strong>Dentrepreneur Control Tower</strong> &bull; Puget Sound Pediatric Dentistry &bull; QuickBooks Online Integration<br>
+    <strong>Dentrepreneur Control Tower</strong> &bull; Puget Sound Pediatric Dentistry &bull; QuickBooks Online<br>
+    <span style="font-size:11px;color:var(--text3);">Collections = QBO Income (as recorded in QuickBooks) &bull; Net Margin = Net Income / Collections</span><br>
     Built by Chris Lugo + Claude AI<br>
     <span id="last-updated" style="font-size:11px;color:var(--text3)"></span>
   </div>
@@ -250,7 +252,8 @@
 
     let DATA = null;
     let selectedYear = null;
-    let selectedMonth = null;
+    let selectedMonth = null;   // month key like "2026-03" or "YTD"
+    let pnlInitialized = false;
 
     function showView(id, btn) {
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -266,7 +269,8 @@
           <div class="icon">📊</div>
           <div class="title">Financial Dashboard Ready</div>
           <div class="desc">
-            This dashboard will display your QuickBooks Online financial data once the connection is complete.
+            This dashboard will display your QuickBooks Online financial data once the QBO refresh workflow runs.<br>
+            <span style="font-size:12px;color:var(--text3);margin-top:8px;display:block;">Go to GitHub Actions &rarr; "QBO Financial Refresh" &rarr; Run workflow</span>
           </div>
         </div>
       `;
@@ -280,6 +284,7 @@
     function buildYearSelector() {
       if (!DATA || !DATA.months || DATA.months.length === 0) return;
       const years = [...new Set(DATA.months.map(m => m.year))].sort((a,b) => b-a);
+      if (!selectedYear) selectedYear = years[0];
       const sel = $('year-selector');
       sel.innerHTML = '';
       years.forEach(y => {
@@ -287,38 +292,58 @@
         btn.className = 'year-btn' + (y === selectedYear ? ' active' : '');
         btn.textContent = y;
         btn.onclick = () => {
+          if (y === selectedYear) return;
           selectedYear = y;
-          buildYearSelector();
-          buildMonthSelectorForPnL();
+          // Reset month to last available in new year
+          const ym = getMonthsByYear(y);
+          selectedMonth = ym.length > 0 ? ym[ym.length - 1].key : null;
+          renderPnL();
         };
         sel.appendChild(btn);
       });
-      if (!selectedYear && years.length > 0) {
-        selectedYear = years[0];
-        buildYearSelector();
-        buildMonthSelectorForPnL();
-      }
     }
 
     function buildMonthSelectorForPnL() {
       const months = getMonthsByYear(selectedYear);
       const sel = $('pnl-month-selector');
       sel.innerHTML = '';
+
+      // Validate selectedMonth exists in this year
+      const validKeys = months.map(m => m.key);
+      if (!selectedMonth || (!validKeys.includes(selectedMonth) && selectedMonth !== 'YTD')) {
+        selectedMonth = months.length > 0 ? months[months.length - 1].key : null;
+      }
+
+      // Individual month buttons
       months.forEach(m => {
         const btn = document.createElement('button');
         btn.className = 'month-btn' + (m.key === selectedMonth ? ' active' : '');
         btn.textContent = m.label.split(' ')[0];
         btn.onclick = () => {
           selectedMonth = m.key;
-          buildMonthSelectorForPnL();
-          buildPnLTable();
+          renderPnL();
         };
         sel.appendChild(btn);
       });
-      if (!selectedMonth && months.length > 0) {
-        selectedMonth = months[months.length - 1].key;
-        buildMonthSelectorForPnL();
-      }
+
+      // YTD button
+      const ytdBtn = document.createElement('button');
+      ytdBtn.className = 'month-btn' + (selectedMonth === 'YTD' ? ' active' : '');
+      ytdBtn.textContent = 'YTD';
+      ytdBtn.style.borderColor = selectedMonth === 'YTD' ? 'var(--green)' : '';
+      ytdBtn.style.color = selectedMonth === 'YTD' ? 'var(--green)' : '';
+      ytdBtn.onclick = () => {
+        selectedMonth = 'YTD';
+        renderPnL();
+      };
+      sel.appendChild(ytdBtn);
+    }
+
+    /** Rebuild all P&L sub-components without recursion */
+    function renderPnL() {
+      buildYearSelector();
+      buildMonthSelectorForPnL();
+      buildPnLTable();
     }
 
     function getMonth(key) {
@@ -326,18 +351,60 @@
       return DATA.months.find(m => m.key === key);
     }
 
+    /** Compute YTD line items by accumulating all months up to (and including) the selected month */
+    function computeYTDLineItems(year, throughKey) {
+      const months = getMonthsByYear(year);
+      const accumulated = {};
+      const sectionOrder = [];
+      const sectionMap = {};
+
+      for (const m of months) {
+        if (!m.pnl || !m.pnl.lineItems) continue;
+        // If throughKey is specified, stop after that month
+        if (throughKey && throughKey !== 'YTD' && m.key > throughKey) break;
+
+        m.pnl.lineItems.forEach(item => {
+          const id = item.name + '|' + (item.section || '') + '|' + (item.isTotal ? 'T' : 'D');
+          if (!accumulated[id]) {
+            accumulated[id] = { ...item, amount: 0 };
+            if (item.section && !sectionMap[item.section]) {
+              sectionMap[item.section] = true;
+              sectionOrder.push(item.section);
+            }
+          }
+          accumulated[id].amount += item.amount;
+        });
+      }
+
+      return Object.values(accumulated);
+    }
+
+    /** Compute YTD totals by summing monthly P&L totals */
+    function computeYTDTotals(year, throughKey) {
+      const months = getMonthsByYear(year);
+      const totals = { totalIncome: 0, totalExpenses: 0, netIncome: 0 };
+      for (const m of months) {
+        if (!m.pnl) continue;
+        if (throughKey && throughKey !== 'YTD' && m.key > throughKey) break;
+        totals.totalIncome += m.pnl.totalIncome || 0;
+        totals.totalExpenses += m.pnl.totalExpenses || 0;
+        totals.netIncome += m.pnl.netIncome || 0;
+      }
+      return totals;
+    }
+
     function getYTDData(year) {
       if (!DATA) return null;
       const months = getMonthsByYear(year);
       if (months.length === 0) return null;
-      const lastMonth = months[months.length - 1];
       if (year === DATA.current_year && DATA.ytd && DATA.ytd.current) {
         return { data: DATA.ytd.current, label: 'YTD ' + year };
       }
       if (year === DATA.prior_year && DATA.ytd && DATA.ytd.prior) {
         return { data: DATA.ytd.prior, label: 'YTD ' + year };
       }
-      return null;
+      // Fallback: compute from monthly data
+      return { data: computeYTDTotals(year, 'YTD'), label: 'YTD ' + year };
     }
 
     function buildOverviewKPIs() {
@@ -373,15 +440,15 @@
 
       $('kpi-overview').innerHTML = `
         <div class="kpi">
-          <div class="kpi-label">YTD Revenue</div>
+          <div class="kpi-label">YTD Collections</div>
           <div class="kpi-value accent-val">${fmtWhole(rev)}</div>
           <div class="kpi-detail">${revPctChange !== 0 ? `<span class="trend ${revPctChange>=0?'up':'down'}">${revPctChange>=0?'▲':'▼'} ${fmtPct(revPctChange)}</span>` : ''}</div>
-          <div class="kpi-sublabel">vs prior year YTD</div>
+          <div class="kpi-sublabel">QBO Income &bull; vs prior year YTD</div>
         </div>
         <div class="kpi">
           <div class="kpi-label">YTD Net Income</div>
           <div class="kpi-value ${net>=0?'green-val':'red-val'}">${net<0?'-':''}${fmtWhole(net)}</div>
-          <div class="kpi-detail">${margin.toFixed(1)}% margin</div>
+          <div class="kpi-detail">${margin.toFixed(1)}% net margin</div>
           <div class="kpi-sublabel">${netPctChange !== 0 ? `<span class="trend ${netPctChange>=0?'up':'down'}">${netPctChange>=0?'▲':'▼'} ${fmtPct(netPctChange)}</span>` : 'vs prior year'}</div>
         </div>
         <div class="kpi">
@@ -422,7 +489,7 @@
       let html = `
         <div class="trend-month header">
           <div class="month-name">Month</div>
-          <div>Revenue</div>
+          <div>Collections</div>
           <div>Expenses</div>
           <div>Net Income</div>
           <div>Margin</div>
@@ -545,12 +612,23 @@
     }
 
     function buildPnLView() {
-      buildYearSelector();
-      buildMonthSelectorForPnL();
-      buildPnLTable();
+      if (!pnlInitialized) {
+        if (!selectedYear) selectedYear = DATA.current_year;
+        const ym = getMonthsByYear(selectedYear);
+        if (!selectedMonth || !ym.find(m => m.key === selectedMonth)) {
+          selectedMonth = ym.length > 0 ? ym[ym.length - 1].key : null;
+        }
+        pnlInitialized = true;
+      }
+      renderPnL();
     }
 
     function buildPnLTable() {
+      if (selectedMonth === 'YTD') {
+        buildPnLTableYTD();
+        return;
+      }
+
       const m = getMonth(selectedMonth);
       if (!m || !m.pnl) {
         $('pnl-table').innerHTML = '<div style="color:var(--text3);text-align:center;padding:30px">No data for selected month</div>';
@@ -558,11 +636,16 @@
       }
 
       const rows = m.pnl.lineItems || [];
-      const ytdData = getYTDData(selectedYear);
+      // Compute YTD line items by accumulating all months through selected month
+      const ytdItems = computeYTDLineItems(selectedYear, selectedMonth);
+      const ytdLookup = {};
+      ytdItems.forEach(item => {
+        const id = item.name + '|' + (item.section || '') + '|' + (item.isTotal ? 'T' : 'D');
+        ytdLookup[id] = item.amount;
+      });
 
-      let html = '<table><thead><tr><th>Account</th><th class="r">This Month</th>';
-      if (ytdData) html += '<th class="r">YTD</th>';
-      html += '</tr></thead><tbody>';
+      const monthLabel = m.label.split(' ')[0];
+      let html = `<table><thead><tr><th>Account</th><th class="r">${monthLabel}</th><th class="r">YTD ${selectedYear}</th></tr></thead><tbody>`;
 
       let lastSection = '';
       rows.forEach(r => {
@@ -572,16 +655,59 @@
         }
         const indent = r.depth ? 'padding-left:'+(r.depth*20+14)+'px;' : '';
         const isTotal = r.isTotal;
+        const id = r.name + '|' + (r.section || '') + '|' + (r.isTotal ? 'T' : 'D');
+        const ytdAmt = ytdLookup[id] || 0;
+
         html += `<tr class="${isTotal?'total-row':''}">
           <td style="${indent}">${r.name}</td>
-          <td class="r mono ${isTotal?'bold':''}" style="color:${r.amount<0?'var(--red)':'var(--green)'}">${r.amount<0?'-':''}$${fmt(Math.abs(r.amount))}</td>`;
-        if (ytdData) {
-          const ytdItem = m.pnl.ytdLineItems && m.pnl.ytdLineItems.find(x => x.name === r.name);
-          const ytdAmt = ytdItem ? ytdItem.amount : 0;
-          html += `<td class="r mono ${isTotal?'bold':''}" style="color:${ytdAmt<0?'var(--red)':'var(--green)'}">${ytdAmt<0?'-':''}$${fmt(Math.abs(ytdAmt))}</td>`;
-        }
-        html += '</tr>';
+          <td class="r mono ${isTotal?'bold':''}" style="color:${r.amount<0?'var(--red)':'var(--green)'}">${r.amount<0?'-':''}$${fmt(Math.abs(r.amount))}</td>
+          <td class="r mono ${isTotal?'bold':''}" style="color:${ytdAmt<0?'var(--red)':'var(--green)'}">${ytdAmt<0?'-':''}$${fmt(Math.abs(ytdAmt))}</td>
+        </tr>`;
       });
+
+      // Summary row
+      const ytdTotals = computeYTDTotals(selectedYear, selectedMonth);
+      html += `<tr class="total-row" style="border-top:3px solid var(--accent-border);">
+        <td style="font-size:14px;">Net Income</td>
+        <td class="r mono bold" style="font-size:14px;color:${(m.pnl.netIncome||0)>=0?'var(--green)':'var(--red)'}">${(m.pnl.netIncome||0)<0?'-':''}$${fmt(Math.abs(m.pnl.netIncome||0))}</td>
+        <td class="r mono bold" style="font-size:14px;color:${ytdTotals.netIncome>=0?'var(--green)':'var(--red)'}">${ytdTotals.netIncome<0?'-':''}$${fmt(Math.abs(ytdTotals.netIncome))}</td>
+      </tr>`;
+
+      html += '</tbody></table>';
+      $('pnl-table').innerHTML = html;
+    }
+
+    function buildPnLTableYTD() {
+      const ytdItems = computeYTDLineItems(selectedYear, 'YTD');
+      if (ytdItems.length === 0) {
+        $('pnl-table').innerHTML = '<div style="color:var(--text3);text-align:center;padding:30px">No YTD data for ' + selectedYear + '</div>';
+        return;
+      }
+
+      const ytdTotals = computeYTDTotals(selectedYear, 'YTD');
+
+      let html = `<table><thead><tr><th>Account</th><th class="r">YTD ${selectedYear}</th></tr></thead><tbody>`;
+
+      let lastSection = '';
+      ytdItems.forEach(r => {
+        if (r.section && r.section !== lastSection) {
+          html += `<tr class="section-row"><td colspan="2">${r.section}</td></tr>`;
+          lastSection = r.section;
+        }
+        const indent = r.depth ? 'padding-left:'+(r.depth*20+14)+'px;' : '';
+        const isTotal = r.isTotal;
+        html += `<tr class="${isTotal?'total-row':''}">
+          <td style="${indent}">${r.name}</td>
+          <td class="r mono ${isTotal?'bold':''}" style="color:${r.amount<0?'var(--red)':'var(--green)'}">${r.amount<0?'-':''}$${fmt(Math.abs(r.amount))}</td>
+        </tr>`;
+      });
+
+      // Summary
+      const margin = ytdTotals.totalIncome > 0 ? (ytdTotals.netIncome / ytdTotals.totalIncome * 100) : 0;
+      html += `<tr class="total-row" style="border-top:3px solid var(--accent-border);">
+        <td style="font-size:14px;">Net Income <span style="color:var(--text3);font-size:12px;font-weight:400;">(${margin.toFixed(1)}% margin)</span></td>
+        <td class="r mono bold" style="font-size:14px;color:${ytdTotals.netIncome>=0?'var(--green)':'var(--red)'}">${ytdTotals.netIncome<0?'-':''}$${fmt(Math.abs(ytdTotals.netIncome))}</td>
+      </tr>`;
 
       html += '</tbody></table>';
       $('pnl-table').innerHTML = html;
@@ -619,8 +745,11 @@
       const m = DATA.months && DATA.months.length > 0 ? DATA.months[DATA.months.length-1] : null;
       if (!m || !m.cashflow) {
         $('cashflow-table').innerHTML = '<div style="color:var(--text3);text-align:center;padding:30px">No cash flow data</div>';
+        $('cashflow-period').textContent = '';
         return;
       }
+      // Show what period this covers
+      $('cashflow-period').textContent = `Period: ${m.label} (${m.startDate} to ${m.endDate}) — Current month only`;
 
       const rows = m.cashflow.lineItems || [];
       let html = '<table><thead><tr><th>Category</th><th class="r">Amount</th></tr></thead><tbody>';
@@ -761,11 +890,10 @@
         return;
       }
 
-      if (!selectedYear) {
-        selectedYear = DATA.current_year;
-      }
+      if (!selectedYear) selectedYear = DATA.current_year;
       if (!selectedMonth) {
-        selectedMonth = DATA.months[DATA.months.length - 1].key;
+        const ym = getMonthsByYear(selectedYear);
+        selectedMonth = ym.length > 0 ? ym[ym.length - 1].key : null;
       }
 
       buildOverviewKPIs();
