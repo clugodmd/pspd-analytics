@@ -359,6 +359,119 @@ def query_zcode_status(conn):
     return {}
 
 
+# ── Doctor Leaderboard KPIs ────────────────────────────────────────────────
+# Aggregates production and treatment metrics per doctor for the
+# leaderboard dashboard. Does NOT disclose pay/compensation.
+
+def query_doctor_leaderboard(conn):
+    """Build doctor-level KPIs from treatment and production views."""
+    cursor = conn.cursor()
+    leaderboard = {}
+
+    # KPI 1: Unscheduled treatment count + value per diagnosing doctor
+    try:
+        cursor.execute("""
+            SELECT
+                DiagnosingProvider          AS provider,
+                COUNT(DISTINCT PATID)       AS unscheduled_patients,
+                SUM(TotalFee)               AS unscheduled_value,
+                AVG(DaysSinceLastPlanActivity) AS avg_days_pending
+            FROM vw_TxAction_Unscheduled_Current_Scheduler_v2
+            WHERE DiagnosingProvider IS NOT NULL
+              AND DiagnosingProvider <> ''
+            GROUP BY DiagnosingProvider
+            ORDER BY SUM(TotalFee) DESC
+        """)
+        for row in rows_to_dicts(cursor):
+            prov = str(row.get('provider', '')).strip()
+            if not prov:
+                continue
+            leaderboard[prov] = {
+                'provider': prov,
+                'unscheduled_patients': int(row.get('unscheduled_patients', 0)),
+                'unscheduled_value': round(float(row.get('unscheduled_value', 0) or 0), 2),
+                'avg_days_pending': round(float(row.get('avg_days_pending', 0) or 0), 0),
+            }
+        print(f"  Leaderboard: {len(leaderboard)} providers with unscheduled tx")
+    except Exception as e:
+        print(f"  ⚠ Unscheduled tx aggregation failed: {e}")
+
+    # KPI 2: Try to get production data (completed procedures)
+    # Discover production-related views first
+    production_views = []
+    try:
+        cursor.execute("""
+            SELECT TABLE_NAME FROM INFORMATION_SCHEMA.VIEWS
+            WHERE TABLE_NAME LIKE '%prod%'
+               OR TABLE_NAME LIKE '%income%'
+               OR TABLE_NAME LIKE '%ledger%'
+               OR TABLE_NAME LIKE '%complete%'
+            ORDER BY TABLE_NAME
+        """)
+        production_views = [row[0] for row in cursor.fetchall()]
+        print(f"  Discovered production views: {production_views}")
+    except Exception as e:
+        print(f"  ⚠ View discovery failed: {e}")
+
+    # KPI 3: Try vw_income_allocation (same view used by payroll)
+    try:
+        cursor.execute("""
+            SELECT
+                provider_name               AS provider,
+                SUM(net_production)          AS mtd_production,
+                SUM(net_collections)         AS mtd_collections,
+                COUNT(DISTINCT patient_id)   AS patients_seen
+            FROM rpt.vw_income_allocation
+            WHERE service_date >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
+              AND provider_name IS NOT NULL
+              AND provider_name <> ''
+            GROUP BY provider_name
+            ORDER BY SUM(net_production) DESC
+        """)
+        for row in rows_to_dicts(cursor):
+            prov = str(row.get('provider', '')).strip()
+            if not prov:
+                continue
+            if prov not in leaderboard:
+                leaderboard[prov] = {'provider': prov}
+            leaderboard[prov]['mtd_production'] = round(float(row.get('mtd_production', 0) or 0), 2)
+            leaderboard[prov]['mtd_collections'] = round(float(row.get('mtd_collections', 0) or 0), 2)
+            leaderboard[prov]['patients_seen_mtd'] = int(row.get('patients_seen', 0))
+        print(f"  MTD production data loaded for {len(leaderboard)} providers")
+    except Exception as e:
+        print(f"  ⚠ MTD production query failed: {e}")
+
+    # KPI 4: Try to get treatment plan conversion (tx planned vs completed)
+    try:
+        cursor.execute("""
+            SELECT
+                DiagnosingProvider          AS provider,
+                COUNT(DISTINCT PATID)       AS total_planned,
+                SUM(CASE WHEN NextApptDate IS NOT NULL THEN 1 ELSE 0 END) AS scheduled_count
+            FROM vw_TxAction_Unscheduled_Current_Scheduler_v2
+            WHERE DiagnosingProvider IS NOT NULL
+              AND DiagnosingProvider <> ''
+            GROUP BY DiagnosingProvider
+        """)
+        for row in rows_to_dicts(cursor):
+            prov = str(row.get('provider', '')).strip()
+            if not prov or prov not in leaderboard:
+                continue
+            total = int(row.get('total_planned', 0))
+            scheduled = int(row.get('scheduled_count', 0))
+            leaderboard[prov]['total_tx_planned'] = total
+            leaderboard[prov]['tx_scheduled'] = scheduled
+            leaderboard[prov]['scheduling_rate'] = round(scheduled / total * 100, 1) if total > 0 else 0
+        print(f"  Treatment scheduling rates loaded")
+    except Exception as e:
+        print(f"  ⚠ Tx conversion query failed: {e}")
+
+    return {
+        'providers': list(leaderboard.values()),
+        'discovered_views': production_views,
+    }
+
+
 # ── Data Processing ─────────────────────────────────────────────────────────
 
 def normalize_office(name):
@@ -490,6 +603,10 @@ def main():
     bad_phones = query_bad_phones(conn)
     zcode_map = query_zcode_status(conn)
 
+    # Pull doctor leaderboard KPIs
+    print("\nQuerying doctor leaderboard...")
+    leaderboard = query_doctor_leaderboard(conn)
+
     conn.close()
     print("\n✓ Connection closed")
 
@@ -515,6 +632,7 @@ def main():
         "treatment": treatment,
         "contact_log": contact_log_clean,
         "bad_phones": bad_phones,
+        "doctor_leaderboard": leaderboard,
         "generated_at": datetime.utcnow().isoformat() + "Z",
         "generated": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
         "data_as_of": {
@@ -529,6 +647,7 @@ def main():
             "high_risk_patients": high_risk,
             "bad_phone_count": len(bad_phones),
             "contact_log_entries": len(contact_log_clean),
+            "leaderboard_providers": len(leaderboard.get('providers', [])),
         },
     }
 
