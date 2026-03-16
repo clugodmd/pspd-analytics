@@ -335,9 +335,10 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
 <!-- ── Controls ── -->
 <div class="controls">
   <div class="tab-group">
-    <button class="tab-btn active" data-view="recall" onclick="switchView('recall')">Hygiene Recall</button>
-    <button class="tab-btn" data-view="overdue" onclick="switchView('overdue')">Overdue</button>
+    <button class="tab-btn active" data-view="recall" onclick="switchView('recall')">Due Next 30</button>
+    <button class="tab-btn" data-view="overdue" onclick="switchView('overdue')">Past Due</button>
     <button class="tab-btn" data-view="treatment" onclick="switchView('treatment')">Unscheduled Tx</button>
+    <button class="tab-btn" data-view="leaderboard" onclick="switchView('leaderboard')">Dr. Leaderboard</button>
     <button class="tab-btn" data-view="review" onclick="switchView('review')">Needs Review</button>
   </div>
   <select class="office-select" id="officeFilter" onchange="applyFilters()">
@@ -395,7 +396,7 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
   <div id="view-recall" class="view-panel">
     <div class="table-wrap">
       <div class="table-header">
-        <h3>Household Hygiene List – Next 30 Days</h3>
+        <h3>Hygiene Recall — Due Next 30 Days</h3>
         <span class="table-count" id="recall-count">Loading...</span>
       </div>
       <div style="overflow-x:auto;">
@@ -423,7 +424,7 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
   <div id="view-overdue" class="view-panel" style="display:none;">
     <div class="table-wrap">
       <div class="table-header">
-        <h3>Household Recall Call List — Overdue</h3>
+        <h3>Past Due Hygiene Recall</h3>
         <span class="table-count" id="overdue-count">Loading...</span>
       </div>
       <div style="overflow-x:auto;">
@@ -497,6 +498,31 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
         </table>
       </div>
     </div>
+  <!-- Leaderboard View -->
+  <div id="view-leaderboard" class="view-panel" style="display:none;">
+    <div class="table-wrap">
+      <div class="table-header">
+        <h3>Doctor Leaderboard — Production & Treatment KPIs</h3>
+        <span class="table-count" id="leaderboard-count">Loading...</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="leaderboard-table">
+          <thead><tr>
+            <th>Provider</th>
+            <th>Status</th>
+            <th>Unscheduled Pts</th>
+            <th>Unscheduled $</th>
+            <th>Avg Days Pending</th>
+            <th>Scheduling Rate</th>
+            <th>MTD Patients</th>
+            <th>MTD Production</th>
+          </tr></thead>
+          <tbody id="leaderboard-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Guide Section ── -->
   <div class="guide-section">
     <div class="guide-toggle" onclick="toggleGuide()">
@@ -540,6 +566,7 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
     <div id="twilioNotice" style="background:rgba(232,200,74,0.15); padding:0.75rem; border-radius:6px; margin-bottom:1rem; border:1px solid rgba(232,200,74,0.3); font-size:0.8rem; color:var(--yellow); display:none;">
       <strong>Notice:</strong> Twilio not yet connected — messages will be logged only. <a href="javascript:openSettingsModal()" style="color:inherit; text-decoration:underline;">Configure Twilio</a>
     </div>
+    <div id="departedNotice" style="background:rgba(196,72,90,0.15); padding:0.75rem; border-radius:6px; margin-bottom:1rem; border:1px solid rgba(196,72,90,0.3); font-size:0.8rem; color:var(--red); display:none;"></div>
     <div style="margin-bottom:0.75rem;">
       <label style="font-size:0.8rem; color:var(--text2);">To:</label>
       <div id="smsTo" style="font-weight:600;"></div>
@@ -647,7 +674,48 @@ tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
 // ════════════════════════════════════════
 const DATA_URL = 'data/callsheets.json';
 const LOG_URL = 'data/callsheet_log.json';
+const DOCTORS_URL = 'data/doctors.json';
 const TWILIO_FUNCTION_URL = ''; // Set to your Twilio Function URL for SMS sending
+
+// ── Departed Doctors ──
+let departedDoctors = {};  // { "Kirk": {display, last_day, note}, "Ping": {...}, ... }
+
+async function loadDoctors() {
+  try {
+    const resp = await fetch(DOCTORS_URL + '?t=' + Date.now());
+    if (!resp.ok) return;
+    const doc = await resp.json();
+    if (doc.terminated) {
+      Object.entries(doc.terminated).forEach(([key, val]) => {
+        // Extract last name for matching: "Kirk, Kyle" → "Kirk"
+        const lastName = key.split(',')[0].trim();
+        departedDoctors[lastName.toLowerCase()] = {
+          display: val.display || key,
+          last_day: val.last_day || val.termination_date || '',
+          note: val.note || 'No longer with practice'
+        };
+      });
+    }
+    console.log('Loaded departed doctors:', Object.keys(departedDoctors));
+  } catch (e) {
+    console.warn('Could not load doctors.json:', e);
+  }
+}
+
+function isDepartedDoctor(providerName) {
+  if (!providerName) return false;
+  const name = providerName.toLowerCase().trim();
+  for (const [key, val] of Object.entries(departedDoctors)) {
+    if (name.includes(key)) return val;
+  }
+  return false;
+}
+
+function departedBadge(providerName) {
+  const dep = isDepartedDoctor(providerName);
+  if (!dep) return '';
+  return ` <span class="risk-badge risk-high" style="font-size:0.55rem;cursor:help;background:rgba(196,72,90,0.25);border:1px solid rgba(196,72,90,0.5);" title="${esc(dep.display)} left the practice (${esc(dep.last_day)}). Use caution — family may be upset.">DOCTOR LEFT</span>`;
+}
 
 // ── SMS Templates ──
 const TEMPLATES = {
@@ -702,6 +770,8 @@ function saveSettings() {
 // ════════════════════════════════════════
 async function loadData() {
   try {
+    // Load doctors.json in parallel with callsheets data
+    await loadDoctors();
     const resp = await fetch(DATA_URL + '?t=' + Date.now());
     if (!resp.ok) throw new Error('No data file');
     data = await resp.json();
@@ -858,6 +928,9 @@ function routeEmptyTxToReview() {
 function buildReviewList() {
   reviewItems = [];
 
+  // Load purged items from session storage
+  const purgedSet = loadPurgedSet();
+
   // Find bad phones across all lists
   const allRecords = [
     ...(data.recall || []).map(r => ({...r, source: 'recall', row_id: 'recall-' + r.household_id})),
@@ -869,6 +942,22 @@ function buildReviewList() {
     const phone = (r.phone || '').replace(/[\s\-\(\)\.]/g, '');
     const name = r.household || r.name || (r.lname + ', ' + r.fname);
     const office = r.last_office || r.office || '';
+
+    // Skip purged items
+    if (purgedSet.has(r.row_id)) return;
+
+    // Bad/unknown data: name is "Unknown", empty, or just "Family"
+    const cleanName = (name || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    if (!cleanName || cleanName === 'unknown' || cleanName === 'family' || cleanName === ', ' || cleanName === 'unknown family' || /^[,\s]+$/.test(cleanName)) {
+      reviewItems.push({
+        name: name || '(Unknown)', phone: r.phone || '(none)',
+        issue: 'Missing Patient Name — Clean in Denticon',
+        source: r.source, office, row_id: r.row_id,
+        last_attempt: '-',
+        issue_class: 'badge-purple',
+        purge_eligible: true
+      });
+    }
 
     // Bad phone: known bad, or missing/too short
     if (badPhoneSet.has(r.phone) || badPhoneSet.has(phone)) {
@@ -901,12 +990,31 @@ function buildReviewList() {
     }
   });
 
+  // Add $0 fee treatment plans — sealants etc. always have fees
+  (data.treatment || []).forEach(r => {
+    const rowId = 'tx-' + r.patient_id;
+    if (purgedSet.has(rowId)) return;
+    if ((!r.total_fee || Number(r.total_fee) === 0) && (r.tx_summary || '').trim()) {
+      const name = r.name || (r.lname + ', ' + r.fname);
+      reviewItems.push({
+        name,
+        phone: r.phone || '(none)',
+        issue: '$0 Fee — Verify Treatment Plan in Denticon',
+        source: 'treatment',
+        office: r.office || '',
+        row_id: rowId,
+        last_attempt: '-',
+        issue_class: 'badge-yellow'
+      });
+    }
+  });
+
   // Add empty treatment plan records (no tx_summary) — needs chart review
   if (data._empty_tx_records) {
     data._empty_tx_records.forEach(r => {
       const name = r.name || (r.lname + ', ' + r.fname);
       const rowId = 'tx-' + r.patient_id;
-      // Skip if already flagged as reviewed
+      if (purgedSet.has(rowId)) return;
       if (reviewedSet && reviewedSet.has(rowId)) return;
       reviewItems.push({
         name,
@@ -920,6 +1028,25 @@ function buildReviewList() {
       });
     });
   }
+}
+
+function loadPurgedSet() {
+  try {
+    const raw = localStorage.getItem('pspd_purged');
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch { return new Set(); }
+}
+
+function purgeRecord(rowId) {
+  try {
+    const purged = loadPurgedSet();
+    purged.add(rowId);
+    localStorage.setItem('pspd_purged', JSON.stringify([...purged]));
+  } catch { /* silent */ }
+  // Also remove from the active data arrays so it won't show in other tabs
+  reviewItems = reviewItems.filter(r => r.row_id !== rowId);
+  renderReview();
+  updateKPIs();
 }
 
 function getLastAttempt(rowId) {
@@ -1164,39 +1291,44 @@ function riskBadge(r) {
 
 function computeRiskBadge(r) {
   let score = 0;
+  let factors = [];
 
   // Factor 1: Days overdue (overdue/recall tabs)
   const daysOverdue = r.days_overdue || 0;
-  if (daysOverdue > 270) score += 3;
-  else if (daysOverdue > 180) score += 2;
-  else if (daysOverdue > 90) score += 1;
+  if (daysOverdue > 270) { score += 3; factors.push(`${daysOverdue}d overdue (+3)`); }
+  else if (daysOverdue > 180) { score += 2; factors.push(`${daysOverdue}d overdue (+2)`); }
+  else if (daysOverdue > 90) { score += 1; factors.push(`${daysOverdue}d overdue (+1)`); }
 
   // Factor 2: Treatment plan age (treatment tab) — days_since_plan
   const daysSincePlan = r.days_since_plan || 0;
-  if (daysSincePlan > 180) score += 3;
-  else if (daysSincePlan > 90) score += 2;
-  else if (daysSincePlan > 30) score += 1;
+  if (daysSincePlan > 180) { score += 3; factors.push(`Tx plan ${daysSincePlan}d old (+3)`); }
+  else if (daysSincePlan > 90) { score += 2; factors.push(`Tx plan ${daysSincePlan}d old (+2)`); }
+  else if (daysSincePlan > 30) { score += 1; factors.push(`Tx plan ${daysSincePlan}d old (+1)`); }
 
   // Factor 3: Fee size (higher fee = higher urgency for treatment)
   const fee = r.total_fee || 0;
-  if (fee >= 3000) score += 2;
-  else if (fee >= 1000) score += 1;
+  if (fee >= 3000) { score += 2; factors.push(`Fee $${Number(fee).toLocaleString()} (+2)`); }
+  else if (fee >= 1000) { score += 1; factors.push(`Fee $${Number(fee).toLocaleString()} (+1)`); }
 
   // Factor 4: Number of kids due (more kids = more urgency)
   const kids = r.kids_due_count || 0;
-  if (kids >= 4) score += 2;
-  else if (kids >= 2) score += 1;
+  if (kids >= 4) { score += 2; factors.push(`${kids} kids due (+2)`); }
+  else if (kids >= 2) { score += 1; factors.push(`${kids} kids due (+1)`); }
 
   // Factor 5: Bad phone (can't reach them)
-  if (isBadPhone(r.phone)) score += 1;
+  if (isBadPhone(r.phone)) { score += 1; factors.push('Bad phone (+1)'); }
 
   // Factor 6: GA/block cases are inherently higher urgency
   const tx = (r.tx_summary || '').toLowerCase();
-  if (/\bga\b|\bblock\b/.test(tx)) score += 1;
+  if (/\bga\b|\bblock\b/.test(tx)) { score += 1; factors.push('GA/Block case (+1)'); }
 
-  if (score >= 4) return '<span class="risk-badge risk-high">High</span>';
-  if (score >= 2) return '<span class="risk-badge risk-medium">Med</span>';
-  if (score >= 1) return '<span class="risk-badge risk-low">Low</span>';
+  const tooltip = factors.length > 0
+    ? `Score ${score}: ${factors.join(', ')}`
+    : 'No risk factors detected';
+
+  if (score >= 4) return `<span class="risk-badge risk-high" title="${esc(tooltip)}" style="cursor:help;">High</span>`;
+  if (score >= 2) return `<span class="risk-badge risk-medium" title="${esc(tooltip)}" style="cursor:help;">Med</span>`;
+  if (score >= 1) return `<span class="risk-badge risk-low" title="${esc(tooltip)}" style="cursor:help;">Low</span>`;
   return '<span style="color:var(--text3);font-size:0.7rem;">—</span>';
 }
 
@@ -1317,6 +1449,7 @@ let currentFilteredItems = [];
 
 function render() {
   if (currentView === 'review') { renderReview(); updateKPIs(); return; }
+  if (currentView === 'leaderboard') { renderLeaderboard(); return; }
   currentPage = 1;
   currentFilteredItems = getFilteredData();
   if (currentView === 'recall') renderRecall(currentFilteredItems);
@@ -1385,10 +1518,10 @@ function renderRecallRow(r) {
     <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
     <td>${riskBadge(r)}</td>
     <td><span class="badge badge-blue">${r.kids_due_count || 0}</span></td>
-    <td style="font-size:0.78rem;">${esc(r.kids_due_names || '-')}</td>
+    <td style="font-size:0.78rem;">${formatKidsWithGrad(r.kids_due_names)}</td>
     <td>${esc(r.suggest_date || '-')}</td>
     <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span></td>
-    <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}</td>
+    <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}${departedBadge(r.last_provider)}</td>
     <td>${contactHistoryCell(id, r)}</td>
     <td>${actionBtns(id, r.phone)}</td>
   </tr>`;
@@ -1417,10 +1550,10 @@ function renderOverdueRow(r) {
     <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
     <td>${riskBadge(r)}</td>
     <td><span class="badge badge-blue">${r.kids_due_count || 0}</span></td>
-    <td style="font-size:0.78rem;">${esc(r.kids_due_names || '-')}${txInfo}</td>
+    <td style="font-size:0.78rem;">${formatKidsWithGrad(r.kids_due_names)}${txInfo}</td>
     <td><span class="badge ${daysClass}">${r.days_overdue || 0} days</span></td>
     <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span></td>
-    <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}</td>
+    <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}${departedBadge(r.last_provider)}</td>
     <td>${contactHistoryCell(id, r)}</td>
     <td>${actionBtns(id, r.phone)}</td>
   </tr>`;
@@ -1443,16 +1576,16 @@ function renderTreatmentRow(r) {
   // Show Pending Tx tag if this was merged from overdue logic
   const pendingTag = r._pending_tx ? '<span class="badge badge-yellow" style="font-size:0.55rem;margin-left:0.3rem;">Pending Tx</span>' : '';
   return `<tr class="${cls}" id="${id}">
-    <td class="patient-name">${esc(r.name || (r.lname + ', ' + r.fname))}</td>
-    <td class="patient-age">${r.age || '-'}</td>
+    <td class="patient-name">${esc(r.name || (r.lname + ', ' + r.fname))}${Number(r.age) >= 17 ? ' 🎓' : ''}</td>
+    <td class="patient-age">${r.age || '-'}${Number(r.age) >= 17 ? '<span style="display:block;font-size:0.6rem;color:var(--yellow);">Aging out</span>' : ''}</td>
     <td>${phoneCell(r.phone, r.name || r.fname, '', '', id)}</td>
     <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
     <td>${riskBadge(r)}</td>
     <td>${renderTxTags(r.tx_summary || r.treatment || '')}${pendingTag}</td>
-    <td class="fee">${r.total_fee ? '$' + Number(r.total_fee).toLocaleString() : '-'}</td>
+    <td class="fee">${r.total_fee && Number(r.total_fee) > 0 ? '$' + Number(r.total_fee).toLocaleString() : '<span class="risk-badge risk-medium" style="font-size:0.6rem;cursor:help;" title="Fee is $0 or missing — verify treatment plan in Denticon">$0 — Verify</span>'}</td>
     <td>${planAgeCell(r)}</td>
     <td>${timeNeededCell(r)}</td>
-    <td style="font-size:0.78rem;color:var(--text2);">${esc(r.diagnosing_provider || '-')}</td>
+    <td style="font-size:0.78rem;color:var(--text2);">${esc(r.diagnosing_provider || '-')}${departedBadge(r.diagnosing_provider)}</td>
     <td>${actionBtns(id, r.phone)}</td>
   </tr>`;
 }
@@ -1479,6 +1612,9 @@ function renderReview() {
   }
 
   body.innerHTML = items.map(r => {
+    const purgeBtn = r.purge_eligible
+      ? `<button class="btn-skip" onclick="purgeRecord('${esc(r.row_id)}')" title="Suppress this record — hide from all lists this cycle" style="font-size:0.6rem;">Purge</button>`
+      : '';
     return `<tr>
       <td class="patient-name">${esc(r.name)}</td>
       <td>${esc(r.phone)}</td>
@@ -1486,7 +1622,44 @@ function renderReview() {
       <td><span class="badge badge-blue">${esc(r.source)}</span></td>
       <td><span class="badge badge-orange">${esc(r.office || '-')}</span></td>
       <td style="font-size:0.75rem;color:var(--text2);">${esc(r.last_attempt)}</td>
-      <td><button class="btn-review" onclick="flagReviewed('${esc(r.row_id)}')">Mark Reviewed</button></td>
+      <td><button class="btn-review" onclick="flagReviewed('${esc(r.row_id)}')">Reviewed</button> ${purgeBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderLeaderboard() {
+  const body = document.getElementById('leaderboard-body');
+  const lb = data.doctor_leaderboard;
+  if (!lb || !lb.providers || lb.providers.length === 0) {
+    document.getElementById('leaderboard-count').textContent = 'No data';
+    body.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:3rem;color:var(--text3);">
+      No doctor leaderboard data. Run the callsheet refresh workflow to populate.</td></tr>`;
+    return;
+  }
+
+  const providers = lb.providers.sort((a, b) => (b.mtd_production || 0) - (a.mtd_production || 0));
+  document.getElementById('leaderboard-count').textContent = providers.length + ' providers';
+
+  body.innerHTML = providers.map((p, idx) => {
+    const dep = isDepartedDoctor(p.provider);
+    const statusBadge = dep
+      ? '<span class="risk-badge risk-high" style="font-size:0.6rem;">LEFT</span>'
+      : '<span class="badge badge-green" style="font-size:0.6rem;">Active</span>';
+    const rowStyle = dep ? 'opacity:0.5;' : '';
+    const rankBadge = !dep && idx < 3 ? `<span style="font-size:0.85rem;margin-right:0.3rem;">${['🥇','🥈','🥉'][idx]}</span>` : '';
+
+    const schedRate = p.scheduling_rate != null ? p.scheduling_rate + '%' : '-';
+    const schedColor = (p.scheduling_rate || 0) >= 50 ? 'var(--green)' : (p.scheduling_rate || 0) >= 25 ? 'var(--yellow)' : 'var(--red)';
+
+    return `<tr style="${rowStyle}">
+      <td class="patient-name">${rankBadge}${esc(p.provider)}</td>
+      <td>${statusBadge}</td>
+      <td><span class="badge badge-blue">${p.unscheduled_patients || 0}</span></td>
+      <td class="fee">${p.unscheduled_value ? '$' + Number(p.unscheduled_value).toLocaleString() : '-'}</td>
+      <td>${p.avg_days_pending ? Math.round(p.avg_days_pending) + 'd' : '-'}</td>
+      <td><span style="color:${schedColor};font-weight:600;">${schedRate}</span></td>
+      <td>${p.patients_seen_mtd || '-'}</td>
+      <td class="fee">${p.mtd_production ? '$' + Number(p.mtd_production).toLocaleString() : '-'}</td>
     </tr>`;
   }).join('');
 }
@@ -1979,6 +2152,24 @@ function openSmsModal(phone, name, office, kids, rowId) {
   const hasConnection = TWILIO_FUNCTION_URL || appSettings.twilioFunctionUrl;
   twilioNotice.style.display = hasConnection ? 'none' : 'block';
 
+  // Show departed doctor warning if applicable
+  let providerForRow = '';
+  const items = [...(data.recall || []), ...(data.overdue || []), ...(data.treatment || [])];
+  const matchRec = items.find(r =>
+    ('recall-' + r.household_id === rowId) ||
+    ('overdue-' + r.household_id === rowId) ||
+    ('tx-' + r.patient_id === rowId)
+  );
+  if (matchRec) providerForRow = matchRec.last_provider || matchRec.diagnosing_provider || '';
+  const depInfo = isDepartedDoctor(providerForRow);
+  const depNotice = document.getElementById('departedNotice');
+  if (depInfo && depNotice) {
+    depNotice.innerHTML = `<strong>Warning:</strong> ${esc(depInfo.display)} is no longer with the practice (left ${esc(depInfo.last_day)}). Use caution — this family may be upset. Consider a warm, empathetic tone and avoid mentioning the doctor by name.`;
+    depNotice.style.display = 'block';
+  } else if (depNotice) {
+    depNotice.style.display = 'none';
+  }
+
   // Auto-select template based on current view
   const tmpl = document.getElementById('smsTemplate');
   if (currentView === 'recall') tmpl.value = 'recall';
@@ -2255,6 +2446,14 @@ function closeHistoryModal() {
 // ════════════════════════════════════════
 // ── Utility ──
 // ════════════════════════════════════════
+function formatKidsWithGrad(kidsStr) {
+  // Add 🎓 next to kids aged 17+ in the "Name (age); Name (age)" format
+  if (!kidsStr) return '-';
+  return esc(kidsStr).replace(/\((\d+)\)/g, (match, age) => {
+    return Number(age) >= 17 ? `(${age}) 🎓` : `(${age})`;
+  });
+}
+
 function esc(str) {
   if (!str) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
