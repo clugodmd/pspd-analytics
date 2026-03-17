@@ -1,0 +1,2480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSPD Call Sheets — Interactive Recall & Treatment Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>
+    :root {
+      --bg: #1C3329; --bg2: #243D33; --card: #2E4A3E; --card-hover: #38564A;
+      --accent: #6292A0; --accent-light: #7AAFBD;
+      --accent-glow: rgba(98,146,160,0.15); --accent-border: rgba(98,146,160,0.35);
+      --text: #F7F8F8; --text2: #9AADA2; --text3: #5E7A6E;
+      --border: rgba(247,248,248,0.08);
+      --green: #5DBE8A; --red: #C4485A; --blue: #6292A0; --purple: #8B7BA5; --teal: #7AAFBD;
+      --yellow: #E8C84A; --orange: #D4915E;
+      --wood: #7D6652; --wood-glow: rgba(125,102,82,0.12);
+      --sans: 'DM Sans', sans-serif; --serif: 'Instrument Serif', serif;
+      --accent-lt: #7AAFBD;
+      --radius: 12px;
+    }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+a { color: var(--accent-lt); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Header ── */
+.header {
+  background: linear-gradient(135deg, var(--bg2) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 1.5rem 2rem;
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.header h1 {
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 400;
+  background: linear-gradient(135deg, var(--text) 0%, var(--accent-lt) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.header .subtitle { color: var(--text2); font-size: 0.85rem; margin-top: 0.2rem; }
+
+/* ── Controls ── */
+.controls {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;
+  padding: 1rem 2rem; background: var(--bg2); border-bottom: 1px solid var(--border);
+}
+.tab-group { display: flex; gap: 0.25rem; background: var(--bg); border-radius: 8px; padding: 3px; }
+.tab-btn {
+  padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer;
+  font-family: var(--sans); font-size: 0.85rem; font-weight: 500;
+  background: transparent; color: var(--text2); transition: all 0.2s;
+}
+.tab-btn.active { background: var(--accent); color: #fff; }
+.tab-btn:hover:not(.active) { background: rgba(255,255,255,0.06); color: var(--text); }
+
+.office-select, .search-input, .sort-select, .status-filter {
+  padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 0.85rem;
+}
+.office-select:focus, .search-input:focus, .sort-select:focus, .status-filter:focus { outline: none; border-color: var(--accent); }
+.search-input { min-width: 200px; }
+.search-input::placeholder { color: var(--text3); }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+}
+.badge-green { background: rgba(93,190,138,0.15); color: var(--green); }
+.badge-red { background: rgba(196,72,90,0.15); color: var(--red); }
+.badge-blue { background: rgba(98,146,160,0.15); color: var(--blue); }
+.badge-orange { background: var(--accent-glow); color: var(--accent-lt); }
+.badge-purple { background: rgba(139,123,165,0.15); color: var(--purple); }
+.badge-yellow { background: rgba(232,200,74,0.15); color: var(--yellow); }
+
+/* ── Risk Badges ── */
+.risk-badge {
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.65rem;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+}
+.risk-high { background: rgba(196,72,90,0.2); color: var(--red); border: 1px solid rgba(196,72,90,0.3); }
+.risk-medium { background: rgba(232,200,74,0.2); color: var(--yellow); border: 1px solid rgba(232,200,74,0.3); }
+.risk-low { background: rgba(93,190,138,0.2); color: var(--green); border: 1px solid rgba(93,190,138,0.3); }
+
+/* ── Phone Status ── */
+.phone-status {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+}
+.phone-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%; font-size: 0.55rem;
+}
+.phone-ok .phone-icon { background: rgba(93,190,138,0.2); color: var(--green); }
+.phone-bad .phone-icon { background: rgba(196,72,90,0.3); color: var(--red); }
+.phone-unknown .phone-icon { background: rgba(148,163,184,0.2); color: var(--text3); }
+.phone-bad .phone-link { color: var(--red); text-decoration: line-through; }
+
+/* ── Contact History Indicator ── */
+.contact-indicator {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  font-size: 0.7rem; color: var(--text3);
+}
+.contact-indicator .ci-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+.ci-sms { background: var(--blue); }
+.ci-email { background: var(--purple); }
+.ci-called { background: var(--green); }
+.ci-zcode { background: var(--accent); }
+.contact-history-row {
+  display: flex; flex-wrap: wrap; gap: 0.2rem; align-items: center;
+}
+.ch-chip {
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  padding: 0.1rem 0.4rem; border-radius: 10px; font-size: 0.6rem; font-weight: 600;
+}
+.ch-chip.sms { background: rgba(98,146,160,0.15); color: var(--blue); }
+.ch-chip.call { background: rgba(93,190,138,0.15); color: var(--green); }
+.ch-chip.weave { background: rgba(122,175,189,0.15); color: var(--teal); }
+.ch-chip.email { background: rgba(139,123,165,0.15); color: var(--purple); }
+.ch-chip.zcode { background: var(--accent-glow); color: var(--accent-lt); }
+.ch-chip.failed { background: rgba(196,72,90,0.15); color: var(--red); }
+
+/* ── KPI Row ── */
+.kpi-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem; padding: 1rem 2rem;
+}
+.kpi-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1rem 1.2rem; transition: border-color 0.2s;
+}
+.kpi-card:hover { border-color: rgba(98,146,160,0.3); }
+.kpi-label { font-size: 0.7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+.kpi-value { font-size: 1.6rem; font-weight: 700; color: var(--text); margin-top: 0.2rem; }
+.kpi-sub { font-size: 0.75rem; color: var(--text2); margin-top: 0.15rem; }
+
+/* ── Main Grid ── */
+.main { padding: 0 2rem 2rem; }
+
+/* ── Call Sheet Table ── */
+.table-wrap {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; margin-top: 1rem;
+}
+.table-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.2rem; border-bottom: 1px solid var(--border);
+}
+.table-header h3 { font-family: var(--serif); font-size: 1.1rem; font-weight: 400; }
+.table-count { color: var(--text2); font-size: 0.8rem; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+thead th {
+  text-align: left; padding: 0.7rem 1rem; color: var(--text3); font-weight: 600;
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.15);
+  cursor: pointer; user-select: none; white-space: nowrap;
+}
+thead th:hover { color: var(--accent-lt); }
+thead th .sort-arrow { margin-left: 0.3rem; opacity: 0.4; }
+thead th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
+thead th.sortable { cursor: pointer; user-select: none; }
+thead th.sortable:hover { color: var(--accent); }
+thead th.sortable:hover .sort-arrow { opacity: 0.8; }
+
+tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+tbody tr:nth-child(odd) { background: rgba(232,200,74,0.02); }
+tbody tr:hover { background: rgba(98,146,160,0.08); }
+tbody td { padding: 0.6rem 1rem; color: var(--text); vertical-align: middle; }
+
+.patient-name { font-weight: 600; white-space: nowrap; }
+.patient-age { color: var(--text2); font-size: 0.75rem; }
+.phone-link { color: var(--accent-lt); cursor: pointer; white-space: nowrap; }
+.phone-link:hover { text-decoration: underline; }
+
+.tx-summary {
+  display: flex; flex-wrap: wrap; gap: 0.25rem;
+}
+.tx-tag {
+  display: inline-block; padding: 0.15rem 0.4rem; border-radius: 4px;
+  font-size: 0.7rem; font-weight: 600; background: rgba(98,146,160,0.15); color: var(--blue);
+}
+.tx-tag.ga { background: rgba(196,72,90,0.15); color: var(--red); }
+.tx-tag.ssc { background: rgba(139,123,165,0.15); color: var(--purple); }
+.tx-tag.ext { background: rgba(232,200,74,0.15); color: var(--yellow); }
+.tx-tag.seal { background: rgba(93,190,138,0.15); color: var(--green); }
+.tx-tag.sdf { background: var(--accent-glow); color: var(--accent-lt); }
+
+.fee { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ── Action Buttons ── */
+.action-btns { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+.btn-sms, .btn-weave, .btn-call, .btn-done, .btn-skip, .btn-review, .btn-log {
+  padding: 0.3rem 0.6rem; border: none; border-radius: 6px;
+  font-size: 0.7rem; font-weight: 600; cursor: pointer;
+  font-family: var(--sans); transition: all 0.2s;
+}
+.btn-sms { background: rgba(98,146,160,0.2); color: var(--blue); }
+.btn-sms:hover { background: rgba(98,146,160,0.35); }
+.btn-weave { background: rgba(93,190,138,0.2); color: var(--green); }
+.btn-weave:hover { background: rgba(93,190,138,0.35); }
+.btn-call { background: rgba(93,190,138,0.2); color: var(--green); }
+.btn-call:hover { background: rgba(93,190,138,0.35); }
+.btn-done { background: rgba(93,190,138,0.2); color: var(--green); }
+.btn-done:hover { background: rgba(93,190,138,0.35); }
+.btn-skip { background: rgba(196,72,90,0.15); color: var(--red); }
+.btn-skip:hover { background: rgba(196,72,90,0.3); }
+.btn-review { background: rgba(232,200,74,0.15); color: var(--yellow); }
+.btn-review:hover { background: rgba(232,200,74,0.3); }
+.btn-log { background: rgba(139,123,165,0.15); color: var(--purple); }
+.btn-log:hover { background: rgba(139,123,165,0.3); }
+.btn-undo { background: rgba(196,72,90,0.2); color: var(--red); border: 1px solid rgba(196,72,90,0.4); padding: 0.3rem 0.6rem; }
+.btn-undo:hover { background: rgba(196,72,90,0.35); }
+
+/* ── Weave Popup ── */
+.weave-popup {
+  position: absolute; background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.5rem; min-width: 180px; z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.weave-popup button {
+  display: block; width: 100%; padding: 0.4rem 0.6rem;
+  border: none; border-radius: 4px; background: rgba(98,146,160,0.15);
+  color: var(--text); font-size: 0.75rem; cursor: pointer;
+  text-align: left; margin-bottom: 0.3rem; font-family: var(--sans);
+  transition: background 0.2s;
+}
+.weave-popup button:last-child { margin-bottom: 0; }
+.weave-popup button:hover { background: rgba(98,146,160,0.3); }
+
+/* ── Settings Modal ── */
+.settings-modal { max-width: 500px; }
+.settings-field { margin-bottom: 1rem; }
+.settings-field label { display: block; font-size: 0.8rem; color: var(--text2); margin-bottom: 0.4rem; font-weight: 600; }
+.settings-field input { width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 0.85rem; }
+.settings-field input:focus { outline: none; border-color: var(--accent); }
+
+/* ── Guide Section ── */
+.guide-section { margin-top: 2rem; padding: 1.5rem; background: rgba(232,200,74,0.05); border: 1px solid rgba(232,200,74,0.2); border-radius: var(--radius); }
+.guide-toggle { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 600; color: var(--accent-lt); user-select: none; }
+.guide-toggle:hover { color: var(--text); }
+.guide-content { margin-top: 1rem; font-size: 0.8rem; color: var(--text2); line-height: 1.6; }
+.guide-content dt { font-weight: 600; color: var(--text); margin-top: 0.5rem; }
+.guide-content dd { margin-left: 1rem; margin-bottom: 0.3rem; }
+
+.row-contacted { opacity: 0.45; }
+.row-contacted td { text-decoration: line-through; text-decoration-color: var(--text3); }
+.row-skipped { opacity: 0.3; }
+.row-bad-phone { background: rgba(196,72,90,0.04); }
+
+/* ── SMS Modal ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 1000; align-items: center; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1.5rem; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto;
+}
+.modal h3 { font-family: var(--serif); margin-bottom: 1rem; }
+.modal textarea {
+  width: 100%; min-height: 120px; padding: 0.75rem; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--bg); color: var(--text); font-family: var(--sans);
+  font-size: 0.85rem; resize: vertical;
+}
+.modal textarea:focus { outline: none; border-color: var(--accent); }
+.modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
+.btn-primary {
+  padding: 0.6rem 1.2rem; border: none; border-radius: 8px; cursor: pointer;
+  font-family: var(--sans); font-size: 0.85rem; font-weight: 600;
+  background: var(--accent); color: #fff; transition: background 0.2s;
+}
+.btn-primary:hover { background: var(--accent-lt); }
+.btn-secondary {
+  padding: 0.6rem 1.2rem; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+  font-family: var(--sans); font-size: 0.85rem; font-weight: 500;
+  background: transparent; color: var(--text2); transition: all 0.2s;
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+
+.template-select {
+  width: 100%; padding: 0.5rem; margin-bottom: 0.75rem;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 0.85rem;
+}
+
+/* ── Contact History Modal ── */
+.log-table { width: 100%; font-size: 0.78rem; }
+.log-table th { text-align: left; padding: 0.5rem; color: var(--text3); font-size: 0.7rem; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+.log-table td { padding: 0.5rem; border-bottom: 1px solid var(--border); }
+.log-status-sent { color: var(--green); }
+.log-status-delivered { color: var(--green); font-weight: 600; }
+.log-status-failed { color: var(--red); font-weight: 600; }
+.log-status-undelivered { color: var(--yellow); }
+
+/* ── Empty State ── */
+.empty-state { text-align: center; padding: 4rem 2rem; }
+.empty-state h2 { font-family: var(--serif); font-size: 1.5rem; margin-bottom: 0.5rem; }
+.empty-state p { color: var(--text2); max-width: 500px; margin: 0 auto; }
+
+/* ── Footer ── */
+.footer {
+  text-align: center; padding: 1.5rem 2rem; color: var(--text3); font-size: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .header, .controls, .kpi-row, .main { padding-left: 1rem; padding-right: 1rem; }
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  table { font-size: 0.75rem; }
+  thead th, tbody td { padding: 0.5rem 0.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <a href="index.html" style="color:var(--text3);font-size:0.8rem;text-decoration:none;display:inline-flex;align-items:center;gap:0.3rem;margin-bottom:0.3rem;">&larr; Control Tower</a>
+      <h1>Call Sheets</h1>
+      <div class="subtitle">Interactive Recall & Treatment Action Dashboard</div>
+    </div>
+    <div style="display:flex; gap:0.5rem; align-items:center;">
+      <span class="badge badge-green" id="badge-connected">Connected</span>
+      <span style="color:var(--text3); font-size:0.8rem;" id="last-updated">Loading...</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Controls ── -->
+<div class="controls">
+  <div class="tab-group">
+    <button class="tab-btn active" data-view="recall" onclick="switchView('recall')">Due Next 30</button>
+    <button class="tab-btn" data-view="overdue" onclick="switchView('overdue')">Past Due</button>
+    <button class="tab-btn" data-view="treatment" onclick="switchView('treatment')">Unscheduled Tx</button>
+    <button class="tab-btn" data-view="review" onclick="switchView('review')">Needs Review</button>
+  </div>
+  <select class="office-select" id="officeFilter" onchange="applyFilters()">
+    <option value="ALL">All Offices</option>
+    <option value="EVERETT">Everett</option>
+    <option value="LAKE STEVENS">Lake Stevens</option>
+    <option value="MARYSVILLE">Marysville</option>
+    <option value="MONROE">Monroe</option>
+    <option value="STANWOOD">Stanwood</option>
+  </select>
+  <select class="status-filter" id="statusFilter" onchange="applyFilters()">
+    <option value="all">All Status</option>
+    <option value="not-contacted">Not Contacted</option>
+    <option value="contacted">Contacted (SMS/Email)</option>
+    <option value="z-coded">Z-Coded (Completed)</option>
+    <option value="bad-phone">Bad Phone #</option>
+  </select>
+  <input class="search-input" type="text" id="searchInput" placeholder="Search name, phone, or email..." oninput="applyFilters()">
+  <select class="sort-select" id="sortSelect" onchange="columnSortKey=null;document.querySelectorAll('th.sortable').forEach(h=>{h.classList.remove('sorted');h.querySelector('.sort-arrow').textContent='↕'});applyFilters()">
+    <option value="priority">Sort: Priority</option>
+    <option value="risk-desc">Sort: Risk High-Low</option>
+    <option value="name">Sort: Name A-Z</option>
+    <option value="fee-desc">Sort: Fee High-Low</option>
+    <option value="overdue-desc">Sort: Most Overdue</option>
+    <option value="kids-desc">Sort: Most Kids</option>
+  </select>
+  <button class="btn-primary" id="bulkSmsBtn" onclick="openBulkSMS()" style="margin-left:auto;">
+    Send Bulk SMS
+  </button>
+  <button onclick="exportContactLog()" style="background:rgba(98,146,160,0.15);color:var(--accent);border:1px solid rgba(98,146,160,0.3);padding:0.4rem 0.8rem;border-radius:6px;font-size:0.75rem;cursor:pointer;font-family:inherit;" title="Export all contact history as CSV">
+    Export Log
+  </button>
+  <button onclick="openSettingsModal()" style="background:rgba(98,146,160,0.15);color:var(--accent);border:1px solid rgba(98,146,160,0.3);padding:0.4rem 0.8rem;border-radius:6px;font-size:0.75rem;cursor:pointer;font-family:inherit;" title="Open settings">
+    ⚙️ Settings
+  </button>
+  <button onclick="resetAllSession()" style="background:rgba(196,72,90,0.15);color:var(--red);border:1px solid rgba(196,72,90,0.3);padding:0.4rem 0.8rem;border-radius:6px;font-size:0.75rem;cursor:pointer;font-family:inherit;" title="Reset all session state">
+    Reset Session
+  </button>
+</div>
+
+<!-- ── KPI Row ── -->
+<div class="kpi-row" id="kpiRow">
+  <div class="kpi-card"><div class="kpi-label">Total Records</div><div class="kpi-value" id="kpi-households">-</div><div class="kpi-sub" id="kpi-households-sub"></div></div>
+  <div class="kpi-card"><div class="kpi-label">Kids Due</div><div class="kpi-value" id="kpi-kids">-</div><div class="kpi-sub" id="kpi-kids-sub"></div></div>
+  <div class="kpi-card"><div class="kpi-label">Tx Value</div><div class="kpi-value" id="kpi-value">-</div><div class="kpi-sub" id="kpi-value-sub"></div></div>
+  <div class="kpi-card"><div class="kpi-label">Contacted</div><div class="kpi-value" id="kpi-contacted">0</div><div class="kpi-sub" id="kpi-contacted-sub">of 0 visible</div></div>
+  <div class="kpi-card"><div class="kpi-label">SMS Sent</div><div class="kpi-value" id="kpi-sms">0</div><div class="kpi-sub" id="kpi-sms-sub">via Twilio</div></div>
+  <div class="kpi-card"><div class="kpi-label">Bad Numbers</div><div class="kpi-value" id="kpi-bad-phones" style="color:var(--red);">0</div><div class="kpi-sub" id="kpi-bad-sub">need review</div></div>
+  <div class="kpi-card"><div class="kpi-label">High Risk</div><div class="kpi-value" id="kpi-high-risk" style="color:var(--red);">0</div><div class="kpi-sub" id="kpi-risk-sub">patients</div></div>
+</div>
+
+<!-- ── Main Content ── -->
+<div class="main">
+  <!-- Recall View -->
+  <div id="view-recall" class="view-panel">
+    <div class="table-wrap">
+      <div class="table-header">
+        <h3>Hygiene Recall — Due Next 30 Days</h3>
+        <span class="table-count" id="recall-count">Loading...</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="recall-table">
+          <thead><tr>
+            <th data-sort="household" class="sortable">Family / ID <span class="sort-arrow">↕</span></th>
+            <th data-sort="phone" class="sortable">Phone <span class="sort-arrow">↕</span></th>
+            <th>Email</th>
+            <th data-sort="risk" class="sortable" title="Score: Days overdue/plan age + Fee + Kids due + Bad phone + GA. 1=Low, 2-3=Med, 4+=High">Risk <span class="sort-arrow">↕</span></th>
+            <th data-sort="kids" class="sortable">Kids Due <span class="sort-arrow">↕</span></th>
+            <th>Names</th>
+            <th data-sort="suggest_date" class="sortable">Suggest Date <span class="sort-arrow">↕</span></th>
+            <th data-sort="office" class="sortable">Office <span class="sort-arrow">↕</span></th>
+            <th data-sort="provider" class="sortable">Provider <span class="sort-arrow">↕</span></th>
+            <th>History</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody id="recall-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overdue View -->
+  <div id="view-overdue" class="view-panel" style="display:none;">
+    <div class="table-wrap">
+      <div class="table-header">
+        <h3>Past Due Hygiene Recall</h3>
+        <span class="table-count" id="overdue-count">Loading...</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="overdue-table">
+          <thead><tr>
+            <th data-sort="household" class="sortable">Family / ID <span class="sort-arrow">↕</span></th>
+            <th data-sort="phone" class="sortable">Phone <span class="sort-arrow">↕</span></th>
+            <th>Email</th>
+            <th data-sort="risk" class="sortable" title="Score: Days overdue/plan age + Fee + Kids due + Bad phone + GA. 1=Low, 2-3=Med, 4+=High">Risk <span class="sort-arrow">↕</span></th>
+            <th data-sort="kids" class="sortable">Kids Due <span class="sort-arrow">↕</span></th>
+            <th>Names</th>
+            <th data-sort="overdue" class="sortable">Days Overdue <span class="sort-arrow">↕</span></th>
+            <th data-sort="office" class="sortable">Office <span class="sort-arrow">↕</span></th>
+            <th data-sort="provider" class="sortable">Provider <span class="sort-arrow">↕</span></th>
+            <th>History</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody id="overdue-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Treatment View -->
+  <div id="view-treatment" class="view-panel" style="display:none;">
+    <div class="table-wrap">
+      <div class="table-header">
+        <h3>Unscheduled Treatment – Action Required</h3>
+        <span class="table-count" id="treatment-count">Loading...</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="treatment-table">
+          <thead><tr>
+            <th data-sort="patient" class="sortable">Patient <span class="sort-arrow">↕</span></th>
+            <th>Age</th>
+            <th data-sort="phone" class="sortable">Phone <span class="sort-arrow">↕</span></th>
+            <th>Email</th>
+            <th data-sort="risk" class="sortable" title="Score: Days overdue/plan age + Fee + Kids due + Bad phone + GA. 1=Low, 2-3=Med, 4+=High">Risk <span class="sort-arrow">↕</span></th>
+            <th>Treatment</th>
+            <th data-sort="fee" class="sortable">Fee <span class="sort-arrow">↕</span></th>
+            <th data-sort="plan_age" class="sortable">Plan Age <span class="sort-arrow">↕</span></th>
+            <th data-sort="time" class="sortable">Time Needed <span class="sort-arrow">↕</span></th>
+            <th data-sort="provider" class="sortable">Tx Doctor <span class="sort-arrow">↕</span></th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody id="treatment-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Needs Review View -->
+  <div id="view-review" class="view-panel" style="display:none;">
+    <div class="table-wrap">
+      <div class="table-header">
+        <h3>Needs Review — Bad Numbers, Failed Sends & Missing Data</h3>
+        <span class="table-count" id="review-count">Loading...</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="review-table">
+          <thead><tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Issue</th>
+            <th>Source List</th>
+            <th>Office</th>
+            <th>Last Attempt</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody id="review-body"></tbody>
+        </table>
+      </div>
+    </div>
+  <!-- Leaderboard View -->
+  <div id="view-leaderboard" class="view-panel" style="display:none;">
+    <div class="table-wrap">
+      <div class="table-header">
+        <h3>Doctor Leaderboard — Production & Treatment KPIs</h3>
+        <span class="table-count" id="leaderboard-count">Loading...</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="leaderboard-table">
+          <thead><tr>
+            <th>Provider</th>
+            <th>Status</th>
+            <th>Unscheduled Pts</th>
+            <th>Unscheduled $</th>
+            <th>Avg Days Pending</th>
+            <th>Scheduling Rate</th>
+            <th>MTD Patients</th>
+            <th>MTD Production</th>
+          </tr></thead>
+          <tbody id="leaderboard-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Guide Section ── -->
+  <div class="guide-section">
+    <div class="guide-toggle" onclick="toggleGuide()">
+      <span id="guideToggleIcon">▶</span>
+      <span>Guide</span>
+    </div>
+    <div id="guideContent" class="guide-content" style="display:none;">
+      <dl>
+        <dt>Household ID</dt>
+        <dd>Responsible party ID representing the family unit</dd>
+
+        <dt>Kids Due</dt>
+        <dd>Number of children overdue in the household</dd>
+
+        <dt>Days Overdue</dt>
+        <dd>Capped at 365 days for prioritization purposes</dd>
+
+        <dt>Last Hygiene Office</dt>
+        <dd>Office where last cleaning occurred</dd>
+
+        <dt>Highlighted Rows</dt>
+        <dd>Indicates last hygiene office ≠ last visit office</dd>
+
+        <dt>Risk Scoring (Low / Med / High)</dt>
+        <dd>Computed from multiple factors: <strong>Days overdue</strong> (>90d=+1, >180d=+2, >270d=+3), <strong>Treatment plan age</strong> (>30d=+1, >90d=+2, >180d=+3), <strong>Fee</strong> (≥$1k=+1, ≥$3k=+2), <strong>Kids due</strong> (≥2=+1, ≥4=+2), <strong>Bad phone</strong> (+1), <strong>GA/Block</strong> (+1). Score: 1=Low, 2-3=Med, 4+=High.</dd>
+
+        <dt>Time Needed (Treatment tab)</dt>
+        <dd>SDF=30min, Sealants=30min, Single-tooth restorative=45min. GA cases shown separately. "Recall OK" means sealants alone may be done at next recall exam.</dd>
+
+        <dt>Pending Tx (Overdue tab)</dt>
+        <dd>Treatment plans older than 6 months appear in the Overdue tab with a "Pending Tx" tag so parents get ONE call about both overdue hygiene and outstanding treatment.</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<!-- ── SMS Modal ── -->
+<div class="modal-overlay" id="smsModal">
+  <div class="modal">
+    <h3 id="smsModalTitle">Send SMS</h3>
+    <div id="twilioNotice" style="background:rgba(232,200,74,0.15); padding:0.75rem; border-radius:6px; margin-bottom:1rem; border:1px solid rgba(232,200,74,0.3); font-size:0.8rem; color:var(--yellow); display:none;">
+      <strong>Notice:</strong> Twilio not yet connected — messages will be logged only. <a href="javascript:openSettingsModal()" style="color:inherit; text-decoration:underline;">Configure Twilio</a>
+    </div>
+    <div id="departedNotice" style="background:rgba(196,72,90,0.15); padding:0.75rem; border-radius:6px; margin-bottom:1rem; border:1px solid rgba(196,72,90,0.3); font-size:0.8rem; color:var(--red); display:none;"></div>
+    <div style="margin-bottom:0.75rem;">
+      <label style="font-size:0.8rem; color:var(--text2);">To:</label>
+      <div id="smsTo" style="font-weight:600;"></div>
+    </div>
+    <div id="smsContactHistory" style="margin-bottom:0.75rem;"></div>
+    <label style="font-size:0.8rem; color:var(--text2);">Template:</label>
+    <select class="template-select" id="smsTemplate" onchange="loadTemplate()">
+      <option value="recall">Hygiene Recall Reminder</option>
+      <option value="overdue">Overdue Recall Notice</option>
+      <option value="treatment">Treatment Scheduling</option>
+      <option value="confirm">Appointment Confirmation</option>
+      <option value="custom">Custom Message</option>
+    </select>
+    <label style="font-size:0.8rem; color:var(--text2);">Message:</label>
+    <textarea id="smsBody"></textarea>
+    <div style="font-size:0.75rem; color:var(--text3); margin-top:0.3rem;">
+      <span id="charCount">0</span>/160 characters | Reply STOP to unsubscribe
+    </div>
+    <div style="margin-top:0.5rem;">
+      <label style="font-size:0.8rem; color:var(--text2); display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+        <input type="checkbox" id="smsZcode" checked style="accent-color:var(--accent);">
+        Write Z-code after successful send (marks patient as contacted)
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeSmsModal()">Cancel</button>
+      <button class="btn-primary" onclick="sendSMS()">Send SMS</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Bulk SMS Modal ── -->
+<div class="modal-overlay" id="bulkSmsModal">
+  <div class="modal">
+    <h3>Bulk SMS — <span id="bulkCount">0</span> Recipients</h3>
+    <p style="color:var(--text2); font-size:0.85rem; margin-bottom:1rem;">
+      This will send to all visible, non-contacted households/patients with valid phone numbers.
+    </p>
+    <label style="font-size:0.8rem; color:var(--text2);">Template:</label>
+    <select class="template-select" id="bulkTemplate" onchange="loadBulkTemplate()">
+      <option value="recall">Hygiene Recall Reminder</option>
+      <option value="overdue">Overdue Recall Notice</option>
+      <option value="treatment">Treatment Scheduling</option>
+    </select>
+    <label style="font-size:0.8rem; color:var(--text2);">Message (uses {name}, {office}, {kids} placeholders):</label>
+    <textarea id="bulkBody"></textarea>
+    <div style="margin-top:0.5rem;">
+      <label style="font-size:0.8rem; color:var(--text2); display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+        <input type="checkbox" id="bulkZcode" checked style="accent-color:var(--accent);">
+        Write Z-code for each successful send
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeBulkModal()">Cancel</button>
+      <button class="btn-primary" onclick="sendBulkSMS()">Send to All</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Contact History Modal ── -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal" style="max-width:600px;">
+    <h3 id="historyTitle">Contact History</h3>
+    <div id="historyContent"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeHistoryModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Settings Modal ── -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal settings-modal">
+    <h3>Settings</h3>
+    <div class="settings-field">
+      <label for="twilioUrl">Twilio Function URL</label>
+      <input type="text" id="twilioUrl" placeholder="https://your-twilio-function.com" value="">
+    </div>
+    <div class="settings-field">
+      <label for="staffName">Default Staff Name</label>
+      <input type="text" id="staffName" placeholder="Your name" value="">
+    </div>
+    <div style="background:rgba(98,146,160,0.1); padding:0.75rem; border-radius:6px; margin-bottom:1rem; font-size:0.8rem; color:var(--text2);">
+      <strong>Current Status:</strong> <span id="twilioStatus" style="color:var(--red);">Not connected</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeSettingsModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveSettingsModal()">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Footer ── -->
+<div class="footer">
+  Puget Sound Pediatric Dentistry — Call Sheet Dashboard v2.0<br>
+  Data refreshed daily from Denticon via Azure SQL &nbsp;|&nbsp;
+  SMS powered by Twilio &nbsp;|&nbsp;
+  Contact history tracked per cycle &nbsp;|&nbsp;
+  <a href="index.html">Back to Control Tower</a>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// ── Configuration ──
+// ════════════════════════════════════════
+const DATA_URL = 'data/callsheets.json';
+const LOG_URL = 'data/callsheet_log.json';
+const DOCTORS_URL = 'data/doctors.json';
+const TWILIO_FUNCTION_URL = ''; // Set to your Twilio Function URL for SMS sending
+
+// ── Departed Doctors ──
+let departedDoctors = {};  // { "Kirk": {display, last_day, note}, "Ping": {...}, ... }
+
+async function loadDoctors() {
+  try {
+    const resp = await fetch(DOCTORS_URL + '?t=' + Date.now());
+    if (!resp.ok) return;
+    const doc = await resp.json();
+    if (doc.terminated) {
+      Object.entries(doc.terminated).forEach(([key, val]) => {
+        // Extract last name for matching: "Kirk, Kyle" → "Kirk"
+        const lastName = key.split(',')[0].trim();
+        departedDoctors[lastName.toLowerCase()] = {
+          display: val.display || key,
+          last_day: val.last_day || val.termination_date || '',
+          note: val.note || 'No longer with practice'
+        };
+      });
+    }
+    console.log('Loaded departed doctors:', Object.keys(departedDoctors));
+  } catch (e) {
+    console.warn('Could not load doctors.json:', e);
+  }
+}
+
+function isDepartedDoctor(providerName) {
+  if (!providerName) return false;
+  const name = providerName.toLowerCase().trim();
+  for (const [key, val] of Object.entries(departedDoctors)) {
+    if (name.includes(key)) return val;
+  }
+  return false;
+}
+
+function departedBadge(providerName) {
+  const dep = isDepartedDoctor(providerName);
+  if (!dep) return '';
+  return ` <span class="risk-badge risk-high" style="font-size:0.55rem;cursor:help;background:rgba(196,72,90,0.25);border:1px solid rgba(196,72,90,0.5);" title="${esc(dep.display)} left the practice (${esc(dep.last_day)}). Use caution — family may be upset.">DOCTOR LEFT</span>`;
+}
+
+// ── SMS Templates ──
+const TEMPLATES = {
+  recall: `Hi {name}! This is Puget Sound Pediatric Dentistry ({office}). It's time to schedule {kids}'s hygiene appointment. We have openings this month! Reply YES to confirm or call us at {phone}. Reply STOP to opt out.`,
+  overdue: `Hi {name}! This is Puget Sound Pediatric Dentistry ({office}). Our records show {kids} is overdue for a dental cleaning. Let's get them scheduled — reply YES or call {phone}. Reply STOP to opt out.`,
+  treatment: `Hi {name}! This is Puget Sound Pediatric Dentistry. {patient} has recommended treatment that hasn't been scheduled yet. We'd love to get this taken care of — please reply or call {phone}. Reply STOP to opt out.`,
+  confirm: `Hi {name}! This is a reminder that {kids} has an upcoming appointment at Puget Sound Pediatric Dentistry ({office}). Please reply C to confirm or R to reschedule. Reply STOP to opt out.`,
+  custom: ''
+};
+
+const OFFICE_PHONES = {
+  'STANWOOD': '(360) 339-8000',
+  'EVERETT': '(425) 595-4246',
+  'LAKE STEVENS': '(425) 367-4149',
+  'MARYSVILLE': '(360) 659-8100',
+  'MONROE': '(360) 863-8700'
+};
+
+// ════════════════════════════════════════
+// ── State ──
+// ════════════════════════════════════════
+let data = { recall: [], overdue: [], treatment: [], contact_log: [], bad_phones: [], generated: '' };
+let currentView = 'recall';
+let contactedSet = new Set();   // Track contacted rows by ID (this session)
+let skippedSet = new Set();
+let smsSentCount = 0;
+let currentSmsTarget = null;
+let contactLog = [];            // Persistent contact log: [{id, phone, type, status, date, message}]
+let badPhoneSet = new Set();    // Phone numbers confirmed bad
+let reviewItems = [];           // Aggregated items needing attention
+let actionHistory = [];         // Track actions for undo: [{row_id, action_type, timestamp, prev_state}]
+let appSettings = {};           // Store settings: {twilioFunctionUrl, staffName}
+
+// ════════════════════════════════════════
+// ── Settings ──
+// ════════════════════════════════════════
+function loadSettings() {
+  try {
+    const saved = localStorage.getItem('pspd_settings');
+    appSettings = saved ? JSON.parse(saved) : {};
+  } catch { appSettings = {}; }
+}
+
+function saveSettings() {
+  try {
+    localStorage.setItem('pspd_settings', JSON.stringify(appSettings));
+  } catch { /* silent */ }
+}
+
+// ════════════════════════════════════════
+// ── Data Loading ──
+// ════════════════════════════════════════
+async function loadData() {
+  try {
+    // Load doctors.json in parallel with callsheets data
+    await loadDoctors();
+    const resp = await fetch(DATA_URL + '?t=' + Date.now());
+    if (!resp.ok) throw new Error('No data file');
+    data = await resp.json();
+    document.getElementById('last-updated').textContent = 'Updated: ' + (data.generated || 'Unknown');
+    document.getElementById('badge-connected').className = 'badge badge-green';
+    document.getElementById('badge-connected').textContent = 'Connected';
+
+    // Load contact log from data (server-side) + localStorage (session-side)
+    if (data.contact_log) {
+      contactLog = [...data.contact_log];
+    }
+    // Merge session log from memory
+    const sessionLog = loadSessionLog();
+    sessionLog.forEach(entry => {
+      if (!contactLog.find(e => e.id === entry.id && e.date === entry.date)) {
+        contactLog.push(entry);
+      }
+    });
+
+    // Load bad phones from data
+    if (data.bad_phones) {
+      data.bad_phones.forEach(p => badPhoneSet.add(p));
+    }
+
+    // Rebuild contacted set from log
+    contactLog.forEach(entry => {
+      if (entry.status === 'sent' || entry.status === 'delivered') {
+        contactedSet.add(entry.row_id);
+      }
+    });
+
+    // Route treatment plans >6 months to overdue tab with "Pending Tx" tag
+    routeOldTreatmentToOverdue();
+    // Route empty tx_summary records to review tab
+    routeEmptyTxToReview();
+
+    buildReviewList();
+    loadSettings();
+    render();
+  } catch (e) {
+    showEmpty();
+  }
+}
+
+function loadSessionLog() {
+  try {
+    const raw = localStorage.getItem('pspd_contact_log');
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveSessionLog(entry) {
+  try {
+    // Add staff name from login
+    var staffUser = localStorage.getItem('pspd_user') || 'unknown';
+    var staffNames = { drlugo:'Dr. Lugo', tanya:'Tanya', angela:'Angela', staff:'Front Desk' };
+    entry.staff = staffNames[staffUser] || staffUser;
+
+    const log = loadSessionLog();
+    log.push(entry);
+    localStorage.setItem('pspd_contact_log', JSON.stringify(log));
+  } catch { /* silent */ }
+}
+
+function exportContactLog() {
+  var log = loadSessionLog();
+  if (!log.length) { alert('No contact history to export.'); return; }
+  var csv = 'Date,Staff,Type,Status,RowID,Phone,Name,Message\\n';
+  for (var i = 0; i < log.length; i++) {
+    var e = log[i];
+    csv += [e.date||'', e.staff||'', e.type||'', e.status||'', e.row_id||'', e.phone||'', (e.name||'').replace(/,/g,' '), (e.message||'').replace(/,/g,' ')].join(',') + '\\n';
+  }
+  var blob = new Blob([csv], {type:'text/csv'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'contact_log_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+}
+
+function showEmpty() {
+  document.getElementById('badge-connected').className = 'badge badge-red';
+  document.getElementById('badge-connected').textContent = 'No Data';
+  document.getElementById('last-updated').textContent = 'Waiting for first data refresh';
+  ['recall-body', 'overdue-body', 'treatment-body', 'review-body'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:3rem;color:var(--text3);">
+      No data loaded. Push <code>data/callsheets.json</code> via GitHub Actions to populate this dashboard.
+    </td></tr>`;
+  });
+}
+
+// ════════════════════════════════════════
+// ── Treatment Routing ──
+// ════════════════════════════════════════
+function routeOldTreatmentToOverdue() {
+  // Treatment plans >6 months old → move to overdue tab with "Pending Tx" tag
+  // so parents get ONE call about both overdue hygiene and outstanding treatment
+  if (!data.treatment) return;
+  const stale = [];
+  const keep = [];
+  data.treatment.forEach(r => {
+    if ((r.days_since_plan || 0) > 180 && (r.tx_summary || '').trim()) {
+      // Create an overdue-style record from the treatment record
+      stale.push({
+        // Overdue fields — use patient info as pseudo-household
+        household_id: 'ptx-' + r.patient_id,
+        household: r.name || (r.lname + ', ' + r.fname),
+        phone: r.phone,
+        email: r.email,
+        kids_due_count: 1,
+        kids_due_names: r.name || (r.fname || ''),
+        days_overdue: r.days_since_plan || 0,
+        last_office: r.office || '',
+        last_provider: r.diagnosing_provider || '',
+        // Preserve original treatment info
+        tx_summary: r.tx_summary,
+        total_fee: r.total_fee,
+        days_since_plan: r.days_since_plan,
+        patient_id: r.patient_id,
+        _pending_tx: true,  // flag for "Pending Tx" badge
+        _source: 'treatment'
+      });
+    } else {
+      keep.push(r);
+    }
+  });
+  data.treatment = keep;
+  if (!data.overdue) data.overdue = [];
+  data.overdue = [...data.overdue, ...stale];
+}
+
+function routeEmptyTxToReview() {
+  // Treatment records with no active tx_summary → move to Review tab
+  if (!data.treatment) return;
+  const keep = [];
+  data.treatment.forEach(r => {
+    const tx = (r.tx_summary || '').trim();
+    if (!tx) {
+      // Will be picked up by buildReviewList instead
+      r._empty_tx = true;
+    }
+    keep.push(r);
+  });
+  // Don't remove from treatment array — buildReviewList will flag them
+  // but we DO want to remove them from the treatment view
+  data.treatment = keep.filter(r => !r._empty_tx);
+  // Store them separately so buildReviewList can access them
+  data._empty_tx_records = keep.filter(r => r._empty_tx);
+}
+
+// ════════════════════════════════════════
+// ── Review List Builder ──
+// ════════════════════════════════════════
+function buildReviewList() {
+  reviewItems = [];
+
+  // Load purged items from session storage
+  const purgedSet = loadPurgedSet();
+
+  // Find bad phones across all lists
+  const allRecords = [
+    ...(data.recall || []).map(r => ({...r, source: 'recall', row_id: 'recall-' + r.household_id})),
+    ...(data.overdue || []).map(r => ({...r, source: 'overdue', row_id: 'overdue-' + r.household_id})),
+    ...(data.treatment || []).map(r => ({...r, source: 'treatment', row_id: 'tx-' + r.patient_id})),
+  ];
+
+  allRecords.forEach(r => {
+    const phone = (r.phone || '').replace(/[\s\-\(\)\.]/g, '');
+    const name = r.household || r.name || (r.lname + ', ' + r.fname);
+    const office = r.last_office || r.office || '';
+
+    // Skip purged items
+    if (purgedSet.has(r.row_id)) return;
+
+    // Bad/unknown data: name is "Unknown", empty, or just "Family"
+    const cleanName = (name || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    if (!cleanName || cleanName === 'unknown' || cleanName === 'family' || cleanName === ', ' || cleanName === 'unknown family' || /^[,\s]+$/.test(cleanName)) {
+      reviewItems.push({
+        name: name || '(Unknown)', phone: r.phone || '(none)',
+        issue: 'Missing Patient Name — Clean in Denticon',
+        source: r.source, office, row_id: r.row_id,
+        last_attempt: '-',
+        issue_class: 'badge-purple',
+        purge_eligible: true
+      });
+    }
+
+    // Bad phone: only flag KNOWN bad (SMS failed) and truly empty phones
+    // Only flag for recall/overdue (where phone outreach is primary action)
+    if (badPhoneSet.has(r.phone) || badPhoneSet.has(phone)) {
+      reviewItems.push({
+        name, phone: r.phone, issue: 'Bad Number — SMS Failed',
+        source: r.source, office, row_id: r.row_id,
+        last_attempt: getLastAttempt(r.row_id),
+        issue_class: 'badge-red'
+      });
+    } else if ((!phone || phone.length < 7) && (r.source === 'recall' || r.source === 'overdue')) {
+      // Only flag completely missing phones for recall/overdue — not every treatment record
+      reviewItems.push({
+        name, phone: r.phone || '(none)', issue: 'No Phone on File',
+        source: r.source, office, row_id: r.row_id,
+        last_attempt: '-',
+        issue_class: 'badge-yellow'
+      });
+    }
+
+    // Failed sends from log
+    const failedSend = contactLog.find(e => e.row_id === r.row_id && (e.status === 'failed' || e.status === 'undelivered'));
+    if (failedSend && !badPhoneSet.has(phone)) {
+      reviewItems.push({
+        name, phone: r.phone, issue: `SMS ${failedSend.status}: ${failedSend.error || 'unknown'}`,
+        source: r.source, office, row_id: r.row_id,
+        last_attempt: failedSend.date,
+        issue_class: 'badge-red'
+      });
+    }
+  });
+
+  // Add $0 fee treatment plans — sealants etc. always have fees
+  (data.treatment || []).forEach(r => {
+    const rowId = 'tx-' + r.patient_id;
+    if (purgedSet.has(rowId)) return;
+    if ((!r.total_fee || Number(r.total_fee) === 0) && (r.tx_summary || '').trim()) {
+      const name = r.name || (r.lname + ', ' + r.fname);
+      reviewItems.push({
+        name,
+        phone: r.phone || '(none)',
+        issue: '$0 Fee — Verify Treatment Plan in Denticon',
+        source: 'treatment',
+        office: r.office || '',
+        row_id: rowId,
+        last_attempt: '-',
+        issue_class: 'badge-yellow'
+      });
+    }
+  });
+
+  // Add empty treatment plan records (no tx_summary) — needs chart review
+  if (data._empty_tx_records) {
+    data._empty_tx_records.forEach(r => {
+      const name = r.name || (r.lname + ', ' + r.fname);
+      const rowId = 'tx-' + r.patient_id;
+      if (purgedSet.has(rowId)) return;
+      if (reviewedSet && reviewedSet.has(rowId)) return;
+      reviewItems.push({
+        name,
+        phone: r.phone || '(none)',
+        issue: 'No Active Treatment Listed — Review Chart',
+        source: 'treatment',
+        office: r.office || '',
+        row_id: rowId,
+        last_attempt: '-',
+        issue_class: 'badge-yellow'
+      });
+    });
+  }
+}
+
+function loadPurgedSet() {
+  try {
+    const raw = localStorage.getItem('pspd_purged');
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch { return new Set(); }
+}
+
+function purgeRecord(rowId) {
+  try {
+    const purged = loadPurgedSet();
+    purged.add(rowId);
+    localStorage.setItem('pspd_purged', JSON.stringify([...purged]));
+  } catch { /* silent */ }
+  // Also remove from the active data arrays so it won't show in other tabs
+  reviewItems = reviewItems.filter(r => r.row_id !== rowId);
+  renderReview();
+  updateKPIs();
+}
+
+function getLastAttempt(rowId) {
+  const entries = contactLog.filter(e => e.row_id === rowId);
+  if (!entries.length) return '-';
+  const last = entries[entries.length - 1];
+  return last.date || '-';
+}
+
+// ════════════════════════════════════════
+// ── View Switching ──
+// ════════════════════════════════════════
+function switchView(view) {
+  currentView = view;
+  // Reset column sort when switching tabs so old sorts don't carry over
+  columnSortKey = null;
+  columnSortDir = 'asc';
+  document.querySelectorAll('th.sortable .sort-arrow').forEach(a => a.textContent = '↕');
+  document.querySelectorAll('th.sortable').forEach(h => h.classList.remove('sorted'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  document.querySelectorAll('.view-panel').forEach(p => p.style.display = 'none');
+  document.getElementById('view-' + view).style.display = 'block';
+  render();
+}
+
+// ════════════════════════════════════════
+// ── Filtering & Sorting ──
+// ════════════════════════════════════════
+function getFilteredData() {
+  if (currentView === 'review') return reviewItems;
+
+  const office = document.getElementById('officeFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const sort = document.getElementById('sortSelect').value;
+
+  let items = [...(data[currentView] || [])];
+
+  // Filter out test patients (patient names starting with "Test,")
+  items = items.filter(r => {
+    const name = (r.name || r.fname || '').toLowerCase();
+    return !name.startsWith('test,') && !name.startsWith('test ');
+  });
+
+  // Overdue tab: limit to within 1 year overdue (matches PowerBI filter)
+  if (currentView === 'overdue') {
+    items = items.filter(r => (r.days_overdue || 0) <= 365);
+  }
+
+  if (office !== 'ALL') {
+    items = items.filter(r => {
+      const loc = (r.office || r.last_office || '').toUpperCase();
+      return loc.includes(office);
+    });
+  }
+
+  // Status filter
+  if (status === 'not-contacted') {
+    items = items.filter(r => {
+      const id = getRowId(r);
+      return !contactedSet.has(id) && !hasZcode(r);
+    });
+  } else if (status === 'contacted') {
+    items = items.filter(r => {
+      const id = getRowId(r);
+      return contactedSet.has(id);
+    });
+  } else if (status === 'z-coded') {
+    items = items.filter(r => hasZcode(r));
+  } else if (status === 'bad-phone') {
+    items = items.filter(r => {
+      const phone = (r.phone || '').replace(/[\s\-\(\)\.]/g, '');
+      return badPhoneSet.has(r.phone) || badPhoneSet.has(phone) || !phone || phone.length < 10;
+    });
+  }
+
+  if (search) {
+    items = items.filter(r => {
+      const str = JSON.stringify(r).toLowerCase();
+      return str.includes(search);
+    });
+  }
+
+  // Sort — column header sort takes priority over dropdown
+  if (columnSortKey) {
+    items.sort(columnSortCompare);
+  } else {
+    items.sort((a, b) => {
+      switch (sort) {
+        case 'name': return (a.name || a.household || '').localeCompare(b.name || b.household || '');
+        case 'fee-desc': return (b.total_fee || 0) - (a.total_fee || 0);
+        case 'overdue-desc': return (b.days_overdue || 0) - (a.days_overdue || 0);
+        case 'kids-desc': return (b.kids_due_count || 0) - (a.kids_due_count || 0);
+        case 'risk-desc': return riskScore(b) - riskScore(a);
+        default: return (b.priority_score || 0) - (a.priority_score || 0);
+      }
+    });
+  }
+
+  return items;
+}
+
+function getRowId(r) {
+  if (currentView === 'treatment') return 'tx-' + r.patient_id;
+  return currentView + '-' + r.household_id;
+}
+
+function hasZcode(r) {
+  return r.z_code_date && r.z_code_date !== '';
+}
+
+// riskScore() is defined below with riskBadge()
+
+function applyFilters() { render(); }
+
+// ════════════════════════════════════════
+// ── Column Header Sort ──
+// ════════════════════════════════════════
+let columnSortKey = null;
+let columnSortDir = 'asc'; // toggles asc/desc
+
+function initColumnSort() {
+  document.querySelectorAll('th.sortable[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      if (columnSortKey === key) {
+        columnSortDir = columnSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        columnSortKey = key;
+        columnSortDir = 'asc';
+      }
+      // Clear dropdown to avoid conflict
+      document.getElementById('sortSelect').value = 'priority';
+      // Update visual indicators
+      document.querySelectorAll('th.sortable').forEach(h => h.classList.remove('sorted'));
+      th.classList.add('sorted');
+      th.querySelector('.sort-arrow').textContent = columnSortDir === 'asc' ? '↑' : '↓';
+      // Re-render
+      render();
+    });
+  });
+}
+
+function columnSortCompare(a, b) {
+  if (!columnSortKey) return 0;
+  let va, vb;
+  switch (columnSortKey) {
+    case 'household':
+      va = (a.household || a.name || '').toLowerCase();
+      vb = (b.household || b.name || '').toLowerCase();
+      return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    case 'patient':
+      va = ((a.lname || '') + (a.fname || '') + (a.name || '')).toLowerCase();
+      vb = ((b.lname || '') + (b.fname || '') + (b.name || '')).toLowerCase();
+      return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    case 'phone':
+      va = (a.phone || '').replace(/\D/g, '');
+      vb = (b.phone || '').replace(/\D/g, '');
+      return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    case 'risk':
+      va = riskScore(a); vb = riskScore(b);
+      return columnSortDir === 'asc' ? va - vb : vb - va;
+    case 'kids':
+      va = a.kids_due_count || 0; vb = b.kids_due_count || 0;
+      return columnSortDir === 'asc' ? va - vb : vb - va;
+    case 'overdue':
+      va = a.days_overdue || 0; vb = b.days_overdue || 0;
+      return columnSortDir === 'asc' ? va - vb : vb - va;
+    case 'suggest_date':
+      va = a.suggest_date || ''; vb = b.suggest_date || '';
+      return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    case 'office':
+      va = (a.last_office || a.office || '').toLowerCase();
+      vb = (b.last_office || b.office || '').toLowerCase();
+      return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    case 'provider':
+      va = (a.last_provider || a.diagnosing_provider || '').toLowerCase();
+      vb = (b.last_provider || b.diagnosing_provider || '').toLowerCase();
+      return columnSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    case 'fee':
+      va = a.total_fee || 0; vb = b.total_fee || 0;
+      return columnSortDir === 'asc' ? va - vb : vb - va;
+    case 'plan_age':
+      va = a.days_since_plan || 0; vb = b.days_since_plan || 0;
+      return columnSortDir === 'asc' ? va - vb : vb - va;
+    case 'time':
+      va = parseInt(a.booking_slot) || 0; vb = parseInt(b.booking_slot) || 0;
+      return columnSortDir === 'asc' ? va - vb : vb - va;
+    default: return 0;
+  }
+}
+
+// ════════════════════════════════════════
+// ── Household Name Formatter ──
+// ════════════════════════════════════════
+function formatHousehold(r) {
+  // Extract a short family name from kids_due_names and append the household_id
+  // e.g. "Melanie Ramos (9); Marianna Ramos (12)..." → "Ramos Family"
+  const names = r.kids_due_names || r.household || '';
+  let familyName = '';
+
+  // Try to extract last name from first child: "FirstName LastName (age)"
+  const firstChild = names.split(';')[0].trim();
+  const nameMatch = firstChild.match(/^(.+?)\s*\(\d+\)$/);
+  if (nameMatch) {
+    const parts = nameMatch[1].trim().split(/\s+/);
+    if (parts.length >= 2) {
+      familyName = parts[parts.length - 1]; // last word = last name
+    } else {
+      familyName = parts[0];
+    }
+  } else {
+    // Fallback: try the household field which ends with " Family"
+    const hh = r.household || '';
+    if (hh.endsWith(' Family')) {
+      // Just grab last name from first person listed
+      const p = hh.split(';')[0].trim().split(/\s+/);
+      familyName = p.length >= 2 ? p[p.length - 1].replace(/\(\d+\)/g, '').trim() : p[0];
+    } else {
+      familyName = hh.substring(0, 20);
+    }
+  }
+
+  const hid = r.household_id || '';
+  return `<strong>${esc(familyName)} Family</strong>
+    <span style="display:block;font-size:0.7rem;color:var(--text3);">ID: ${hid}</span>`;
+}
+
+// ════════════════════════════════════════
+// ── Risk Badge Renderer ──
+// ════════════════════════════════════════
+function riskBadge(r) {
+  // First check if the data includes explicit risk
+  const risk = (r.risk || r.caries_risk || '').toString().toLowerCase();
+  if (risk === 'high' || risk === '3') return '<span class="risk-badge risk-high">High</span>';
+  if (risk === 'medium' || risk === 'moderate' || risk === '2') return '<span class="risk-badge risk-medium">Med</span>';
+  if (risk === 'low' || risk === '1') return '<span class="risk-badge risk-low">Low</span>';
+
+  // Compute risk from available data when no explicit risk field
+  return computeRiskBadge(r);
+}
+
+function computeRiskBadge(r) {
+  let score = 0;
+  let factors = [];
+
+  // Factor 1: Days overdue (overdue/recall tabs)
+  const daysOverdue = r.days_overdue || 0;
+  if (daysOverdue > 270) { score += 3; factors.push(`${daysOverdue}d overdue (+3)`); }
+  else if (daysOverdue > 180) { score += 2; factors.push(`${daysOverdue}d overdue (+2)`); }
+  else if (daysOverdue > 90) { score += 1; factors.push(`${daysOverdue}d overdue (+1)`); }
+
+  // Factor 2: Treatment plan age (treatment tab) — days_since_plan
+  const daysSincePlan = r.days_since_plan || 0;
+  if (daysSincePlan > 180) { score += 3; factors.push(`Tx plan ${daysSincePlan}d old (+3)`); }
+  else if (daysSincePlan > 90) { score += 2; factors.push(`Tx plan ${daysSincePlan}d old (+2)`); }
+  else if (daysSincePlan > 30) { score += 1; factors.push(`Tx plan ${daysSincePlan}d old (+1)`); }
+
+  // Factor 3: Fee size (higher fee = higher urgency for treatment)
+  const fee = r.total_fee || 0;
+  if (fee >= 3000) { score += 2; factors.push(`Fee $${Number(fee).toLocaleString()} (+2)`); }
+  else if (fee >= 1000) { score += 1; factors.push(`Fee $${Number(fee).toLocaleString()} (+1)`); }
+
+  // Factor 4: Number of kids due (more kids = more urgency)
+  const kids = r.kids_due_count || 0;
+  if (kids >= 4) { score += 2; factors.push(`${kids} kids due (+2)`); }
+  else if (kids >= 2) { score += 1; factors.push(`${kids} kids due (+1)`); }
+
+  // Factor 5: Bad phone (can't reach them)
+  if (isBadPhone(r.phone)) { score += 1; factors.push('Bad phone (+1)'); }
+
+  // Factor 6: GA/block cases are inherently higher urgency
+  const tx = (r.tx_summary || '').toLowerCase();
+  if (/\bga\b|\bblock\b/.test(tx)) { score += 1; factors.push('GA/Block case (+1)'); }
+
+  const tooltip = factors.length > 0
+    ? `Score ${score}: ${factors.join(', ')}`
+    : 'No risk factors detected';
+
+  if (score >= 4) return `<span class="risk-badge risk-high" title="${esc(tooltip)}" style="cursor:help;">High</span>`;
+  if (score >= 2) return `<span class="risk-badge risk-medium" title="${esc(tooltip)}" style="cursor:help;">Med</span>`;
+  if (score >= 1) return `<span class="risk-badge risk-low" title="${esc(tooltip)}" style="cursor:help;">Low</span>`;
+  return '<span style="color:var(--text3);font-size:0.7rem;">—</span>';
+}
+
+function riskScore(r) {
+  const risk = (r.risk || r.caries_risk || '').toString().toLowerCase();
+  if (risk === 'high' || risk === '3') return 3;
+  if (risk === 'medium' || risk === 'moderate' || risk === '2') return 2;
+  if (risk === 'low' || risk === '1') return 1;
+
+  // Compute from available data
+  let score = 0;
+  const daysOverdue = r.days_overdue || 0;
+  if (daysOverdue > 270) score += 3;
+  else if (daysOverdue > 180) score += 2;
+  else if (daysOverdue > 90) score += 1;
+  const daysSincePlan = r.days_since_plan || 0;
+  if (daysSincePlan > 180) score += 3;
+  else if (daysSincePlan > 90) score += 2;
+  else if (daysSincePlan > 30) score += 1;
+  const fee = r.total_fee || 0;
+  if (fee >= 3000) score += 2;
+  else if (fee >= 1000) score += 1;
+  const kids = r.kids_due_count || 0;
+  if (kids >= 4) score += 2;
+  else if (kids >= 2) score += 1;
+  if (isBadPhone(r.phone)) score += 1;
+  const tx = (r.tx_summary || '').toLowerCase();
+  if (/\bga\b|\bblock\b/.test(tx)) score += 1;
+
+  if (score >= 4) return 3;
+  if (score >= 2) return 2;
+  if (score >= 1) return 1;
+  return 0;
+}
+
+// ════════════════════════════════════════
+// ── Phone Status Renderer ──
+// ════════════════════════════════════════
+function phoneCell(phone, name, office, kids, rowId) {
+  const cleanPhone = (phone || '').replace(/[\s\-\(\)\.]/g, '');
+  let statusClass = 'phone-unknown';
+  let icon = '?';
+
+  if (badPhoneSet.has(phone) || badPhoneSet.has(cleanPhone)) {
+    statusClass = 'phone-bad';
+    icon = '✗';
+  } else if (!cleanPhone || cleanPhone.length < 10) {
+    statusClass = 'phone-bad';
+    icon = '!';
+  } else if (contactLog.some(e => e.phone === phone && (e.status === 'delivered' || e.status === 'sent'))) {
+    statusClass = 'phone-ok';
+    icon = '✓';
+  }
+
+  return `<div class="phone-status ${statusClass}">
+    <span class="phone-icon">${icon}</span>
+    <span class="phone-link" onclick="openSmsModal('${esc(phone)}','${esc(name)}','${esc(office)}','${esc(kids)}','${rowId}')">${esc(phone || '—')}</span>
+  </div>`;
+}
+
+// ════════════════════════════════════════
+// ── Contact History Chips ──
+// ════════════════════════════════════════
+function contactHistoryCell(rowId, record) {
+  // Build a combined history: dental visit info + contact log
+  let parts = [];
+  const isTxRow = rowId && rowId.startsWith('tx-');
+
+  // Show dental/hygiene history from the data record (skip for treatment rows — they have dedicated columns)
+  if (record && !isTxRow) {
+    if (record.most_recent_hygiene) {
+      parts.push(`<span style="font-size:0.68rem;color:var(--text2);">Last hyg: ${record.most_recent_hygiene}</span>`);
+    }
+    if (record.last_visit_date && record.last_visit_date !== record.most_recent_hygiene) {
+      parts.push(`<span style="font-size:0.68rem;color:var(--text3);">Last visit: ${record.last_visit_date}</span>`);
+    }
+    // Next appointment info
+    if (record.next_appt_date) {
+      const typeLabel = record.next_appt_type || '';
+      const isTxAppt = /treatment|tx|restor|ga|block|sdf/i.test(typeLabel);
+      const apptColor = isTxAppt ? 'var(--green)' : 'var(--text3)';
+      parts.push(`<span style="font-size:0.65rem;color:${apptColor};">Next: ${record.next_appt_date} (${typeLabel})</span>`);
+    } else if (record.next_appt_type === 'No Future Appt') {
+      parts.push(`<span style="font-size:0.65rem;color:var(--red);">No future appt</span>`);
+    }
+  }
+
+  // Show contact log entries (from this session / centralized tracking)
+  const entries = contactLog.filter(e => e.row_id === rowId);
+  if (entries.length) {
+    const chips = entries.slice(-3).map(e => {
+      let cls = 'sms';
+      let label = 'SMS';
+      if (e.type === 'call') { cls = 'call'; label = 'Called'; }
+      if (e.type === 'email') { cls = 'email'; label = 'Email'; }
+      if (e.type === 'weave') { cls = 'weave'; label = 'Weave'; }
+      if (e.type === 'zcode') { cls = 'zcode'; label = 'Z-code'; }
+      if (e.status === 'failed' || e.status === 'undelivered') { cls = 'failed'; label += ' ✗'; }
+      const staffTag = e.staff ? ` (${e.staff})` : '';
+      const dt = e.date ? e.date.split(' ')[0] : '';
+      return `<span class="ch-chip ${cls}" title="${esc(e.date || '')}${staffTag}: ${esc(e.message || '').slice(0,50)}">${label} ${dt}</span>`;
+    });
+    parts.push(chips.join(''));
+    parts.push(`<button class="btn-log" onclick="showHistory('${rowId}')" title="View full history" style="padding:0.15rem 0.4rem;">...</button>`);
+  } else if (!parts.length) {
+    return '<span style="color:var(--text3);font-size:0.7rem;">No history</span>';
+  }
+
+  return `<div class="contact-history-row">${parts.join('<br>')}</div>`;
+}
+
+// ════════════════════════════════════════
+// ── Rendering (with pagination) ──
+// ════════════════════════════════════════
+const PAGE_SIZE = 50;
+let currentPage = 1;
+let currentFilteredItems = [];
+
+function render() {
+  if (currentView === 'review') { renderReview(); updateKPIs(); return; }
+  if (currentView === 'leaderboard') { renderLeaderboard(); return; }
+  currentPage = 1;
+  currentFilteredItems = getFilteredData();
+  if (currentView === 'recall') renderRecall(currentFilteredItems);
+  else if (currentView === 'overdue') renderOverdue(currentFilteredItems);
+  else renderTreatment(currentFilteredItems);
+  updateKPIs();
+}
+
+function loadMoreRows() {
+  currentPage++;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const slice = currentFilteredItems.slice(start, start + PAGE_SIZE);
+  if (!slice.length) return;
+  const bodyId = currentView === 'recall' ? 'recall-body' : currentView === 'overdue' ? 'overdue-body' : 'treatment-body';
+  const body = document.getElementById(bodyId);
+  // Remove existing "load more" row
+  const loadMoreRow = body.querySelector('.load-more-row');
+  if (loadMoreRow) loadMoreRow.remove();
+  // Append new rows
+  let html;
+  if (currentView === 'recall') html = slice.map(r => renderRecallRow(r)).join('');
+  else if (currentView === 'overdue') html = slice.map(r => renderOverdueRow(r)).join('');
+  else html = slice.map(r => renderTreatmentRow(r)).join('');
+  body.insertAdjacentHTML('beforeend', html);
+  // Add another load more button if needed
+  const shown = currentPage * PAGE_SIZE;
+  if (shown < currentFilteredItems.length) {
+    const remaining = currentFilteredItems.length - shown;
+    body.insertAdjacentHTML('beforeend', loadMoreHtml(remaining));
+  }
+}
+
+function loadMoreHtml(remaining) {
+  const cols = currentView === 'treatment' ? 12 : 11;
+  return `<tr class="load-more-row"><td colspan="${cols}" style="text-align:center;padding:1rem;">
+    <button onclick="loadMoreRows()" style="background:var(--green);color:#fff;border:none;padding:0.5rem 2rem;border-radius:6px;cursor:pointer;font-size:0.9rem;">
+      Show Next ${Math.min(PAGE_SIZE, remaining)} of ${remaining} Remaining
+    </button>
+    <button onclick="loadAllRows()" style="background:transparent;color:var(--text2);border:1px solid var(--border);padding:0.5rem 1.5rem;border-radius:6px;cursor:pointer;font-size:0.85rem;margin-left:0.5rem;">
+      Show All
+    </button>
+  </td></tr>`;
+}
+
+function loadAllRows() {
+  const bodyId = currentView === 'recall' ? 'recall-body' : currentView === 'overdue' ? 'overdue-body' : 'treatment-body';
+  const body = document.getElementById(bodyId);
+  const loadMoreRow = body.querySelector('.load-more-row');
+  if (loadMoreRow) loadMoreRow.remove();
+  const start = currentPage * PAGE_SIZE;
+  const slice = currentFilteredItems.slice(start);
+  let html;
+  if (currentView === 'recall') html = slice.map(r => renderRecallRow(r)).join('');
+  else if (currentView === 'overdue') html = slice.map(r => renderOverdueRow(r)).join('');
+  else html = slice.map(r => renderTreatmentRow(r)).join('');
+  body.insertAdjacentHTML('beforeend', html);
+  currentPage = Math.ceil(currentFilteredItems.length / PAGE_SIZE);
+}
+
+function renderRecallRow(r) {
+  const id = 'recall-' + r.household_id;
+  const cls = contactedSet.has(id) ? 'row-contacted' : skippedSet.has(id) ? 'row-skipped' : isBadPhone(r.phone) ? 'row-bad-phone' : '';
+  return `<tr class="${cls}" id="${id}">
+    <td class="patient-name">${formatHousehold(r)}</td>
+    <td>${phoneCell(r.phone, r.household, r.last_office, r.kids_due_names, id)}</td>
+    <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
+    <td>${riskBadge(r)}</td>
+    <td><span class="badge badge-blue">${r.kids_due_count || 0}</span></td>
+    <td style="font-size:0.78rem;">${formatKidsWithGrad(r.kids_due_names)}</td>
+    <td>${esc(r.suggest_date || '-')}</td>
+    <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span></td>
+    <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}${departedBadge(r.last_provider)}</td>
+    <td>${contactHistoryCell(id, r)}</td>
+    <td>${actionBtns(id, r.phone)}</td>
+  </tr>`;
+}
+
+function renderRecall(items) {
+  const body = document.getElementById('recall-body');
+  document.getElementById('recall-count').textContent = items.length + ' households';
+  if (!items.length) { body.innerHTML = emptyRow(11); return; }
+  const page = items.slice(0, PAGE_SIZE);
+  body.innerHTML = page.map(r => renderRecallRow(r)).join('');
+  if (items.length > PAGE_SIZE) {
+    body.insertAdjacentHTML('beforeend', loadMoreHtml(items.length - PAGE_SIZE));
+  }
+}
+
+function renderOverdueRow(r) {
+  const id = 'overdue-' + r.household_id;
+  const cls = contactedSet.has(id) ? 'row-contacted' : skippedSet.has(id) ? 'row-skipped' : isBadPhone(r.phone) ? 'row-bad-phone' : '';
+  const daysClass = (r.days_overdue || 0) > 180 ? 'badge-red' : (r.days_overdue || 0) > 90 ? 'badge-orange' : 'badge-yellow';
+  const pendingTxTag = r._pending_tx ? '<span class="badge badge-yellow" style="font-size:0.55rem;margin-left:0.3rem;" title="Treatment plan >6mo — call about both hygiene and treatment">Pending Tx</span>' : '';
+  const txInfo = r._pending_tx && r.tx_summary ? `<br><span style="font-size:0.65rem;color:var(--text3);">Tx: ${esc(r.tx_summary.substring(0, 40))}${r.tx_summary.length > 40 ? '…' : ''}</span>` : '';
+  return `<tr class="${cls}" id="${id}">
+    <td class="patient-name">${formatHousehold(r)}${pendingTxTag}</td>
+    <td>${phoneCell(r.phone, r.household, r.last_office, r.kids_due_names, id)}</td>
+    <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
+    <td>${riskBadge(r)}</td>
+    <td><span class="badge badge-blue">${r.kids_due_count || 0}</span></td>
+    <td style="font-size:0.78rem;">${formatKidsWithGrad(r.kids_due_names)}${txInfo}</td>
+    <td><span class="badge ${daysClass}">${r.days_overdue || 0} days</span></td>
+    <td><span class="badge badge-orange">${esc(r.last_office || '-')}</span></td>
+    <td style="font-size:0.78rem;color:var(--text2);">${esc(r.last_provider || '-')}${departedBadge(r.last_provider)}</td>
+    <td>${contactHistoryCell(id, r)}</td>
+    <td>${actionBtns(id, r.phone)}</td>
+  </tr>`;
+}
+
+function renderOverdue(items) {
+  const body = document.getElementById('overdue-body');
+  document.getElementById('overdue-count').textContent = items.length + ' households';
+  if (!items.length) { body.innerHTML = emptyRow(11); return; }
+  const page = items.slice(0, PAGE_SIZE);
+  body.innerHTML = page.map(r => renderOverdueRow(r)).join('');
+  if (items.length > PAGE_SIZE) {
+    body.insertAdjacentHTML('beforeend', loadMoreHtml(items.length - PAGE_SIZE));
+  }
+}
+
+function renderTreatmentRow(r) {
+  const id = 'tx-' + r.patient_id;
+  const cls = contactedSet.has(id) ? 'row-contacted' : skippedSet.has(id) ? 'row-skipped' : isBadPhone(r.phone) ? 'row-bad-phone' : '';
+  // Show Pending Tx tag if this was merged from overdue logic
+  const pendingTag = r._pending_tx ? '<span class="badge badge-yellow" style="font-size:0.55rem;margin-left:0.3rem;">Pending Tx</span>' : '';
+  return `<tr class="${cls}" id="${id}">
+    <td class="patient-name">${esc(r.name || (r.lname + ', ' + r.fname))}${Number(r.age) >= 17 ? ' 🎓' : ''}</td>
+    <td class="patient-age">${r.age || '-'}${Number(r.age) >= 17 ? '<span style="display:block;font-size:0.6rem;color:var(--yellow);">Aging out</span>' : ''}</td>
+    <td>${phoneCell(r.phone, r.name || r.fname, '', '', id)}</td>
+    <td style="font-size:0.75rem;color:var(--text2);">${esc(r.email || '-')}</td>
+    <td>${riskBadge(r)}</td>
+    <td>${renderTxTags(r.tx_summary || r.treatment || '')}${pendingTag}</td>
+    <td class="fee">${r.total_fee && Number(r.total_fee) > 0 ? '$' + Number(r.total_fee).toLocaleString() : '<span class="risk-badge risk-medium" style="font-size:0.6rem;cursor:help;" title="Fee is $0 or missing — verify treatment plan in Denticon">$0 — Verify</span>'}</td>
+    <td>${planAgeCell(r)}</td>
+    <td>${timeNeededCell(r)}</td>
+    <td style="font-size:0.78rem;color:var(--text2);">${esc(r.diagnosing_provider || '-')}${departedBadge(r.diagnosing_provider)}</td>
+    <td>${actionBtns(id, r.phone)}</td>
+  </tr>`;
+}
+
+function renderTreatment(items) {
+  const body = document.getElementById('treatment-body');
+  document.getElementById('treatment-count').textContent = items.length + ' patients';
+  if (!items.length) { body.innerHTML = emptyRow(12); return; }
+  const page = items.slice(0, PAGE_SIZE);
+  body.innerHTML = page.map(r => renderTreatmentRow(r)).join('');
+  if (items.length > PAGE_SIZE) {
+    body.insertAdjacentHTML('beforeend', loadMoreHtml(items.length - PAGE_SIZE));
+  }
+}
+
+function renderReview() {
+  const body = document.getElementById('review-body');
+  const items = reviewItems;
+  document.getElementById('review-count').textContent = items.length + ' items';
+  if (!items.length) {
+    body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--green);">
+      All clear — no issues to review.</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = items.map(r => {
+    const purgeBtn = r.purge_eligible
+      ? `<button class="btn-skip" onclick="purgeRecord('${esc(r.row_id)}')" title="Suppress this record — hide from all lists this cycle" style="font-size:0.6rem;">Purge</button>`
+      : '';
+    return `<tr>
+      <td class="patient-name">${esc(r.name)}</td>
+      <td>${esc(r.phone)}</td>
+      <td><span class="badge ${r.issue_class}">${esc(r.issue)}</span></td>
+      <td><span class="badge badge-blue">${esc(r.source)}</span></td>
+      <td><span class="badge badge-orange">${esc(r.office || '-')}</span></td>
+      <td style="font-size:0.75rem;color:var(--text2);">${esc(r.last_attempt)}</td>
+      <td><button class="btn-review" onclick="flagReviewed('${esc(r.row_id)}')">Reviewed</button> ${purgeBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderLeaderboard() {
+  const body = document.getElementById('leaderboard-body');
+  const lb = data.doctor_leaderboard;
+  if (!lb || !lb.providers || lb.providers.length === 0) {
+    document.getElementById('leaderboard-count').textContent = 'No data';
+    body.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:3rem;color:var(--text3);">
+      No doctor leaderboard data. Run the callsheet refresh workflow to populate.</td></tr>`;
+    return;
+  }
+
+  const providers = lb.providers.sort((a, b) => (b.mtd_production || 0) - (a.mtd_production || 0));
+  document.getElementById('leaderboard-count').textContent = providers.length + ' providers';
+
+  body.innerHTML = providers.map((p, idx) => {
+    const dep = isDepartedDoctor(p.provider);
+    const statusBadge = dep
+      ? '<span class="risk-badge risk-high" style="font-size:0.6rem;">LEFT</span>'
+      : '<span class="badge badge-green" style="font-size:0.6rem;">Active</span>';
+    const rowStyle = dep ? 'opacity:0.5;' : '';
+    const rankBadge = !dep && idx < 3 ? `<span style="font-size:0.85rem;margin-right:0.3rem;">${['🥇','🥈','🥉'][idx]}</span>` : '';
+
+    const schedRate = p.scheduling_rate != null ? p.scheduling_rate + '%' : '-';
+    const schedColor = (p.scheduling_rate || 0) >= 50 ? 'var(--green)' : (p.scheduling_rate || 0) >= 25 ? 'var(--yellow)' : 'var(--red)';
+
+    return `<tr style="${rowStyle}">
+      <td class="patient-name">${rankBadge}${esc(p.provider)}</td>
+      <td>${statusBadge}</td>
+      <td><span class="badge badge-blue">${p.unscheduled_patients || 0}</span></td>
+      <td class="fee">${p.unscheduled_value ? '$' + Number(p.unscheduled_value).toLocaleString() : '-'}</td>
+      <td>${p.avg_days_pending ? Math.round(p.avg_days_pending) + 'd' : '-'}</td>
+      <td><span style="color:${schedColor};font-weight:600;">${schedRate}</span></td>
+      <td>${p.patients_seen_mtd || '-'}</td>
+      <td class="fee">${p.mtd_production ? '$' + Number(p.mtd_production).toLocaleString() : '-'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function bookingSlotCell(r) {
+  const tx = (r.tx_summary || r.treatment || '').toLowerCase();
+  let slot = r.booking_slot || '';
+  const isSdfOrSealant = /\bsdf\b|\bseal/.test(tx) && !/\bga\b|\bblock\b|\bssc\b|\bcrown\b|\bext/.test(tx);
+  if (isSdfOrSealant && (slot === '60' || slot === 60)) slot = '30';
+  const isGA = String(slot).toUpperCase() === 'GA' || /\bga\b|\bblock\b/.test(tx);
+  if (isGA) return `<span class="badge badge-red">GA</span>`;
+  return `<span class="badge badge-blue">${esc(String(slot) || '-')}</span>`;
+}
+
+function planAgeCell(r) {
+  const days = r.days_since_plan || 0;
+  if (days >= 180) {
+    const mo = Math.round(days / 30);
+    return `<span class="risk-badge risk-high" style="font-size:0.6rem;">${mo}mo</span>`;
+  } else if (days >= 90) {
+    const mo = Math.round(days / 30);
+    return `<span class="risk-badge risk-medium" style="font-size:0.6rem;">${mo}mo</span>`;
+  } else {
+    return `<span style="font-size:0.72rem;color:var(--text2);">${days}d</span>`;
+  }
+}
+
+function timeNeededCell(r) {
+  const tx = (r.tx_summary || r.treatment || '').toLowerCase();
+  const isGA = /\bga\b|\bblock\b/.test(tx);
+  if (isGA) return `<span class="badge badge-red">GA</span>`;
+
+  // Determine time needed based on treatment type
+  const isSdfOnly = /\bsdf\b/.test(tx) && !/\bssc\b|\bcrown\b|\bext|\bga\b|\bblock\b/.test(tx);
+  const isSealantOnly = /\bseal/.test(tx) && !/\bssc\b|\bcrown\b|\bext|\bga\b|\bblock\b|\bsdf\b/.test(tx);
+  const isSdfAndSealant = /\bsdf\b/.test(tx) && /\bseal/.test(tx) && !/\bssc\b|\bcrown\b|\bext|\bga\b|\bblock\b/.test(tx);
+  const isSingleRestorative = /\b(ssc|crown|rest|comp|pulp)\b/.test(tx) && !/\bga\b|\bblock\b/.test(tx);
+
+  let minutes = r.booking_slot || '';
+  if (isSdfOnly || isSealantOnly || isSdfAndSealant) {
+    minutes = '30';
+  } else if (isSingleRestorative && (!minutes || minutes === '60' || Number(minutes) === 60)) {
+    minutes = '45';
+  }
+
+  // Sealant-only flag
+  if (isSealantOnly) {
+    return `<div style="text-align:center;line-height:1.4;">
+      <span class="badge badge-blue">${minutes}min</span><br>
+      <span class="badge badge-yellow" style="font-size:0.55rem;padding:0.1rem 0.3rem;" title="Sealants alone — may be done at next recall exam">Recall OK</span>
+    </div>`;
+  }
+
+  if (minutes) {
+    return `<span class="badge badge-blue">${minutes}min</span>`;
+  }
+  return `<span style="color:var(--text3);font-size:0.7rem;">—</span>`;
+}
+
+function renderTxTags(summary) {
+  if (!summary) return '<span class="risk-badge risk-medium" style="font-size:0.6rem;cursor:help;" title="Treatment plan exists but no procedures listed — review charting">No Tx Listed</span>';
+  const tags = summary.split(/[,;]+/).map(s => s.trim()).filter(Boolean);
+  return '<div class="tx-summary">' + tags.map(t => {
+    const tl = t.toLowerCase();
+    let cls = '';
+    if (tl.includes('ga') || tl.includes('block')) cls = 'ga';
+    else if (tl.includes('ssc') || tl.includes('crown')) cls = 'ssc';
+    else if (tl.includes('ext')) cls = 'ext';
+    else if (tl.includes('seal')) cls = 'seal';
+    else if (tl.includes('sdf')) cls = 'sdf';
+    return `<span class="tx-tag ${cls}">${esc(t)}</span>`;
+  }).join('') + '</div>';
+}
+
+function actionBtns(id, phone) {
+  const isBad = isBadPhone(phone);
+  const hasUndo = actionHistory.some(a => a.row_id === id && a.is_last);
+  return `<div class="action-btns" style="position:relative;">
+    ${phone && !isBad ? `<div style="position:relative;display:inline-block;">
+      <button class="btn-weave" onclick="showWeavePopup(event, '${esc(phone)}', '${id}')" title="Contact via Weave">💬 Weave</button>
+      <div id="weave-popup-${id}" class="weave-popup" style="display:none;position:absolute;top:100%;left:0;margin-top:0.3rem;">
+        <button onclick="weaveOpenApp('${esc(phone)}');closeWeavePopup('${id}')">Open in Weave</button>
+        <button onclick="markWeave('${id}');closeWeavePopup('${id}')">Mark as Contacted</button>
+      </div>
+    </div>` : ''}
+    ${phone && !isBad ? `<button class="btn-sms" onclick="openSmsModalById('${id}')" title="Send SMS via Twilio">SMS</button>` : ''}
+    ${phone && !isBad ? `<button class="btn-call" onclick="markCalled('${id}')" title="Log phone call" style="background:rgba(98,146,160,0.15);color:var(--accent);border:1px solid rgba(98,146,160,0.3);padding:0.2rem 0.5rem;border-radius:4px;font-size:0.65rem;cursor:pointer;font-family:inherit;">Called</button>` : ''}
+    <button class="btn-email" onclick="markEmailed('${id}')" title="Log email sent" style="background:rgba(139,123,165,0.15);color:var(--purple);border:1px solid rgba(139,123,165,0.3);padding:0.2rem 0.5rem;border-radius:4px;font-size:0.65rem;cursor:pointer;font-family:inherit;">Emailed</button>
+    ${hasUndo ? `<button class="btn-undo" onclick="undoLastAction('${id}')" title="Undo last action">↩ Undo</button>` : ''}
+    ${isBad ? '<span class="badge badge-red" style="font-size:0.6rem;">Bad #</span>' : ''}
+    <button class="btn-done" onclick="markDone('${id}')" title="Mark contacted (other)">Done</button>
+    <button class="btn-skip" onclick="markSkip('${id}')" title="Skip">Skip</button>
+  </div>`;
+}
+
+function isBadPhone(phone) {
+  if (!phone) return true;
+  const clean = phone.replace(/[\s\-\(\)\.]/g, '');
+  return badPhoneSet.has(phone) || badPhoneSet.has(clean) || clean.length < 10;
+}
+
+function emptyRow(cols) {
+  return `<tr><td colspan="${cols}" style="text-align:center;padding:2rem;color:var(--text3);">No records match your filters.</td></tr>`;
+}
+
+// ════════════════════════════════════════
+// ── KPI Updates ──
+// ════════════════════════════════════════
+function updateKPIs() {
+  const items = currentView === 'review' ? reviewItems : getFilteredData();
+  const view = currentView;
+
+  let households = 0, kids = 0, value = 0;
+  if (view === 'recall' || view === 'overdue') {
+    households = items.length;
+    kids = items.reduce((s, r) => s + (r.kids_due_count || 0), 0);
+  } else if (view === 'treatment') {
+    households = items.length;
+    kids = items.length;
+    value = items.reduce((s, r) => s + (r.total_fee || 0), 0);
+  } else {
+    households = items.length;
+  }
+
+  document.getElementById('kpi-households').textContent = households.toLocaleString();
+  document.getElementById('kpi-households-sub').textContent =
+    view === 'treatment' ? 'patients' : view === 'review' ? 'issues' : 'households';
+  document.getElementById('kpi-kids').textContent = kids.toLocaleString();
+  document.getElementById('kpi-kids-sub').textContent = view === 'treatment' ? 'need scheduling' : 'kids due';
+
+  if (value > 0) {
+    document.getElementById('kpi-value').textContent = '$' + value.toLocaleString();
+    document.getElementById('kpi-value-sub').textContent = 'unscheduled tx value';
+  } else {
+    document.getElementById('kpi-value').textContent = '-';
+    document.getElementById('kpi-value-sub').textContent = view === 'recall' ? 'N/A for recall' : '';
+  }
+
+  // Contacted count (across all views)
+  const allItems = [...(data.recall || []), ...(data.overdue || []), ...(data.treatment || [])];
+  const totalContacted = allItems.filter(r => {
+    const id = r.patient_id ? 'tx-' + r.patient_id
+      : (r.household_id ? 'recall-' + r.household_id : '');
+    return contactedSet.has(id);
+  }).length;
+  document.getElementById('kpi-contacted').textContent = totalContacted;
+  document.getElementById('kpi-contacted-sub').textContent = `this session`;
+  document.getElementById('kpi-sms').textContent = smsSentCount;
+
+  // Bad phones
+  const badCount = reviewItems.filter(r => r.issue.includes('Bad') || r.issue.includes('Missing') || r.issue.includes('Invalid')).length;
+  document.getElementById('kpi-bad-phones').textContent = badCount;
+
+  // High risk
+  const allPts = [...(data.recall || []), ...(data.overdue || []), ...(data.treatment || [])];
+  const highRiskCount = allPts.filter(r => riskScore(r) >= 3).length;
+  document.getElementById('kpi-high-risk').textContent = highRiskCount;
+}
+
+// ════════════════════════════════════════
+// ── Row Actions ──
+// ════════════════════════════════════════
+function markDone(id) {
+  recordAction(id, 'done');
+  contactedSet.add(id);
+  skippedSet.delete(id);
+  const row = document.getElementById(id);
+  if (row) { row.className = 'row-contacted'; }
+  updateKPIs();
+}
+
+function markSkip(id) {
+  recordAction(id, 'skip');
+  skippedSet.add(id);
+  contactedSet.delete(id);
+  const row = document.getElementById(id);
+  if (row) { row.className = 'row-skipped'; }
+  updateKPIs();
+}
+
+function markWeave(id) {
+  recordAction(id, 'weave');
+  // Log as "contacted via Weave" — no SMS sent from dashboard
+  const logEntry = {
+    row_id: id,
+    phone: '',
+    name: '',
+    type: 'weave',
+    message: 'Contacted via Weave app',
+    date: new Date().toISOString().split('T')[0] + ' ' + new Date().toTimeString().slice(0,5),
+    status: 'sent',
+  };
+  // Pull phone/name from row data
+  const items = getFilteredData();
+  const view = currentView;
+  let record;
+  if (view === 'treatment') {
+    record = items.find(r => 'tx-' + r.patient_id === id);
+    if (record) { logEntry.phone = record.phone || ''; logEntry.name = record.name || record.fname || ''; }
+  } else {
+    record = items.find(r => view + '-' + r.household_id === id);
+    if (record) { logEntry.phone = record.phone || ''; logEntry.name = record.household || ''; }
+  }
+  contactLog.push(logEntry);
+  saveSessionLog(logEntry);
+  contactedSet.add(id);
+  skippedSet.delete(id);
+  const row = document.getElementById(id);
+  if (row) { row.className = 'row-contacted'; }
+  updateKPIs();
+  render();
+}
+
+function markCalled(id) {
+  recordAction(id, 'call');
+  const logEntry = {
+    row_id: id,
+    phone: '',
+    name: '',
+    type: 'call',
+    message: 'Phone call logged',
+    date: new Date().toISOString().split('T')[0] + ' ' + new Date().toTimeString().slice(0,5),
+    status: 'sent',
+  };
+  // Try to pull phone/name from the row data
+  const items = getFilteredData();
+  const view = currentView;
+  let record;
+  if (view === 'treatment') {
+    record = items.find(r => 'tx-' + r.patient_id === id);
+    if (record) { logEntry.phone = record.phone || ''; logEntry.name = record.name || record.fname || ''; }
+  } else {
+    record = items.find(r => view + '-' + r.household_id === id);
+    if (record) { logEntry.phone = record.phone || ''; logEntry.name = record.household || ''; }
+  }
+  contactLog.push(logEntry);
+  saveSessionLog(logEntry);
+  contactedSet.add(id);
+  skippedSet.delete(id);
+  const row = document.getElementById(id);
+  if (row) { row.className = 'row-contacted'; }
+  updateKPIs();
+  render();
+}
+
+function markEmailed(id) {
+  recordAction(id, 'email');
+  const logEntry = {
+    row_id: id,
+    phone: '',
+    name: '',
+    type: 'email',
+    message: 'Email sent',
+    date: new Date().toISOString().split('T')[0] + ' ' + new Date().toTimeString().slice(0,5),
+    status: 'sent',
+  };
+  const items = getFilteredData();
+  const view = currentView;
+  let record;
+  if (view === 'treatment') {
+    record = items.find(r => 'tx-' + r.patient_id === id);
+    if (record) { logEntry.phone = record.phone || ''; logEntry.name = record.name || record.fname || ''; }
+  } else {
+    record = items.find(r => view + '-' + r.household_id === id);
+    if (record) { logEntry.phone = record.phone || ''; logEntry.name = record.household || ''; }
+  }
+  contactLog.push(logEntry);
+  saveSessionLog(logEntry);
+  contactedSet.add(id);
+  skippedSet.delete(id);
+  const row = document.getElementById(id);
+  if (row) { row.className = 'row-contacted'; }
+  updateKPIs();
+  render();
+}
+
+function flagReviewed(rowId) {
+  reviewItems = reviewItems.filter(r => r.row_id !== rowId);
+  renderReview();
+  updateKPIs();
+}
+
+// ════════════════════════════════════════
+// ── Undo System ──
+// ════════════════════════════════════════
+function recordAction(rowId, actionType) {
+  // Remove existing undo markers for this row
+  actionHistory.forEach(a => { if (a.row_id === rowId) a.is_last = false; });
+
+  // Save current state before action
+  const prevState = {
+    inContacted: contactedSet.has(rowId),
+    inSkipped: skippedSet.has(rowId),
+    logEntriesCount: contactLog.filter(e => e.row_id === rowId).length
+  };
+
+  actionHistory.push({
+    row_id: rowId,
+    action_type: actionType,
+    timestamp: new Date().getTime(),
+    prev_state: prevState,
+    is_last: true
+  });
+}
+
+function undoLastAction(rowId) {
+  const action = actionHistory.find(a => a.row_id === rowId && a.is_last);
+  if (!action) return;
+
+  const prevState = action.prev_state;
+
+  // Restore contact state
+  if (prevState.inContacted) {
+    contactedSet.add(rowId);
+  } else {
+    contactedSet.delete(rowId);
+  }
+
+  if (prevState.inSkipped) {
+    skippedSet.add(rowId);
+  } else {
+    skippedSet.delete(rowId);
+  }
+
+  // Remove last log entry for this row
+  const rowLog = contactLog.filter(e => e.row_id === rowId);
+  if (rowLog.length > prevState.logEntriesCount) {
+    const lastEntry = rowLog[rowLog.length - 1];
+    const idx = contactLog.indexOf(lastEntry);
+    if (idx > -1) contactLog.splice(idx, 1);
+
+    // Also remove from session log
+    const sessionLog = loadSessionLog();
+    const sessionIdx = sessionLog.findIndex(e => e.row_id === rowId && e.date === lastEntry.date && e.type === lastEntry.type);
+    if (sessionIdx > -1) {
+      sessionLog.splice(sessionIdx, 1);
+      localStorage.setItem('pspd_contact_log', JSON.stringify(sessionLog));
+    }
+  }
+
+  // Remove action from history
+  const actionIdx = actionHistory.indexOf(action);
+  if (actionIdx > -1) actionHistory.splice(actionIdx, 1);
+
+  // Update row visual
+  const row = document.getElementById(rowId);
+  if (row) {
+    if (prevState.inContacted) {
+      row.className = 'row-contacted';
+    } else if (prevState.inSkipped) {
+      row.className = 'row-skipped';
+    } else {
+      row.className = '';
+    }
+  }
+
+  updateKPIs();
+  render();
+}
+
+function resetAllSession() {
+  if (!confirm('Are you sure you want to reset ALL session state? This will clear:\n- All contacted records\n- All skipped records\n- All action history\n- SMS count\n\nThis cannot be undone.')) {
+    return;
+  }
+
+  contactedSet.clear();
+  skippedSet.clear();
+  actionHistory = [];
+  smsSentCount = 0;
+  localStorage.removeItem('pspd_contact_log');
+
+  render();
+  updateKPIs();
+}
+
+// ════════════════════════════════════════
+// ── Weave Integration ──
+// ════════════════════════════════════════
+function showWeavePopup(event, phone, rowId) {
+  event.stopPropagation();
+  const popup = document.getElementById('weave-popup-' + rowId);
+  if (!popup) return;
+
+  // Close any other open popups
+  document.querySelectorAll('.weave-popup').forEach(p => {
+    if (p.id !== 'weave-popup-' + rowId) p.style.display = 'none';
+  });
+
+  popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+
+  // Close on outside click
+  if (popup.style.display === 'block') {
+    setTimeout(() => {
+      document.addEventListener('click', function closePopup(e) {
+        if (!popup.contains(e.target) && e.target.closest('button') !== event.target) {
+          popup.style.display = 'none';
+          document.removeEventListener('click', closePopup);
+        }
+      });
+    }, 0);
+  }
+}
+
+function closeWeavePopup(rowId) {
+  const popup = document.getElementById('weave-popup-' + rowId);
+  if (popup) popup.style.display = 'none';
+}
+
+function weaveOpenApp(phone) {
+  // Generate Weave deep link
+  const cleanPhone = phone.replace(/[\s\-\(\)\.]/g, '');
+  const weaveUrl = 'weave://messages?phone=' + encodeURIComponent(cleanPhone);
+
+  // Try to open the Weave app
+  window.location.href = weaveUrl;
+
+  // Fallback: if app doesn't exist, show message
+  setTimeout(() => {
+    alert('Opening Weave app... If it doesn\'t open, please make sure you have the Weave app installed.');
+  }, 500);
+}
+
+// ════════════════════════════════════════
+// ── Settings Modal ──
+// ════════════════════════════════════════
+function openSettingsModal() {
+  document.getElementById('twilioUrl').value = appSettings.twilioFunctionUrl || '';
+  document.getElementById('staffName').value = appSettings.staffName || '';
+
+  // Show Twilio status
+  const twilioStatus = document.getElementById('twilioStatus');
+  if (TWILIO_FUNCTION_URL || appSettings.twilioFunctionUrl) {
+    twilioStatus.textContent = 'Connected';
+    twilioStatus.style.color = 'var(--green)';
+  } else {
+    twilioStatus.textContent = 'Not connected';
+    twilioStatus.style.color = 'var(--red)';
+  }
+
+  document.getElementById('settingsModal').classList.add('show');
+}
+
+function closeSettingsModal() {
+  document.getElementById('settingsModal').classList.remove('show');
+}
+
+function saveSettingsModal() {
+  const twilioUrl = document.getElementById('twilioUrl').value.trim();
+  const staffName = document.getElementById('staffName').value.trim();
+
+  appSettings.twilioFunctionUrl = twilioUrl;
+  appSettings.staffName = staffName;
+  saveSettings();
+
+  alert('Settings saved!');
+  closeSettingsModal();
+}
+
+// ════════════════════════════════════════
+// ── Guide Toggle ──
+// ════════════════════════════════════════
+function toggleGuide() {
+  const content = document.getElementById('guideContent');
+  const icon = document.getElementById('guideToggleIcon');
+
+  if (content.style.display === 'none') {
+    content.style.display = 'block';
+    icon.textContent = '▼';
+  } else {
+    content.style.display = 'none';
+    icon.textContent = '▶';
+  }
+}
+
+// ════════════════════════════════════════
+// ── SMS Modal ──
+// ════════════════════════════════════════
+function openSmsModal(phone, name, office, kids, rowId) {
+  currentSmsTarget = { phone, name, office, kids, rowId };
+  document.getElementById('smsTo').textContent = `${name} — ${phone}`;
+  document.getElementById('smsModalTitle').textContent = `SMS to ${name}`;
+
+  // Show contact history in modal
+  const historyHtml = contactHistoryCell(rowId);
+  document.getElementById('smsContactHistory').innerHTML =
+    `<div style="font-size:0.75rem;color:var(--text3);margin-bottom:0.5rem;">Previous contact:</div>${historyHtml}`;
+
+  // Show Twilio notice if not connected
+  const twilioNotice = document.getElementById('twilioNotice');
+  const hasConnection = TWILIO_FUNCTION_URL || appSettings.twilioFunctionUrl;
+  twilioNotice.style.display = hasConnection ? 'none' : 'block';
+
+  // Show departed doctor warning if applicable
+  let providerForRow = '';
+  const items = [...(data.recall || []), ...(data.overdue || []), ...(data.treatment || [])];
+  const matchRec = items.find(r =>
+    ('recall-' + r.household_id === rowId) ||
+    ('overdue-' + r.household_id === rowId) ||
+    ('tx-' + r.patient_id === rowId)
+  );
+  if (matchRec) providerForRow = matchRec.last_provider || matchRec.diagnosing_provider || '';
+  const depInfo = isDepartedDoctor(providerForRow);
+  const depNotice = document.getElementById('departedNotice');
+  if (depInfo && depNotice) {
+    depNotice.innerHTML = `<strong>Warning:</strong> ${esc(depInfo.display)} is no longer with the practice (left ${esc(depInfo.last_day)}). Use caution — this family may be upset. Consider a warm, empathetic tone and avoid mentioning the doctor by name.`;
+    depNotice.style.display = 'block';
+  } else if (depNotice) {
+    depNotice.style.display = 'none';
+  }
+
+  // Auto-select template based on current view
+  const tmpl = document.getElementById('smsTemplate');
+  if (currentView === 'recall') tmpl.value = 'recall';
+  else if (currentView === 'overdue') tmpl.value = 'overdue';
+  else tmpl.value = 'treatment';
+  loadTemplate();
+
+  document.getElementById('smsModal').classList.add('show');
+}
+
+function openSmsModalById(id) {
+  const items = getFilteredData();
+  const view = currentView;
+  let record;
+  if (view === 'treatment') {
+    record = items.find(r => 'tx-' + r.patient_id === id);
+    if (record) openSmsModal(record.phone, record.name || record.fname, '', '', id);
+  } else {
+    record = items.find(r => view + '-' + r.household_id === id);
+    if (record) openSmsModal(record.phone, record.household, record.last_office, record.kids_due_names, id);
+  }
+}
+
+function closeSmsModal() {
+  document.getElementById('smsModal').classList.remove('show');
+  currentSmsTarget = null;
+}
+
+function loadTemplate() {
+  const tmpl = document.getElementById('smsTemplate').value;
+  let body = TEMPLATES[tmpl] || '';
+  if (currentSmsTarget) {
+    body = body
+      .replace(/\{name\}/g, currentSmsTarget.name || '')
+      .replace(/\{office\}/g, currentSmsTarget.office || '')
+      .replace(/\{kids\}/g, currentSmsTarget.kids || '')
+      .replace(/\{patient\}/g, currentSmsTarget.name || '')
+      .replace(/\{phone\}/g, OFFICE_PHONES[currentSmsTarget.office?.toUpperCase()] || '(360) 339-8000');
+  }
+  const textarea = document.getElementById('smsBody');
+  textarea.value = body;
+  updateCharCount();
+}
+
+function updateCharCount() {
+  const len = document.getElementById('smsBody').value.length;
+  const el = document.getElementById('charCount');
+  el.textContent = len;
+  el.style.color = len > 160 ? 'var(--yellow)' : len > 320 ? 'var(--red)' : 'var(--text3)';
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const ta = document.getElementById('smsBody');
+  if (ta) ta.addEventListener('input', updateCharCount);
+});
+
+async function sendSMS() {
+  if (!currentSmsTarget || !currentSmsTarget.phone) {
+    alert('No phone number available for this contact.');
+    return;
+  }
+  const body = document.getElementById('smsBody').value;
+  if (!body.trim()) { alert('Please enter a message.'); return; }
+
+  const writeZcode = document.getElementById('smsZcode').checked;
+  const logEntry = {
+    row_id: currentSmsTarget.rowId,
+    phone: currentSmsTarget.phone,
+    name: currentSmsTarget.name,
+    type: 'sms',
+    message: body.slice(0, 100),
+    date: new Date().toISOString().split('T')[0] + ' ' + new Date().toTimeString().slice(0,5),
+    status: 'sent',
+    z_code: writeZcode,
+  };
+
+  if (!TWILIO_FUNCTION_URL && !appSettings.twilioFunctionUrl) {
+    // Demo mode
+    recordAction(currentSmsTarget.rowId, 'sms');
+    smsSentCount++;
+    contactLog.push(logEntry);
+    saveSessionLog(logEntry);
+    markDone(currentSmsTarget.rowId);
+    closeSmsModal();
+    updateKPIs();
+    console.log('[Demo] SMS to', currentSmsTarget.phone, ':', body);
+    if (writeZcode) console.log('[Demo] Z-code would be written for', currentSmsTarget.rowId);
+    return;
+  }
+
+  try {
+    const url = appSettings.twilioFunctionUrl || TWILIO_FUNCTION_URL;
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: currentSmsTarget.phone,
+        body: body,
+        office: currentSmsTarget.office,
+        row_id: currentSmsTarget.rowId,
+        write_zcode: writeZcode,
+      })
+    });
+    const result = await resp.json();
+    if (result.success) {
+      recordAction(currentSmsTarget.rowId, 'sms');
+      logEntry.status = 'sent';
+      logEntry.sid = result.sid;
+      smsSentCount++;
+      contactLog.push(logEntry);
+      saveSessionLog(logEntry);
+      markDone(currentSmsTarget.rowId);
+      closeSmsModal();
+      updateKPIs();
+    } else {
+      logEntry.status = 'failed';
+      logEntry.error = result.error;
+      contactLog.push(logEntry);
+      saveSessionLog(logEntry);
+
+      // Check for bad number errors
+      if (result.code === 21211 || result.code === 21614 || result.code === 21608) {
+        badPhoneSet.add(currentSmsTarget.phone);
+        buildReviewList();
+        render();
+      }
+      alert('SMS failed: ' + (result.error || 'Unknown error'));
+    }
+  } catch (e) {
+    logEntry.status = 'failed';
+    logEntry.error = e.message;
+    contactLog.push(logEntry);
+    saveSessionLog(logEntry);
+    alert('SMS error: ' + e.message);
+  }
+}
+
+// ════════════════════════════════════════
+// ── Bulk SMS ──
+// ════════════════════════════════════════
+function openBulkSMS() {
+  const items = getFilteredData().filter(r => {
+    const phone = r.phone || '';
+    const id = getRowId(r);
+    return phone && !isBadPhone(phone) && !contactedSet.has(id) && !skippedSet.has(id);
+  });
+  document.getElementById('bulkCount').textContent = items.length;
+  const tmpl = document.getElementById('bulkTemplate');
+  if (currentView === 'recall') tmpl.value = 'recall';
+  else if (currentView === 'overdue') tmpl.value = 'overdue';
+  else tmpl.value = 'treatment';
+  loadBulkTemplate();
+  document.getElementById('bulkSmsModal').classList.add('show');
+}
+function closeBulkModal() {
+  document.getElementById('bulkSmsModal').classList.remove('show');
+}
+function loadBulkTemplate() {
+  const tmpl = document.getElementById('bulkTemplate').value;
+  document.getElementById('bulkBody').value = TEMPLATES[tmpl] || '';
+}
+async function sendBulkSMS() {
+  const items = getFilteredData().filter(r => {
+    const phone = r.phone || '';
+    const id = getRowId(r);
+    return phone && !isBadPhone(phone) && !contactedSet.has(id) && !skippedSet.has(id);
+  });
+  const template = document.getElementById('bulkBody').value;
+  const writeZcode = document.getElementById('bulkZcode').checked;
+  if (!template.trim()) { alert('Enter a message template.'); return; }
+
+  let sent = 0, failed = 0;
+  for (const r of items) {
+    const name = r.household || r.name || r.fname || '';
+    const office = r.last_office || '';
+    const kids = r.kids_due_names || '';
+    const phone = r.phone;
+    const id = getRowId(r);
+    const body = template
+      .replace(/\{name\}/g, name)
+      .replace(/\{office\}/g, office)
+      .replace(/\{kids\}/g, kids)
+      .replace(/\{patient\}/g, name)
+      .replace(/\{phone\}/g, OFFICE_PHONES[office?.toUpperCase()] || '(360) 339-8000');
+
+    const logEntry = {
+      row_id: id, phone, name, type: 'sms',
+      message: body.slice(0, 100),
+      date: new Date().toISOString().split('T')[0] + ' ' + new Date().toTimeString().slice(0,5),
+      status: 'sent', z_code: writeZcode,
+    };
+
+    if (!TWILIO_FUNCTION_URL && !appSettings.twilioFunctionUrl) {
+      // Demo mode
+      recordAction(id, 'sms');
+      smsSentCount++;
+      sent++;
+      contactLog.push(logEntry);
+      saveSessionLog(logEntry);
+      markDone(id);
+      console.log(`[Demo Bulk] SMS to ${phone}: ${body.slice(0,60)}...`);
+    } else {
+      try {
+        const url = appSettings.twilioFunctionUrl || TWILIO_FUNCTION_URL;
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ to: phone, body, office, row_id: id, write_zcode: writeZcode })
+        });
+        const result = await resp.json();
+        if (result.success) {
+          recordAction(id, 'sms');
+          logEntry.status = 'sent';
+          smsSentCount++; sent++;
+          contactLog.push(logEntry);
+          saveSessionLog(logEntry);
+          markDone(id);
+        } else {
+          logEntry.status = 'failed'; logEntry.error = result.error;
+          contactLog.push(logEntry);
+          saveSessionLog(logEntry);
+          failed++;
+          if (result.code === 21211 || result.code === 21614) {
+            badPhoneSet.add(phone);
+          }
+        }
+      } catch (e) {
+        logEntry.status = 'failed'; logEntry.error = e.message;
+        contactLog.push(logEntry);
+        saveSessionLog(logEntry);
+        failed++;
+      }
+    }
+  }
+
+  closeBulkModal();
+  buildReviewList();
+  render();
+  alert(`Bulk SMS complete: ${sent} sent, ${failed} failed`);
+}
+
+// ════════════════════════════════════════
+// ── Contact History Modal ──
+// ════════════════════════════════════════
+function showHistory(rowId) {
+  const entries = contactLog.filter(e => e.row_id === rowId);
+  const name = entries.length ? entries[0].name : rowId;
+  document.getElementById('historyTitle').textContent = `Contact History — ${name}`;
+
+  if (!entries.length) {
+    document.getElementById('historyContent').innerHTML =
+      '<p style="color:var(--text3);padding:1rem;">No contact history recorded for this record.</p>';
+  } else {
+    document.getElementById('historyContent').innerHTML = `
+      <table class="log-table">
+        <thead><tr><th>Date</th><th>Type</th><th>Status</th><th>Phone</th><th>Message</th></tr></thead>
+        <tbody>
+          ${entries.map(e => `<tr>
+            <td>${esc(e.date || '-')}</td>
+            <td>${esc(e.type || 'sms')}</td>
+            <td class="log-status-${e.status || 'sent'}">${esc(e.status || 'sent')}</td>
+            <td>${esc(e.phone || '-')}</td>
+            <td style="font-size:0.72rem;color:var(--text2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(e.message || '-')}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+  document.getElementById('historyModal').classList.add('show');
+}
+function closeHistoryModal() {
+  document.getElementById('historyModal').classList.remove('show');
+}
+
+// ════════════════════════════════════════
+// ── Utility ──
+// ════════════════════════════════════════
+function formatKidsWithGrad(kidsStr) {
+  // Add 🎓 next to kids aged 17+ in the "Name (age); Name (age)" format
+  if (!kidsStr) return '-';
+  return esc(kidsStr).replace(/\((\d+)\)/g, (match, age) => {
+    return Number(age) >= 17 ? `(${age}) 🎓` : `(${age})`;
+  });
+}
+
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── Init ──
+loadSettings();
+loadData();
+initColumnSort();
+
+// ── Hash Routing — support deep links like #overdue, #treatment, #review, #leaderboard ──
+function handleHash() {
+  const hash = (location.hash || '').replace('#', '').toLowerCase();
+  const validViews = ['recall', 'overdue', 'treatment', 'review', 'leaderboard'];
+  if (hash && validViews.includes(hash)) {
+    switchView(hash);
+  }
+}
+window.addEventListener('hashchange', handleHash);
+// Run on initial load too
+handleHash();
+</script>
+</body>
+</html>
