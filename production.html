@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PSPD Net Production &amp; KPI Dashboard — Dentrepreneur Control Tower</title>
+  <title>PSPD Production — Dentrepreneur Control Tower</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -146,7 +146,7 @@
   <div class="header">
     <a href="index.html" class="back-link">&larr; Control Tower Home</a>
     <h1>Puget Sound <span>Pediatric Dentistry</span></h1>
-    <div class="sub">Dentrepreneur Control Tower &mdash; Net Production &amp; KPI Dashboard</div>
+    <div class="sub">Dentrepreneur Control Tower &mdash; PSPD Production Dashboard</div>
     <div class="owner-tag">Owner View &bull; Dr. Chris Lugo</div>
   </div>
 
@@ -270,26 +270,35 @@
       <div class="sec-title blue" style="margin-top:32px">Production by Office</div>
       <div class="card" id="prod-by-office"></div>
 
+      <!-- Patient Geography -->
+      <div class="sec-title teal" style="margin-top:32px">Where Patients Come From</div>
+      <div class="card" id="patient-geography"></div>
+
     </div>
 
     <!-- ──────── PROVIDER PERFORMANCE ──────── -->
     <div class="view" id="view-provider">
 
       <div class="time-filter" id="prov-time-filter"></div>
+      <div class="office-filter" id="prov-office-filter"></div>
 
       <div class="sec-title purple">Provider Production Ranking</div>
       <div class="card" id="provider-table" style="overflow-x:auto"></div>
 
       <div class="two-col" style="margin-top:32px">
         <div>
-          <div class="sec-title">Production by Provider</div>
+          <div class="sec-title">Net Production by Provider</div>
           <div class="card" id="provider-bars"></div>
         </div>
         <div>
-          <div class="sec-title teal">Provider Office Distribution</div>
+          <div class="sec-title teal">Provider by Office</div>
           <div class="card" id="provider-offices"></div>
         </div>
       </div>
+
+      <!-- Provider Comparison Grid -->
+      <div class="sec-title blue" style="margin-top:32px">Provider Comparison by Location</div>
+      <div class="card" id="provider-location-grid" style="overflow-x:auto"></div>
 
     </div>
 
@@ -385,7 +394,7 @@
   </div>
 
   <div class="footer">
-    <strong>Dentrepreneur Control Tower</strong> &bull; Puget Sound Pediatric Dentistry &bull; Owner KPI Dashboard<br>
+    <strong>Dentrepreneur Control Tower</strong> &bull; Puget Sound Pediatric Dentistry &bull; PSPD Production Dashboard<br>
     Built by Chris Lugo + Claude AI<br>
     <span id="last-updated" style="font-size:11px;color:var(--text3)"><span class="live-dot"></span>Data refreshes daily at 6 AM</span>
   </div>
@@ -407,6 +416,7 @@
     let DATA = null;
     let selectedPeriod = 'mtd';
     let selectedOffice = 'ALL';
+    let DEPARTED_DOCS = {};  // { "Dr. Kirk": { last_day: "2026-01-02" }, ... }
 
     // ── Navigation ──
     function showView(id, btn) {
@@ -435,7 +445,7 @@
         });
       });
 
-      ['exec','prod','coll'].forEach(prefix => {
+      ['exec','prod','prov','coll'].forEach(prefix => {
         const el = $(prefix+'-office-filter');
         if (!el) return;
         el.innerHTML = '';
@@ -555,13 +565,21 @@
     }
 
     // ── Get Period Data ──
+    function getWeekStart() {
+      // Monday of the current week
+      const now = new Date();
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+      return new Date(now.getFullYear(), now.getMonth(), diff).toISOString().slice(0,10);
+    }
+
     function getPeriodData() {
       if (!DATA) return null;
       const m = DATA.months;
       switch(selectedPeriod) {
-        case 'wtd': return [m[m.length-1]];
+        case 'wtd': return [m[m.length-1]]; // same monthly bucket but daily will filter to WTD
         case 'mtd': return [m[m.length-1]];
-        case 'last-month': return [m[m.length-2]];
+        case 'last-month': return m.length >= 2 ? [m[m.length-2]] : [m[m.length-1]];
         case 'qtd': return m.slice(-3);
         case 'ytd': {
           const yr = new Date().getFullYear();
@@ -570,6 +588,44 @@
         case 'trailing-12': return m;
         default: return [m[m.length-1]];
       }
+    }
+
+    /** Get daily records filtered by period and optionally office */
+    function getFilteredDaily(office) {
+      if (!DATA || !DATA.daily) return [];
+      let daily = DATA.daily;
+      // WTD: filter to current week only
+      if (selectedPeriod === 'wtd') {
+        const weekStart = getWeekStart();
+        daily = daily.filter(d => d.date >= weekStart);
+      }
+      return daily;
+    }
+
+    /** Get daily records by office from the raw pipeline data */
+    function getOfficeDailyData(office) {
+      if (!DATA || !DATA._raw || !DATA._raw.by_office_daily) return [];
+      let records = DATA._raw.by_office_daily.filter(d => d.office === office);
+      // Filter to current month for MTD, or current week for WTD
+      const now = new Date();
+      const curKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+      records = records.filter(d => d.date && d.date.startsWith(curKey));
+      if (selectedPeriod === 'wtd') {
+        const weekStart = getWeekStart();
+        records = records.filter(d => d.date >= weekStart);
+      }
+      return records.map(d => {
+        const dt = new Date(d.date + 'T12:00:00');
+        return {
+          date: d.date,
+          dayLabel: dt.toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric' }),
+          gross: d.gross || 0,
+          adj: Math.abs(d.adjustments || 0),
+          net: d.net || 0,
+          coll: d.collections || 0,
+          patients: d.patients || 0,
+        };
+      });
     }
 
     function aggregate(periodData) {
@@ -583,6 +639,20 @@
           if (od) { gross += od.gross; adj += od.adj; net += od.net; coll += od.coll; visits += od.visits; }
         }
       });
+
+      // For WTD, override with actual daily sums
+      if (selectedPeriod === 'wtd') {
+        const daily = selectedOffice === 'ALL' ? getFilteredDaily() : getOfficeDailyData(selectedOffice);
+        gross=0; adj=0; net=0; coll=0; visits=0;
+        daily.forEach(d => {
+          gross += d.gross || 0;
+          adj += d.adj || Math.abs(d.adjustments || 0);
+          net += d.net || 0;
+          coll += d.coll || d.collections || 0;
+          visits += d.patients || 0;
+        });
+      }
+
       return { gross, adj, net, coll, visits, collRate: net > 0 ? coll/net : 0, adjRate: gross > 0 ? adj/gross : 0, perVisit: visits > 0 ? Math.round(net/visits) : 0 };
     }
 
@@ -709,6 +779,9 @@
 
       // By office bars
       renderProdByOffice();
+
+      // Patient geography
+      renderPatientGeography();
     }
 
     function renderWaterfall(agg) {
@@ -733,29 +806,120 @@
     }
 
     function renderDailyTable() {
-      const daily = DATA.daily;
-      let html = `<table><tr><th>Date</th><th class="r">Gross</th><th class="r">Adjustments</th><th class="r">Net Production</th><th>Net/Gross</th></tr>`;
-      let tGross=0, tAdj=0, tNet=0;
+      // Use office-specific daily data when a single office is selected
+      let daily;
+      let showOffice = false;
+
+      if (selectedOffice !== 'ALL') {
+        daily = getOfficeDailyData(selectedOffice);
+      } else {
+        daily = getFilteredDaily();
+        showOffice = false; // All offices combined view
+      }
+
+      if (!daily || daily.length === 0) {
+        $('daily-prod-table').innerHTML = '<div style="color:var(--text3);text-align:center;padding:30px">No daily data for selected period' + (selectedOffice !== 'ALL' ? ' and office' : '') + '</div>';
+        return;
+      }
+
+      const officeLabel = selectedOffice !== 'ALL'
+        ? ` <span style="color:var(--accent);font-weight:600;">&mdash; ${selectedOffice}</span>`
+        : ' <span style="color:var(--text3);font-size:12px;">(All Offices)</span>';
+
+      let html = `<div style="font-size:13px;color:var(--text2);margin-bottom:12px;">Showing: <strong>${selectedPeriod.toUpperCase()}</strong>${officeLabel}</div>`;
+      html += `<table><tr><th>Date</th><th class="r">Gross</th><th class="r">Adjustments</th><th class="r">Net Production</th>`;
+      if (daily[0] && daily[0].coll !== undefined) html += `<th class="r">Collections</th>`;
+      if (daily[0] && daily[0].patients !== undefined) html += `<th class="r">Patients</th>`;
+      html += `<th>Net/Gross</th></tr>`;
+
+      let tGross=0, tAdj=0, tNet=0, tColl=0, tPats=0;
       daily.forEach(d => {
         const ratio = d.gross > 0 ? (d.net/d.gross*100).toFixed(1) : '0.0';
+        const hasColl = d.coll !== undefined;
+        const hasPats = d.patients !== undefined;
         html += `<tr>
           <td>${d.dayLabel}</td>
           <td class="r mono">${fmt(d.gross)}</td>
           <td class="r mono" style="color:var(--red)">(${fmt(d.adj)})</td>
-          <td class="r mono" style="font-weight:600">${fmt(d.net)}</td>
-          <td>${ratio}%</td>
-        </tr>`;
+          <td class="r mono" style="font-weight:600">${fmt(d.net)}</td>`;
+        if (hasColl) html += `<td class="r mono">${fmt(d.coll)}</td>`;
+        if (hasPats) html += `<td class="r">${d.patients}</td>`;
+        html += `<td>${ratio}%</td></tr>`;
         tGross += d.gross; tAdj += d.adj; tNet += d.net;
+        tColl += d.coll || 0; tPats += d.patients || 0;
       });
       const tRatio = tGross > 0 ? (tNet/tGross*100).toFixed(1) : '0.0';
       html += `<tr class="total-row">
-        <td style="font-weight:700">TOTAL</td>
+        <td style="font-weight:700">TOTAL (${daily.length} days)</td>
         <td class="r mono" style="font-weight:700">${fmt(tGross)}</td>
         <td class="r mono" style="color:var(--red);font-weight:700">(${fmt(tAdj)})</td>
-        <td class="r mono" style="font-weight:700">${fmt(tNet)}</td>
-        <td style="font-weight:700">${tRatio}%</td>
+        <td class="r mono" style="font-weight:700">${fmt(tNet)}</td>`;
+      if (daily[0] && daily[0].coll !== undefined) html += `<td class="r mono" style="font-weight:700">${fmt(tColl)}</td>`;
+      if (daily[0] && daily[0].patients !== undefined) html += `<td class="r" style="font-weight:700">${tPats}</td>`;
+      html += `<td style="font-weight:700">${tRatio}%</td>
       </tr></table>`;
       $('daily-prod-table').innerHTML = html;
+    }
+
+    function renderPatientGeography() {
+      const geo = $('patient-geography');
+      if (!DATA || !DATA._raw || !DATA._raw.by_zip || DATA._raw.by_zip.length === 0) {
+        geo.innerHTML = '<div style="color:var(--text3);text-align:center;padding:30px">Patient geography data will populate after the pipeline runs with zip code data.</div>';
+        return;
+      }
+
+      let zipData = DATA._raw.by_zip;
+
+      // Filter by selected office
+      if (selectedOffice !== 'ALL') {
+        zipData = zipData.filter(z => z.office === selectedOffice);
+      }
+
+      if (zipData.length === 0) {
+        geo.innerHTML = '<div style="color:var(--text3);text-align:center;padding:30px">No patient geography data for this office.</div>';
+        return;
+      }
+
+      // Aggregate by city/zip (combine across offices if ALL)
+      const cityMap = {};
+      zipData.forEach(z => {
+        const key = `${z.city}, ${z.state} ${z.zip}`;
+        if (!cityMap[key]) cityMap[key] = { city: z.city, state: z.state, zip: z.zip, net: 0, patients: 0 };
+        cityMap[key].net += z.net;
+        cityMap[key].patients += z.patients;
+      });
+      const sorted = Object.values(cityMap).sort((a,b) => b.net - a.net);
+      const top20 = sorted.slice(0, 20);
+      const maxNet = top20.length > 0 ? top20[0].net : 1;
+      const totalNet = sorted.reduce((s,z) => s + z.net, 0);
+      const totalPatients = sorted.reduce((s,z) => s + z.patients, 0);
+
+      let html = `<div style="display:flex;gap:24px;margin-bottom:20px;flex-wrap:wrap;">
+        <div style="font-size:13px;color:var(--text2);"><strong style="color:var(--accent)">${sorted.length}</strong> zip codes</div>
+        <div style="font-size:13px;color:var(--text2);"><strong style="color:var(--green)">${totalPatients}</strong> unique patients</div>
+        <div style="font-size:13px;color:var(--text2);"><strong style="color:var(--blue)">${fmt(totalNet)}</strong> net production</div>
+      </div>`;
+
+      // Top 20 zip code bar chart
+      html += `<div style="font-size:11px;text-transform:uppercase;color:var(--text3);font-weight:600;margin-bottom:12px;">Top 20 Patient Locations by Net Production</div>`;
+      top20.forEach(z => {
+        const pct = (z.net / maxNet * 100).toFixed(1);
+        const pctOfTotal = totalNet > 0 ? (z.net / totalNet * 100).toFixed(1) : 0;
+        html += `<div class="hbar">
+          <div class="hbar-label" style="width:180px;font-size:12px;">${z.city || z.zip}<br><span style="font-size:10px;color:var(--text3)">${z.zip} &bull; ${z.patients} pts</span></div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:linear-gradient(90deg,var(--teal),var(--accent))"></div></div>
+          <div class="hbar-val" style="width:110px"><span style="color:var(--teal)">${fmt(z.net)}</span><br><span style="font-size:10px;color:var(--text3)">${pctOfTotal}% of total</span></div>
+        </div>`;
+      });
+
+      if (sorted.length > 20) {
+        const remaining = sorted.slice(20);
+        const remNet = remaining.reduce((s,z) => s + z.net, 0);
+        const remPats = remaining.reduce((s,z) => s + z.patients, 0);
+        html += `<div style="text-align:center;margin-top:12px;padding:12px;background:var(--bg2);border-radius:8px;font-size:12px;color:var(--text3);">+ ${remaining.length} more zip codes: ${remPats} patients, ${fmt(remNet)} net production</div>`;
+      }
+
+      geo.innerHTML = html;
     }
 
     function renderProdByOffice() {
@@ -777,22 +941,54 @@
     }
 
     function renderProviders() {
-      const provs = DATA.providers.sort((a,b) => b.net - a.net);
+      let provs = DATA.providers.sort((a,b) => b.net - a.net);
 
-      // Table
-      let html = `<table><tr><th>#</th><th>Provider</th><th>Office</th><th class="r">Gross</th><th class="r">Adj</th><th class="r">Net Prod</th><th class="r">Visits</th><th class="r">$/Visit</th></tr>`;
-      provs.forEach((p,i) => {
-        html += `<tr>
+      // Filter by selected office
+      const filteredProvs = selectedOffice === 'ALL' ? provs : provs.filter(p => p.office === selectedOffice);
+
+      if (filteredProvs.length === 0) {
+        $('provider-table').innerHTML = '<div style="color:var(--text3);text-align:center;padding:30px">No provider data for selected office. Data populates after the pipeline runs.</div>';
+        $('provider-bars').innerHTML = '';
+        $('provider-offices').innerHTML = '';
+        return;
+      }
+
+      // Calculate averages for comparison
+      const avgNet = filteredProvs.reduce((s,p) => s + p.net, 0) / filteredProvs.length;
+      const avgPerVisit = filteredProvs.filter(p => p.perVisit > 0).reduce((s,p) => s + p.perVisit, 0) / (filteredProvs.filter(p => p.perVisit > 0).length || 1);
+
+      // Table with comparison indicators
+      let html = `<table><tr><th>#</th><th>Provider</th><th>Office</th><th class="r">Gross</th><th class="r">Adj</th><th class="r">Net Prod</th><th class="r">Visits</th><th class="r">$/Visit</th><th class="r">vs Avg</th></tr>`;
+      filteredProvs.forEach((p,i) => {
+        const isDeparted = DEPARTED_DOCS[p.name];
+        const vsAvg = avgNet > 0 ? ((p.net - avgNet) / avgNet * 100) : 0;
+        const vsClass = vsAvg >= 10 ? 'badge-green' : vsAvg >= -10 ? 'badge-orange' : 'badge-red';
+        const departedBadge = isDeparted ? ' <span style="background:rgba(196,72,90,0.2);color:var(--red);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;">DEPARTED</span>' : '';
+
+        html += `<tr${isDeparted ? ' style="opacity:0.5"' : ''}>
           <td style="color:var(--text3)">${i+1}</td>
-          <td style="font-weight:600">${p.name}</td>
-          <td><span class="badge badge-${i%2===0?'orange':'blue'}">${p.office}</span></td>
+          <td style="font-weight:600">${p.name}${departedBadge}</td>
+          <td><span class="badge" style="background:rgba(98,146,160,0.15);color:${OFFICE_COLORS[p.office] || 'var(--accent)'}">${p.office || '—'}</span></td>
           <td class="r mono">${fmt(p.gross)}</td>
           <td class="r mono" style="color:var(--red)">(${fmt(p.adj)})</td>
           <td class="r mono" style="font-weight:600">${fmt(p.net)}</td>
           <td class="r">${p.visits}</td>
           <td class="r mono">${fmt(p.perVisit)}</td>
+          <td class="r"><span class="badge ${vsClass}">${vsAvg >= 0 ? '+' : ''}${vsAvg.toFixed(0)}%</span></td>
         </tr>`;
       });
+      // Average row
+      html += `<tr class="total-row">
+        <td></td>
+        <td style="font-weight:700;color:var(--accent)">AVG (${filteredProvs.length} providers)</td>
+        <td></td>
+        <td class="r mono" style="font-weight:700">${fmt(filteredProvs.reduce((s,p)=>s+p.gross,0)/filteredProvs.length)}</td>
+        <td class="r mono" style="color:var(--red);font-weight:700">(${fmt(filteredProvs.reduce((s,p)=>s+p.adj,0)/filteredProvs.length)})</td>
+        <td class="r mono" style="font-weight:700">${fmt(avgNet)}</td>
+        <td class="r" style="font-weight:700">${Math.round(filteredProvs.reduce((s,p)=>s+p.visits,0)/filteredProvs.length)}</td>
+        <td class="r mono" style="font-weight:700">${fmt(Math.round(avgPerVisit))}</td>
+        <td class="r"><span class="badge badge-orange">Baseline</span></td>
+      </tr>`;
       html += '</table>';
       $('provider-table').innerHTML = html;
 
@@ -942,6 +1138,7 @@
       renderExecutive();
       renderProduction();
       renderProviders();
+      renderProviderLocationGrid();
       renderCollections();
       renderRecallHealth();
     }
@@ -1040,6 +1237,7 @@
         months, providers, daily, recallHealth,
         generated: raw.generated_at || new Date().toISOString(),
         data_as_of: raw.generated_at ? raw.generated_at.slice(0,10) : '',
+        _raw: raw,  // Keep raw pipeline data for office-level daily queries
       };
     }
 
@@ -1079,14 +1277,104 @@
       }
     }
 
+    // ── Load departed doctors ──
+    async function loadDoctors() {
+      try {
+        const resp = await fetch('data/doctors.json?t=' + Date.now());
+        if (!resp.ok) return;
+        const data = await resp.json();
+        if (data.terminated) {
+          for (const [key, doc] of Object.entries(data.terminated)) {
+            const name = doc.display || key;
+            DEPARTED_DOCS[name] = { last_day: doc.last_day || doc.termination_date };
+            // Also match on full name patterns
+            DEPARTED_DOCS[key] = DEPARTED_DOCS[name];
+          }
+        }
+        console.log(`Loaded ${Object.keys(DEPARTED_DOCS).length} departed doctors`);
+      } catch(e) {
+        console.log('Could not load doctors.json:', e.message);
+      }
+    }
+
+    // ── Provider comparison by location ──
+    function renderProviderLocationGrid() {
+      if (!DATA || !DATA._raw || !DATA._raw.by_provider_mtd) {
+        $('provider-location-grid').innerHTML = '<div style="color:var(--text3);text-align:center;padding:30px">Provider location data populates after the pipeline runs</div>';
+        return;
+      }
+
+      const raw = DATA._raw.by_provider_mtd;
+      // Build a matrix: provider → { office → { net, gross, patients } }
+      const provMap = {};
+      const officeSet = new Set();
+      raw.forEach(r => {
+        const prov = r.provider;
+        const office = r.office;
+        if (!prov || !office) return;
+        officeSet.add(office);
+        if (!provMap[prov]) provMap[prov] = {};
+        if (!provMap[prov][office]) provMap[prov][office] = { net:0, gross:0, patients:0 };
+        provMap[prov][office].net += r.net || 0;
+        provMap[prov][office].gross += r.gross || 0;
+        provMap[prov][office].patients += r.patients || 0;
+      });
+
+      const offices = OFFICES.filter(o => officeSet.has(o));
+      const providers = Object.keys(provMap).sort((a,b) => {
+        const aTotal = Object.values(provMap[a]).reduce((s,v) => s + v.net, 0);
+        const bTotal = Object.values(provMap[b]).reduce((s,v) => s + v.net, 0);
+        return bTotal - aTotal;
+      });
+
+      if (providers.length === 0) {
+        $('provider-location-grid').innerHTML = '<div style="color:var(--text3);text-align:center;padding:30px">No provider data yet</div>';
+        return;
+      }
+
+      let html = `<div style="font-size:12px;color:var(--text3);margin-bottom:12px;">MTD Net Production by provider and location</div>`;
+      html += `<table><tr><th>Provider</th>`;
+      offices.forEach(o => { html += `<th class="r" style="color:${OFFICE_COLORS[o] || 'var(--accent)'}">${o}</th>`; });
+      html += `<th class="r" style="font-weight:700">TOTAL</th></tr>`;
+
+      providers.forEach(prov => {
+        const isDeparted = DEPARTED_DOCS[prov];
+        const total = Object.values(provMap[prov]).reduce((s,v) => s + v.net, 0);
+        html += `<tr${isDeparted ? ' style="opacity:0.5"' : ''}>`;
+        html += `<td style="font-weight:600">${prov}${isDeparted ? ' <span style="color:var(--red);font-size:10px;">LEFT</span>' : ''}</td>`;
+        offices.forEach(o => {
+          const val = provMap[prov][o]?.net || 0;
+          const pts = provMap[prov][o]?.patients || 0;
+          html += `<td class="r mono">${val > 0 ? fmt(val) : '<span style="color:var(--text3)">—</span>'}</td>`;
+        });
+        html += `<td class="r mono" style="font-weight:700;color:var(--accent)">${fmt(total)}</td>`;
+        html += `</tr>`;
+      });
+
+      // Office totals row
+      html += `<tr class="total-row"><td style="font-weight:700">TOTAL</td>`;
+      let grandTotal = 0;
+      offices.forEach(o => {
+        const officeTotal = providers.reduce((s, p) => s + (provMap[p][o]?.net || 0), 0);
+        grandTotal += officeTotal;
+        html += `<td class="r mono" style="font-weight:700;color:${OFFICE_COLORS[o] || 'var(--accent)'}">${fmt(officeTotal)}</td>`;
+      });
+      html += `<td class="r mono" style="font-weight:700;color:var(--accent)">${fmt(grandTotal)}</td>`;
+      html += `</tr></table>`;
+
+      $('provider-location-grid').innerHTML = html;
+    }
+
     // ── Init ──
     async function init() {
+      // Load departed doctors first
+      await loadDoctors();
+
       // Try to load real production data from pipeline
       try {
         const resp = await fetch('data/production.json?t=' + Date.now());
         if (resp.ok) {
           const raw = await resp.json();
-          // Check if it has real pipeline data (has by_date field)
           if (raw.by_date || raw.by_office_daily || raw.monthly_summary) {
             DATA = transformPipelineData(raw);
             console.log('Loaded production data from pipeline');
@@ -1100,6 +1388,7 @@
       } catch(e) {
         console.log('Using demo data (data/production.json not found or empty):', e.message);
         DATA = generateDemoData();
+        DATA._raw = null;
       }
 
       // Update last-updated timestamp
