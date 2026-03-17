@@ -519,53 +519,68 @@ def query_doctor_leaderboard(conn, col_map=None):
     except Exception as e:
         print(f"  ⚠ View discovery failed: {e}")
 
-    # KPI 3: Try vw_income_allocation (same view used by payroll)
-    # Use col_map if available — provider may be numeric ID, not a string name
-    prov_col = col_map.get('provider_name') or col_map.get('provider_id') if col_map else None
-    if col_map and col_map.get('service_date') and prov_col:
+    # KPI 3: MTD production per provider
+    # Use preferred view (has provider names) if available, else income allocation
+    pv = col_map.get('_preferred') if col_map else None
+    if pv and pv.get('service_date') and pv.get('gross_production'):
+        view = pv['_view']
+        svc = pv['service_date']
+        gross_col = pv['gross_production']
+        # Build provider name expression
+        prov_lname = pv.get('provider_lname')
+        prov_fname = pv.get('provider_fname')
+        prov_full = pv.get('provider_name')
+        if prov_full:
+            prov_expr = f"[{prov_full}]"
+        elif prov_lname and prov_fname:
+            prov_expr = f"RTRIM([{prov_lname}]) + ', ' + RTRIM([{prov_fname}])"
+        else:
+            prov_expr = None
+
+        if prov_expr:
+            try:
+                cursor.execute(f"""
+                    SELECT {prov_expr} AS provider,
+                           SUM([{gross_col}]) AS mtd_production
+                    FROM {view}
+                    WHERE [{svc}] >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
+                      AND {prov_expr} IS NOT NULL
+                    GROUP BY {prov_expr}
+                    ORDER BY SUM([{gross_col}]) DESC
+                """)
+                for row in rows_to_dicts(cursor):
+                    prov_display = str(row.get('provider', '')).strip()
+                    if not prov_display:
+                        continue
+                    if prov_display not in leaderboard:
+                        leaderboard[prov_display] = {'provider': prov_display}
+                    leaderboard[prov_display]['mtd_production'] = round(float(row.get('mtd_production', 0) or 0), 2)
+                print(f"  MTD production data loaded for {len(leaderboard)} providers (preferred view)")
+            except Exception as e:
+                print(f"  ⚠ MTD production query failed: {e}")
+    elif col_map and col_map.get('service_date') and col_map.get('provider_id') and col_map.get('gross_production'):
+        # Fallback to income allocation
         svc = col_map['service_date']
-        prov_is_id = col_map.get('_provider_is_id', False)
-        provider_names = col_map.get('_provider_names', {})
-        gross_col = col_map.get('gross_production')
-        net_col = col_map.get('net_production')
-        coll_col = col_map.get('net_collections')
-        pid_col = col_map.get('patient_id')
-
+        prov_col = col_map['provider_id']
+        gross_col = col_map['gross_production']
         try:
-            select_parts = [f"[{prov_col}] AS provider"]
-            if gross_col: select_parts.append(f"SUM(CAST([{gross_col}] AS DECIMAL(18,2))) AS mtd_production")
-            if coll_col: select_parts.append(f"SUM(CAST([{coll_col}] AS DECIMAL(18,2))) AS mtd_collections")
-            if pid_col: select_parts.append(f"COUNT(DISTINCT [{pid_col}]) AS patients_seen")
-
-            sort = f"SUM(CAST([{gross_col}] AS DECIMAL(18,2)))" if gross_col else f"[{prov_col}]"
-
-            # No string comparison (<> '') on numeric provider IDs
             cursor.execute(f"""
-                SELECT {', '.join(select_parts)}
+                SELECT [{prov_col}] AS provider,
+                       SUM(CAST([{gross_col}] AS DECIMAL(18,2))) AS mtd_production
                 FROM rpt.vw_income_allocation
                 WHERE [{svc}] >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
                   AND [{prov_col}] IS NOT NULL
                 GROUP BY [{prov_col}]
-                ORDER BY {sort} DESC
+                ORDER BY SUM(CAST([{gross_col}] AS DECIMAL(18,2))) DESC
             """)
             for row in rows_to_dicts(cursor):
-                raw_prov = row.get('provider')
-                if raw_prov is None:
+                prov_key = str(int(row['provider'])) if isinstance(row.get('provider'), (int, float)) else str(row.get('provider', '')).strip()
+                if not prov_key:
                     continue
-                # Resolve provider ID to name if needed
-                prov_key = str(int(raw_prov)) if isinstance(raw_prov, (int, float)) else str(raw_prov).strip()
-                if prov_is_id and prov_key in provider_names:
-                    prov_display = provider_names[prov_key]
-                else:
-                    prov_display = prov_key
-                if not prov_display:
-                    continue
-                if prov_display not in leaderboard:
-                    leaderboard[prov_display] = {'provider': prov_display}
-                leaderboard[prov_display]['mtd_production'] = round(float(row.get('mtd_production', 0) or 0), 2)
-                leaderboard[prov_display]['mtd_collections'] = round(float(row.get('mtd_collections', 0) or 0), 2)
-                leaderboard[prov_display]['patients_seen_mtd'] = int(row.get('patients_seen', 0))
-            print(f"  MTD production data loaded for {len(leaderboard)} providers")
+                if prov_key not in leaderboard:
+                    leaderboard[prov_key] = {'provider': prov_key}
+                leaderboard[prov_key]['mtd_production'] = round(float(row.get('mtd_production', 0) or 0), 2)
+            print(f"  MTD production data loaded for {len(leaderboard)} providers (fallback)")
         except Exception as e:
             print(f"  ⚠ MTD production query failed: {e}")
     else:
@@ -606,104 +621,85 @@ def query_doctor_leaderboard(conn, col_map=None):
 # rpt.vw_income_allocation uses different column names than expected.
 # This discovers actual column names and builds a mapping.
 
-def _discover_office_names(conn):
-    """Build a lookup dict mapping OID → office name."""
-    cursor = conn.cursor()
-    office_map = {}
-    # Try common Denticon office/practice tables
-    for tbl in ['OFFICEH', 'OFFICE', 'PRACTICEH', 'PRACTICE', 'BI_Office']:
-        try:
-            cursor.execute(f"SELECT TOP 0 * FROM {tbl}")
-            tcols = [c[0] for c in cursor.description]
-            oid_col = next((c for c in tcols if c.upper() == 'OID'), None)
-            if not oid_col:
-                oid_col = next((c for c in tcols if c.upper() in ('OFFICEID', 'ID', 'PGID')), None)
-            name_col = next((c for c in tcols if 'NAME' in c.upper() and 'NICK' not in c.upper()), None)
-            if not name_col:
-                name_col = next((c for c in tcols if 'NAME' in c.upper()), None)
-            if oid_col and name_col:
-                cursor.execute(f"SELECT [{oid_col}], [{name_col}] FROM {tbl}")
-                for row in cursor.fetchall():
-                    if row[0] is not None and row[1]:
-                        office_map[str(int(row[0])) if isinstance(row[0], (int, float)) else str(row[0])] = str(row[1]).strip()
-                if office_map:
-                    print(f"  Office name lookup: {len(office_map)} offices from {tbl} ({office_map})")
-                    return office_map
-        except Exception:
-            continue
-    print(f"  ⚠ No office name lookup table found")
-    return office_map
-
-
-def _discover_provider_names(conn):
-    """Build a lookup dict mapping provider_id → provider name."""
-    cursor = conn.cursor()
-    prov_map = {}
-    for tbl in ['PROVIDERH', 'PROVIDER', 'BI_Provider']:
-        try:
-            cursor.execute(f"SELECT TOP 0 * FROM {tbl}")
-            tcols = [c[0] for c in cursor.description]
-            pid_col = next((c for c in tcols if c.upper() in ('PROVIDERID', 'PGID', 'ID')), None)
-            # Try to find name columns
-            fname_col = next((c for c in tcols if c.upper() in ('FNAME', 'FIRSTNAME')), None)
-            lname_col = next((c for c in tcols if c.upper() in ('LNAME', 'LASTNAME')), None)
-            name_col = next((c for c in tcols if c.upper() in ('PROVIDERNAME', 'NAME', 'DISPLAYNAME')), None)
-            if pid_col and (name_col or (fname_col and lname_col)):
-                if name_col:
-                    cursor.execute(f"SELECT [{pid_col}], [{name_col}] FROM {tbl}")
-                    for row in cursor.fetchall():
-                        if row[0] is not None and row[1]:
-                            prov_map[str(int(row[0])) if isinstance(row[0], (int, float)) else str(row[0])] = str(row[1]).strip()
-                else:
-                    cursor.execute(f"SELECT [{pid_col}], [{lname_col}], [{fname_col}] FROM {tbl}")
-                    for row in cursor.fetchall():
-                        if row[0] is not None and (row[1] or row[2]):
-                            lname = str(row[1] or '').strip()
-                            fname = str(row[2] or '').strip()
-                            prov_map[str(int(row[0])) if isinstance(row[0], (int, float)) else str(row[0])] = f"{lname}, {fname}" if lname else fname
-                if prov_map:
-                    print(f"  Provider name lookup: {len(prov_map)} providers from {tbl}")
-                    return prov_map
-        except Exception:
-            continue
-    print(f"  ⚠ No provider name lookup table found")
-    return prov_map
-
-
 def discover_income_allocation_columns(conn):
-    """Discover actual column names in rpt.vw_income_allocation.
-    Returns a dict mapping logical names to actual column names, or None if view unavailable.
-    Also discovers office and provider name lookup tables."""
+    """Discover production views and build column mappings.
+    Returns a dict with:
+      - Column mappings for rpt.vw_income_allocation (collections, patient-level data)
+      - Preferred production view info (vw_doctor_production_with_provider_office)
+        for fast queries with readable office/provider names
+    """
     cursor = conn.cursor()
+    col_map = {}
 
-    # First try views that might have human-readable provider/office names
+    # ── Discover preferred production view (has office names + provider names) ──
     preferred_views = [
         'rpt.vw_doctor_production_with_provider_office',
         'rpt.vw_income_allocation_by_office',
     ]
-    preferred_view = None
-    preferred_cols = None
     for pv in preferred_views:
         try:
             cursor.execute(f"SELECT TOP 0 * FROM {pv}")
-            preferred_cols = [col[0] for col in cursor.description]
-            preferred_view = pv
-            print(f"  Found preferred view: {pv} with columns: {preferred_cols}")
-            break
+            pv_cols = [col[0] for col in cursor.description]
+            pv_upper = {c.upper(): c for c in pv_cols}
+            print(f"  Found preferred view: {pv} with columns: {pv_cols}")
+
+            # Map preferred view columns
+            pv_map = {'_view': pv}
+            # Date
+            for pat in ['SERVICE_DATE', 'POST_DATE', 'PROC_DOS_DATE']:
+                if pat in pv_upper:
+                    pv_map['service_date'] = pv_upper[pat]
+                    break
+            # Office name (string, not ID)
+            for pat in ['OFFICE_NAME', 'OFFICENAME']:
+                if pat in pv_upper:
+                    pv_map['office_name'] = pv_upper[pat]
+                    break
+            # Office ID
+            for pat in ['OFFICE_ID', 'OFFICEID', 'OID']:
+                if pat in pv_upper:
+                    pv_map['office_id'] = pv_upper[pat]
+                    break
+            # Provider name parts
+            for pat in ['PROVIDER_LAST_NAME', 'PROVIDERLASTNAME', 'LNAME']:
+                if pat in pv_upper:
+                    pv_map['provider_lname'] = pv_upper[pat]
+                    break
+            for pat in ['PROVIDER_FIRST_NAME', 'PROVIDERFIRSTNAME', 'FNAME']:
+                if pat in pv_upper:
+                    pv_map['provider_fname'] = pv_upper[pat]
+                    break
+            # Full provider name
+            for pat in ['PROVIDER_NAME', 'PROVIDERNAME']:
+                if pat in pv_upper:
+                    pv_map['provider_name'] = pv_upper[pat]
+                    break
+            # Provider ID
+            for pat in ['PROVIDER_ID', 'PROVIDERID']:
+                if pat in pv_upper:
+                    pv_map['provider_id'] = pv_upper[pat]
+                    break
+            # Gross production
+            for pat in ['GROSS_PRODUCTION', 'GROSSPRODUCTION', 'PROC_AMOUNT']:
+                if pat in pv_upper:
+                    pv_map['gross_production'] = pv_upper[pat]
+                    break
+
+            # Only use if it has date + office + production
+            if pv_map.get('service_date') and (pv_map.get('office_name') or pv_map.get('office_id')) and pv_map.get('gross_production'):
+                col_map['_preferred'] = pv_map
+                print(f"  Preferred view mapping: {pv_map}")
+                break
         except Exception:
             continue
 
+    # ── Discover rpt.vw_income_allocation (for collections, patient data, zip queries) ──
     try:
         cursor.execute("SELECT TOP 0 * FROM rpt.vw_income_allocation")
         cols = [col[0] for col in cursor.description]
-        print(f"  Income allocation columns: {cols}")
-
-        # Build mapping from expected names to actual discovered columns
-        col_map = {}
         upper_cols = {c.upper(): c for c in cols}
 
         def find_col(*patterns):
-            """Find first column matching any pattern (case-insensitive exact or substring)."""
             for pat in patterns:
                 pat_upper = pat.upper()
                 if pat_upper in upper_cols:
@@ -713,77 +709,52 @@ def discover_income_allocation_columns(conn):
                         return orig
             return None
 
-        # Date column — proc_dos_date is the procedure date of service
-        col_map['service_date'] = find_col('proc_dos_date', 'service_date', 'ServiceDate',
-                                            'TransDate', 'trans_date', 'ProcDate', 'proc_date',
-                                            'EntryDate', 'entry_date', 'DOS', 'DateOfService')
-
-        # Office — OID is the numeric office ID in this view
+        col_map['service_date'] = find_col('proc_dos_date', 'service_date', 'ProcDate', 'proc_date')
         col_map['office_id'] = find_col('OID')
-        col_map['office_name'] = find_col('office_name', 'OfficeName', 'LocationName', 'FacilityName')
+        col_map['gross_production'] = find_col('proc_amount', 'gross_production', 'GrossProduction')
+        col_map['net_production'] = find_col('net_production', 'NetProduction')
+        col_map['net_collections'] = find_col('alloc_amount', 'net_collections', 'NetCollections')
+        col_map['adjustments'] = find_col('adjustments', 'Adjustments')
+        col_map['patient_id'] = find_col('PATID', 'patient_id', 'PatientID')
+        col_map['provider_id'] = find_col('proc_provider_id', 'alloc_provider_id', 'PROVIDERID')
 
-        # Production amounts — proc_amount is the procedure charge amount
-        col_map['gross_production'] = find_col('proc_amount', 'gross_production', 'GrossProduction',
-                                                'GrossProd', 'gross_prod', 'TotalFee', 'total_fee',
-                                                'Fee', 'GrossCharges', 'Production')
+        # Discover office name lookup (fast — just a small reference table)
+        office_map = {}
+        for tbl in ['OFFICE', 'OFFICEH', 'PRACTICEH']:
+            try:
+                cursor.execute(f"SELECT TOP 0 * FROM {tbl}")
+                tcols = [c[0] for c in cursor.description]
+                oid_col = next((c for c in tcols if c.upper() == 'OID'), None)
+                if not oid_col:
+                    oid_col = next((c for c in tcols if c.upper() in ('OFFICEID', 'ID', 'PGID')), None)
+                name_col = next((c for c in tcols if 'NAME' in c.upper() and 'NICK' not in c.upper()), None)
+                if oid_col and name_col:
+                    cursor.execute(f"SELECT [{oid_col}], [{name_col}] FROM {tbl}")
+                    for row in cursor.fetchall():
+                        if row[0] is not None and row[1]:
+                            office_map[str(int(row[0])) if isinstance(row[0], (int, float)) else str(row[0])] = str(row[1]).strip()
+                    if office_map:
+                        print(f"  Office name lookup: {len(office_map)} offices from {tbl} ({office_map})")
+                        break
+            except Exception:
+                continue
+        col_map['_office_names'] = office_map
 
-        # Net production — may not exist; can derive from gross - adjustments
-        col_map['net_production'] = find_col('net_production', 'NetProduction', 'NetProd',
-                                              'net_prod', 'NetFee', 'AdjustedProduction')
-
-        # Collections — alloc_amount is the payment allocation amount
-        col_map['net_collections'] = find_col('alloc_amount', 'net_collections', 'NetCollections',
-                                               'Collections', 'net_collect', 'Payments', 'NetPayments')
-
-        # Adjustments
-        col_map['adjustments'] = find_col('adjustments', 'Adjustments', 'Adjustment',
-                                           'TotalAdj', 'adj', 'WriteOff')
-
-        # Patient ID
-        col_map['patient_id'] = find_col('PATID', 'patient_id', 'PatientID', 'PatID', 'pat_id')
-
-        # Provider — alloc_provider_id and proc_provider_id are numeric IDs
-        col_map['provider_id'] = find_col('proc_provider_id', 'alloc_provider_id',
-                                           'PROVIDERID', 'provider_id')
-        col_map['provider_name'] = find_col('provider_name', 'ProviderName', 'DoctorName')
-        # Flag: is provider a numeric ID (not a name string)?
-        col_map['_provider_is_id'] = col_map.get('provider_id') is not None and col_map.get('provider_name') is None
-
-        # If preferred view has better columns, check for office/provider names there
-        if preferred_view and preferred_cols:
-            pref_upper = {c.upper(): c for c in preferred_cols}
-            # Check for office name
-            for pat in ['OFFICENAME', 'OFFICE_NAME', 'OFFICE']:
-                if pat in pref_upper and not col_map.get('office_name'):
-                    col_map['_preferred_view'] = preferred_view
-                    col_map['_preferred_office_col'] = pref_upper[pat]
-                    break
-            # Check for provider name
-            for pat in ['PROVIDERNAME', 'PROVIDER_NAME', 'PROVIDER', 'DOCTORNAME']:
-                if pat in pref_upper and not col_map.get('provider_name'):
-                    col_map['_preferred_provider_col'] = pref_upper.get(pat)
-                    break
-
-        # Discover office and provider name lookup tables
-        col_map['_office_names'] = _discover_office_names(conn)
-        col_map['_provider_names'] = _discover_provider_names(conn)
-
-        # Log what we found
+        # Log summary
         public_map = {k: v for k, v in col_map.items() if v and not k.startswith('_')}
-        missing = [k for k in ['service_date', 'office_id', 'gross_production', 'net_collections',
-                                'patient_id', 'provider_id'] if not col_map.get(k)]
-        print(f"  Column mapping: {public_map}")
-        if col_map.get('_provider_is_id'):
-            print(f"  Provider column is numeric ID (will use lookup table)")
-        if col_map.get('office_id') and not col_map.get('office_name'):
-            print(f"  Office column is numeric ID (OID, will use lookup table)")
-        if missing:
-            print(f"  ⚠ Missing mappings: {missing}")
+        print(f"  Income allocation mapping: {public_map}")
+        if col_map.get('_preferred'):
+            print(f"  ✓ Will use preferred view for production queries (fast, has readable names)")
+        else:
+            print(f"  ⚠ No preferred view — will use income allocation for all queries")
 
         return col_map if col_map.get('service_date') else None
 
     except Exception as e:
         print(f"  ⚠ Cannot access rpt.vw_income_allocation: {e}")
+        # If we have the preferred view, still return it
+        if col_map.get('_preferred'):
+            return col_map
         return None
 
 
@@ -792,8 +763,9 @@ def discover_income_allocation_columns(conn):
 # Uses rpt.vw_income_allocation with auto-discovered column names.
 
 def query_daily_production(conn, col_map=None):
-    """Pull daily production by office for current month + prior month.
-    col_map: dict mapping logical names → actual column names in rpt.vw_income_allocation."""
+    """Pull daily production by office, by provider, and monthly summary.
+    Uses vw_doctor_production_with_provider_office (preferred) for fast queries
+    with readable office/provider names. Falls back to rpt.vw_income_allocation."""
     cursor = conn.cursor()
     result = {
         'by_date': [],
@@ -802,56 +774,172 @@ def query_daily_production(conn, col_map=None):
         'monthly_summary': [],
     }
 
-    if not col_map or not col_map.get('service_date'):
-        print(f"  ⚠ No column mapping for rpt.vw_income_allocation — skipping production queries")
+    if not col_map:
+        print(f"  ⚠ No column mapping — skipping production queries")
         return result
 
-    # Shorthand — use provider_id (numeric) if provider_name (string) unavailable
-    svc = col_map['service_date']
-    ofc_name = col_map.get('office_name')     # String office name (may be None)
-    ofc_id = col_map.get('office_id')          # Numeric OID (fallback)
-    ofc = ofc_name or ofc_id                   # Best available office column
-    ofc_is_id = ofc == ofc_id and not ofc_name  # True if office column is numeric ID
-    gross = col_map.get('gross_production')
-    net = col_map.get('net_production')
-    coll = col_map.get('net_collections')
-    adj = col_map.get('adjustments')
-    pid = col_map.get('patient_id')
-    prov = col_map.get('provider_name') or col_map.get('provider_id')
-    prov_is_id = col_map.get('_provider_is_id', False)
+    pv = col_map.get('_preferred')  # Preferred view with readable names
     office_names = col_map.get('_office_names', {})
-    provider_names = col_map.get('_provider_names', {})
 
-    def resolve_office(val):
-        """Convert office ID or name to normalized office name."""
-        if val is None:
-            return ''
-        s = str(int(val)) if isinstance(val, (int, float)) else str(val).strip()
-        if ofc_is_id and s in office_names:
-            return normalize_office(office_names[s])
-        return normalize_office(s)
+    # ── Strategy: use preferred view if available ──
+    if pv and pv.get('service_date') and pv.get('gross_production'):
+        view = pv['_view']
+        svc = pv['service_date']
+        gross = pv['gross_production']
+        ofc = pv.get('office_name') or pv.get('office_id')
+        ofc_is_name = pv.get('office_name') is not None
 
-    def resolve_provider(val):
-        """Convert provider ID to name if needed."""
-        if val is None:
-            return ''
-        s = str(int(val)) if isinstance(val, (int, float)) else str(val).strip()
-        if prov_is_id and s in provider_names:
-            return provider_names[s]
-        return s
+        # Build provider name expression
+        prov_lname = pv.get('provider_lname')
+        prov_fname = pv.get('provider_fname')
+        prov_full = pv.get('provider_name')
+        prov_id = pv.get('provider_id')
 
-    # Daily production by office — current month
-    if ofc:
+        if prov_full:
+            prov_expr = f"[{prov_full}]"
+        elif prov_lname and prov_fname:
+            prov_expr = f"RTRIM([{prov_lname}]) + ', ' + RTRIM([{prov_fname}])"
+        elif prov_id:
+            prov_expr = f"CAST([{prov_id}] AS VARCHAR(20))"
+        else:
+            prov_expr = None
+
+        print(f"  Using preferred view: {view}")
+
+        # Daily production by office
+        if ofc:
+            try:
+                cursor.execute(f"""
+                    SELECT CAST([{svc}] AS DATE) AS prod_date,
+                           [{ofc}] AS office,
+                           SUM([{gross}]) AS gross_production
+                    FROM {view}
+                    WHERE [{svc}] >= DATEADD(month, -1, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
+                      AND [{ofc}] IS NOT NULL
+                    GROUP BY CAST([{svc}] AS DATE), [{ofc}]
+                    ORDER BY CAST([{svc}] AS DATE), [{ofc}]
+                """)
+                for row in rows_to_dicts(cursor):
+                    ofc_val = str(row.get('office', '')).strip()
+                    if ofc_is_name:
+                        ofc_display = normalize_office(ofc_val)
+                    elif ofc_val in office_names:
+                        ofc_display = normalize_office(office_names[ofc_val])
+                    else:
+                        ofc_display = normalize_office(ofc_val)
+                    result['by_office_daily'].append({
+                        'date': str(row.get('prod_date', '')),
+                        'office': ofc_display,
+                        'gross': round(float(row.get('gross_production', 0) or 0), 2),
+                        'net': 0, 'collections': 0, 'adjustments': 0, 'patients': 0,
+                    })
+                print(f"  Daily production: {len(result['by_office_daily'])} office-day records")
+            except Exception as e:
+                print(f"  ⚠ Daily production by office failed: {e}")
+
+        # Daily totals (all offices)
         try:
-            select_parts = [f"CAST([{svc}] AS DATE) AS prod_date", f"[{ofc}] AS office"]
-            if gross: select_parts.append(f"SUM(CAST([{gross}] AS DECIMAL(18,2))) AS gross_production")
-            if net: select_parts.append(f"SUM(CAST([{net}] AS DECIMAL(18,2))) AS net_production")
-            if coll: select_parts.append(f"SUM(CAST([{coll}] AS DECIMAL(18,2))) AS net_collections")
-            if adj: select_parts.append(f"SUM(CAST([{adj}] AS DECIMAL(18,2))) AS adjustments")
-            if pid: select_parts.append(f"COUNT(DISTINCT [{pid}]) AS patients_seen")
-
+            prov_count = f", COUNT(DISTINCT {prov_expr}) AS providers_active" if prov_expr else ""
             cursor.execute(f"""
-                SELECT {', '.join(select_parts)}
+                SELECT CAST([{svc}] AS DATE) AS prod_date,
+                       SUM([{gross}]) AS gross_production
+                       {prov_count}
+                FROM {view}
+                WHERE [{svc}] >= DATEADD(month, -1, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
+                GROUP BY CAST([{svc}] AS DATE)
+                ORDER BY CAST([{svc}] AS DATE)
+            """)
+            for row in rows_to_dicts(cursor):
+                result['by_date'].append({
+                    'date': str(row.get('prod_date', '')),
+                    'gross': round(float(row.get('gross_production', 0) or 0), 2),
+                    'net': 0, 'collections': 0, 'adjustments': 0, 'patients': 0,
+                    'providers': int(row.get('providers_active', 0)),
+                })
+            print(f"  Daily totals: {len(result['by_date'])} days")
+        except Exception as e:
+            print(f"  ⚠ Daily production totals failed: {e}")
+
+        # MTD by provider
+        if prov_expr and ofc:
+            try:
+                cursor.execute(f"""
+                    SELECT {prov_expr} AS provider,
+                           [{ofc}] AS office,
+                           SUM([{gross}]) AS gross_production,
+                           COUNT(DISTINCT CAST([{svc}] AS DATE)) AS days_worked
+                    FROM {view}
+                    WHERE [{svc}] >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
+                      AND {prov_expr} IS NOT NULL
+                    GROUP BY {prov_expr}, [{ofc}]
+                    ORDER BY SUM([{gross}]) DESC
+                """)
+                for row in rows_to_dicts(cursor):
+                    ofc_val = str(row.get('office', '')).strip()
+                    if ofc_is_name:
+                        ofc_display = normalize_office(ofc_val)
+                    elif ofc_val in office_names:
+                        ofc_display = normalize_office(office_names[ofc_val])
+                    else:
+                        ofc_display = normalize_office(ofc_val)
+                    result['by_provider_mtd'].append({
+                        'provider': str(row.get('provider', '')).strip(),
+                        'office': ofc_display,
+                        'gross': round(float(row.get('gross_production', 0) or 0), 2),
+                        'net': 0, 'collections': 0, 'adjustments': 0, 'patients': 0,
+                        'days_worked': int(row.get('days_worked', 0)),
+                    })
+                print(f"  MTD by provider: {len(result['by_provider_mtd'])} provider-office combos")
+            except Exception as e:
+                print(f"  ⚠ MTD by provider failed: {e}")
+
+        # Monthly summary (last 12 months)
+        try:
+            cursor.execute(f"""
+                SELECT YEAR([{svc}]) AS yr, MONTH([{svc}]) AS mo,
+                       SUM([{gross}]) AS gross_production
+                FROM {view}
+                WHERE [{svc}] >= DATEADD(month, -12, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
+                GROUP BY YEAR([{svc}]), MONTH([{svc}])
+                ORDER BY YEAR([{svc}]), MONTH([{svc}])
+            """)
+            month_names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            for row in rows_to_dicts(cursor):
+                yr = int(row.get('yr', 0))
+                mo = int(row.get('mo', 0))
+                result['monthly_summary'].append({
+                    'year': yr, 'month': mo,
+                    'label': f"{month_names[mo]} {yr}" if 1 <= mo <= 12 else f"{mo}/{yr}",
+                    'gross': round(float(row.get('gross_production', 0) or 0), 2),
+                    'net': 0, 'collections': 0, 'adjustments': 0, 'patients': 0,
+                })
+            print(f"  Monthly summary: {len(result['monthly_summary'])} months")
+        except Exception as e:
+            print(f"  ⚠ Monthly summary failed: {e}")
+
+        return result
+
+    # ── Fallback: use rpt.vw_income_allocation ──
+    svc = col_map.get('service_date')
+    if not svc:
+        print(f"  ⚠ No service_date column — skipping production queries")
+        return result
+
+    ofc = col_map.get('office_id')
+    gross = col_map.get('gross_production')
+    coll = col_map.get('net_collections')
+    pid = col_map.get('patient_id')
+    prov = col_map.get('provider_id')
+
+    print(f"  Using fallback: rpt.vw_income_allocation")
+
+    # Daily by office (fallback)
+    if ofc and gross:
+        try:
+            cursor.execute(f"""
+                SELECT CAST([{svc}] AS DATE) AS prod_date, [{ofc}] AS office,
+                       SUM(CAST([{gross}] AS DECIMAL(18,2))) AS gross_production
                 FROM rpt.vw_income_allocation
                 WHERE [{svc}] >= DATEADD(month, -1, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
                   AND [{ofc}] IS NOT NULL
@@ -859,131 +947,65 @@ def query_daily_production(conn, col_map=None):
                 ORDER BY CAST([{svc}] AS DATE), [{ofc}]
             """)
             for row in rows_to_dicts(cursor):
+                ofc_val = str(row.get('office', '')).strip()
+                ofc_key = str(int(float(ofc_val))) if ofc_val.replace('.','').isdigit() else ofc_val
+                ofc_display = normalize_office(office_names.get(ofc_key, ofc_key))
                 result['by_office_daily'].append({
                     'date': str(row.get('prod_date', '')),
-                    'office': resolve_office(row.get('office')),
+                    'office': ofc_display,
                     'gross': round(float(row.get('gross_production', 0) or 0), 2),
-                    'net': round(float(row.get('net_production', 0) or 0), 2),
-                    'collections': round(float(row.get('net_collections', 0) or 0), 2),
-                    'adjustments': round(float(row.get('adjustments', 0) or 0), 2),
-                    'patients': int(row.get('patients_seen', 0)),
+                    'net': 0, 'collections': 0, 'adjustments': 0, 'patients': 0,
                 })
-            print(f"  Daily production: {len(result['by_office_daily'])} office-day records")
+            print(f"  Daily production (fallback): {len(result['by_office_daily'])} office-day records")
         except Exception as e:
             print(f"  ⚠ Daily production by office failed: {e}")
 
-    # Daily production totals (all offices combined)
-    try:
-        select_parts = [f"CAST([{svc}] AS DATE) AS prod_date"]
-        if gross: select_parts.append(f"SUM(CAST([{gross}] AS DECIMAL(18,2))) AS gross_production")
-        if net: select_parts.append(f"SUM(CAST([{net}] AS DECIMAL(18,2))) AS net_production")
-        if coll: select_parts.append(f"SUM(CAST([{coll}] AS DECIMAL(18,2))) AS net_collections")
-        if adj: select_parts.append(f"SUM(CAST([{adj}] AS DECIMAL(18,2))) AS adjustments")
-        if pid: select_parts.append(f"COUNT(DISTINCT [{pid}]) AS patients_seen")
-        if prov: select_parts.append(f"COUNT(DISTINCT [{prov}]) AS providers_active")
-
-        # For numeric provider IDs, don't compare with empty string
-        where_extra = ""
-        if prov:
-            where_extra = f" AND [{prov}] IS NOT NULL"
-
-        cursor.execute(f"""
-            SELECT {', '.join(select_parts)}
-            FROM rpt.vw_income_allocation
-            WHERE [{svc}] >= DATEADD(month, -1, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
-              {where_extra}
-            GROUP BY CAST([{svc}] AS DATE)
-            ORDER BY CAST([{svc}] AS DATE)
-        """)
-        for row in rows_to_dicts(cursor):
-            result['by_date'].append({
-                'date': str(row.get('prod_date', '')),
-                'gross': round(float(row.get('gross_production', 0) or 0), 2),
-                'net': round(float(row.get('net_production', 0) or 0), 2),
-                'collections': round(float(row.get('net_collections', 0) or 0), 2),
-                'adjustments': round(float(row.get('adjustments', 0) or 0), 2),
-                'patients': int(row.get('patients_seen', 0)),
-                'providers': int(row.get('providers_active', 0)),
-            })
-        print(f"  Daily totals: {len(result['by_date'])} days")
-    except Exception as e:
-        print(f"  ⚠ Daily production totals failed: {e}")
-
-    # MTD by provider (for provider ranking)
-    if prov:
+    # Daily totals (fallback)
+    if gross:
         try:
-            select_parts = [f"[{prov}] AS provider"]
-            if ofc: select_parts.append(f"[{ofc}] AS office")
-            if gross: select_parts.append(f"SUM(CAST([{gross}] AS DECIMAL(18,2))) AS gross_production")
-            if net: select_parts.append(f"SUM(CAST([{net}] AS DECIMAL(18,2))) AS net_production")
-            if coll: select_parts.append(f"SUM(CAST([{coll}] AS DECIMAL(18,2))) AS net_collections")
-            if adj: select_parts.append(f"SUM(CAST([{adj}] AS DECIMAL(18,2))) AS adjustments")
-            if pid: select_parts.append(f"COUNT(DISTINCT [{pid}]) AS patients_seen")
-            select_parts.append(f"COUNT(DISTINCT CAST([{svc}] AS DATE)) AS days_worked")
-
-            group_parts = [f"[{prov}]"]
-            if ofc: group_parts.append(f"[{ofc}]")
-
-            sort_col = f"SUM(CAST([{gross}] AS DECIMAL(18,2)))" if gross else f"[{prov}]"
-
-            # No string comparison on numeric columns
             cursor.execute(f"""
-                SELECT {', '.join(select_parts)}
+                SELECT CAST([{svc}] AS DATE) AS prod_date,
+                       SUM(CAST([{gross}] AS DECIMAL(18,2))) AS gross_production
                 FROM rpt.vw_income_allocation
-                WHERE [{svc}] >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
-                  AND [{prov}] IS NOT NULL
-                GROUP BY {', '.join(group_parts)}
-                ORDER BY {sort_col} DESC
+                WHERE [{svc}] >= DATEADD(month, -1, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
+                GROUP BY CAST([{svc}] AS DATE)
+                ORDER BY CAST([{svc}] AS DATE)
             """)
             for row in rows_to_dicts(cursor):
-                result['by_provider_mtd'].append({
-                    'provider': resolve_provider(row.get('provider')),
-                    'office': resolve_office(row.get('office')),
+                result['by_date'].append({
+                    'date': str(row.get('prod_date', '')),
                     'gross': round(float(row.get('gross_production', 0) or 0), 2),
-                    'net': round(float(row.get('net_production', 0) or 0), 2),
-                    'collections': round(float(row.get('net_collections', 0) or 0), 2),
-                    'adjustments': round(float(row.get('adjustments', 0) or 0), 2),
-                    'patients': int(row.get('patients_seen', 0)),
-                    'days_worked': int(row.get('days_worked', 0)),
+                    'net': 0, 'collections': 0, 'adjustments': 0, 'patients': 0, 'providers': 0,
                 })
-            print(f"  MTD by provider: {len(result['by_provider_mtd'])} provider-office combos")
+            print(f"  Daily totals (fallback): {len(result['by_date'])} days")
         except Exception as e:
-            print(f"  ⚠ MTD by provider failed: {e}")
+            print(f"  ⚠ Daily production totals failed: {e}")
 
-    # Monthly summary (last 12 months)
-    try:
-        select_parts = [f"YEAR([{svc}]) AS yr", f"MONTH([{svc}]) AS mo"]
-        if gross: select_parts.append(f"SUM(CAST([{gross}] AS DECIMAL(18,2))) AS gross_production")
-        if net: select_parts.append(f"SUM(CAST([{net}] AS DECIMAL(18,2))) AS net_production")
-        if coll: select_parts.append(f"SUM(CAST([{coll}] AS DECIMAL(18,2))) AS net_collections")
-        if adj: select_parts.append(f"SUM(CAST([{adj}] AS DECIMAL(18,2))) AS adjustments")
-        if pid: select_parts.append(f"COUNT(DISTINCT [{pid}]) AS patients_seen")
-
-        cursor.execute(f"""
-            SELECT {', '.join(select_parts)}
-            FROM rpt.vw_income_allocation
-            WHERE [{svc}] >= DATEADD(month, -12, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
-            GROUP BY YEAR([{svc}]), MONTH([{svc}])
-            ORDER BY YEAR([{svc}]), MONTH([{svc}])
-        """)
-        month_names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-        for row in rows_to_dicts(cursor):
-            yr = int(row.get('yr', 0))
-            mo = int(row.get('mo', 0))
-            result['monthly_summary'].append({
-                'year': yr,
-                'month': mo,
-                'label': f"{month_names[mo]} {yr}" if 1 <= mo <= 12 else f"{mo}/{yr}",
-                'gross': round(float(row.get('gross_production', 0) or 0), 2),
-                'net': round(float(row.get('net_production', 0) or 0), 2),
-                'collections': round(float(row.get('net_collections', 0) or 0), 2),
-                'adjustments': round(float(row.get('adjustments', 0) or 0), 2),
-                'patients': int(row.get('patients_seen', 0)),
-            })
-        print(f"  Monthly summary: {len(result['monthly_summary'])} months")
-    except Exception as e:
-        print(f"  ⚠ Monthly summary failed: {e}")
+    # Monthly summary (fallback)
+    if gross:
+        try:
+            cursor.execute(f"""
+                SELECT YEAR([{svc}]) AS yr, MONTH([{svc}]) AS mo,
+                       SUM(CAST([{gross}] AS DECIMAL(18,2))) AS gross_production
+                FROM rpt.vw_income_allocation
+                WHERE [{svc}] >= DATEADD(month, -12, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
+                GROUP BY YEAR([{svc}]), MONTH([{svc}])
+                ORDER BY YEAR([{svc}]), MONTH([{svc}])
+            """)
+            month_names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            for row in rows_to_dicts(cursor):
+                yr = int(row.get('yr', 0))
+                mo = int(row.get('mo', 0))
+                result['monthly_summary'].append({
+                    'year': yr, 'month': mo,
+                    'label': f"{month_names[mo]} {yr}" if 1 <= mo <= 12 else f"{mo}/{yr}",
+                    'gross': round(float(row.get('gross_production', 0) or 0), 2),
+                    'net': 0, 'collections': 0, 'adjustments': 0, 'patients': 0,
+                })
+            print(f"  Monthly summary (fallback): {len(result['monthly_summary'])} months")
+        except Exception as e:
+            print(f"  ⚠ Monthly summary failed: {e}")
 
     return result
 
