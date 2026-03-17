@@ -2626,11 +2626,11 @@
     },
     {
       "household_id": 122978.0,
-      "household": "Charles Pilling (11); Julia Pilling (15) Family",
+      "household": "Julia Pilling (15); Charles Pilling (11) Family",
       "phone": "(360) 421-7944",
       "email": "epilling@msn.com",
       "kids_due_count": 2,
-      "kids_due_names": "Charles Pilling (11); Julia Pilling (15)",
+      "kids_due_names": "Julia Pilling (15); Charles Pilling (11)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-07-18",
       "oldest_hygiene": "2024-06-14",
@@ -2808,11 +2808,11 @@
     },
     {
       "household_id": 121044.0,
-      "household": "Ayden TheBoy-Jones (17); Tyrone Brisbois Jr. (17); Gabriella Brisbois (8); Tyson Brisbois (7); Benson Brisbois (3) Family",
+      "household": "Tyrone Brisbois Jr. (17); Ayden TheBoy-Jones (17); Gabriella Brisbois (8); Tyson Brisbois (7); Benson Brisbois (3) Family",
       "phone": "(425) 539-1340",
       "email": "cassandrabrisbois@gmail.com",
       "kids_due_count": 5,
-      "kids_due_names": "Ayden TheBoy-Jones (17); Tyrone Brisbois Jr. (17); Gabriella Brisbois (8); Tyson Brisbois (7); Benson Brisbois (3)",
+      "kids_due_names": "Tyrone Brisbois Jr. (17); Ayden TheBoy-Jones (17); Gabriella Brisbois (8); Tyson Brisbois (7); Benson Brisbois (3)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-05-07",
       "oldest_hygiene": "2024-08-14",
@@ -2892,11 +2892,11 @@
     },
     {
       "household_id": 113083.0,
-      "household": "Taylor Hayward (18); Skylar Hayward (16); Layana Hayward (7) Family",
+      "household": "Taylor Hayward (18); Layana Hayward (7); Skylar Hayward (16) Family",
       "phone": "(425) 530-7589",
       "email": "jacqueline48@comcast.net",
       "kids_due_count": 3,
-      "kids_due_names": "Taylor Hayward (18); Skylar Hayward (16); Layana Hayward (7)",
+      "kids_due_names": "Taylor Hayward (18); Layana Hayward (7); Skylar Hayward (16)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-03-25",
       "oldest_hygiene": "2024-09-18",
@@ -2948,11 +2948,11 @@
     },
     {
       "household_id": 107207.0,
-      "household": "Paxton Mckie (10); Declan Mckie (15); Maddox Mckie (14); Avalon Mckie (12) Family",
+      "household": "Paxton Mckie (10); Declan Mckie (15); Avalon Mckie (12); Maddox Mckie (14) Family",
       "phone": "(425) 971-4766",
       "email": "jasmine.mckie@gmail.com",
       "kids_due_count": 4,
-      "kids_due_names": "Paxton Mckie (10); Declan Mckie (15); Maddox Mckie (14); Avalon Mckie (12)",
+      "kids_due_names": "Paxton Mckie (10); Declan Mckie (15); Avalon Mckie (12); Maddox Mckie (14)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2024-10-02",
       "oldest_hygiene": "2024-10-02",
@@ -2962,11 +2962,11 @@
     },
     {
       "household_id": 109214.0,
-      "household": "Athena Moore Olveda (5); Aydriana Ruscigno (17); Annalisa Moore Olveda (12); Ninah Moore-Olveda (11) Family",
+      "household": "Athena Moore Olveda (5); Aydriana Ruscigno (17); Ninah Moore-Olveda (11); Annalisa Moore Olveda (12) Family",
       "phone": "(425) 948-8033",
       "email": "melissamoore338@gmail.com",
       "kids_due_count": 4,
-      "kids_due_names": "Athena Moore Olveda (5); Aydriana Ruscigno (17); Annalisa Moore Olveda (12); Ninah Moore-Olveda (11)",
+      "kids_due_names": "Athena Moore Olveda (5); Aydriana Ruscigno (17); Ninah Moore-Olveda (11); Annalisa Moore Olveda (12)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2024-10-03",
       "oldest_hygiene": "2024-10-03",
@@ -3199,6 +3199,20 @@
       "days_overdue": 481
     },
     {
+      "household_id": 119354.0,
+      "household": "Jolana Dillon (8) Family",
+      "phone": "(425) 299-1052",
+      "email": "llewopmis@icloud.clm",
+      "kids_due_count": 1,
+      "kids_due_names": "Jolana Dillon (8)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2024-11-21",
+      "oldest_hygiene": "2024-11-21",
+      "last_visit_date": "2025-04-02",
+      "last_visit_office": "STANWOOD",
+      "days_overdue": 481
+    },
+    {
       "household_id": 124538.0,
       "household": "Desmond VanAmburg (10) Family",
       "phone": "(425) 681-2652",
@@ -3396,11 +3410,11 @@
     },
     {
       "household_id": 124019.0,
-      "household": "Brandon Toscano-Ornelas (19); Lisa Toscano-Ornelas (18); Fatima Toscano-Ornelas (16); Eliseo Toscano-Ornelas (14) Family",
+      "household": "Lisa Toscano-Ornelas (18); Brandon Toscano-Ornelas (19); Fatima Toscano-Ornelas (16); Eliseo Toscano-Ornelas (14) Family",
       "phone": "(360) 630-4990",
       "email": "roserybeans22@gmail.com",
       "kids_due_count": 4,
-      "kids_due_names": "Brandon Toscano-Ornelas (19); Lisa Toscano-Ornelas (18); Fatima Toscano-Ornelas (16); Eliseo Toscano-Ornelas (14)",
+      "kids_due_names": "Lisa Toscano-Ornelas (18); Brandon Toscano-Ornelas (19); Fatima Toscano-Ornelas (16); Eliseo Toscano-Ornelas (14)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-06-20",
       "oldest_hygiene": "2024-12-17",
@@ -3452,11 +3466,11 @@
     },
     {
       "household_id": 109237.0,
-      "household": "Logan Monger (15); Brennan Monger (11); Paityn Monger (15); Kalyn Monger (9) Family",
+      "household": "Logan Monger (15); Paityn Monger (15); Brennan Monger (11); Kalyn Monger (9) Family",
       "phone": "(425) 770-0391",
       "email": "Karamonger13@gmail.com",
       "kids_due_count": 4,
-      "kids_due_names": "Logan Monger (15); Brennan Monger (11); Paityn Monger (15); Kalyn Monger (9)",
+      "kids_due_names": "Logan Monger (15); Paityn Monger (15); Brennan Monger (11); Kalyn Monger (9)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-07-22",
       "oldest_hygiene": "2024-12-19",
@@ -3550,11 +3564,11 @@
     },
     {
       "household_id": 119668.0,
-      "household": "Fernando Saldana Pacheco Jr. (10); Yamile Saldana Pacheco (14) Family",
+      "household": "Yamile Saldana Pacheco (14); Fernando Saldana Pacheco Jr. (10) Family",
       "phone": "(425) 622-7663",
       "email": "leti.777@hotmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Fernando Saldana Pacheco Jr. (10); Yamile Saldana Pacheco (14)",
+      "kids_due_names": "Yamile Saldana Pacheco (14); Fernando Saldana Pacheco Jr. (10)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2024-12-27",
       "oldest_hygiene": "2024-12-27",
@@ -3634,11 +3648,11 @@
     },
     {
       "household_id": 112686.0,
-      "household": "Roman Thomas (11); Kingstin Thomas (12); Lily Johnson (9) Family",
+      "household": "Kingstin Thomas (12); Roman Thomas (11); Lily Johnson (9) Family",
       "phone": "(360) 691-8205",
       "email": "jessica.nicholas2017@gmail.com",
       "kids_due_count": 3,
-      "kids_due_names": "Roman Thomas (11); Kingstin Thomas (12); Lily Johnson (9)",
+      "kids_due_names": "Kingstin Thomas (12); Roman Thomas (11); Lily Johnson (9)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-01-07",
       "oldest_hygiene": "2025-01-07",
@@ -3830,11 +3844,11 @@
     },
     {
       "household_id": 110252.0,
-      "household": "Jeremiah Rios (13); Joan Rios (17) Family",
+      "household": "Joan Rios (17); Jeremiah Rios (13) Family",
       "phone": "(425) 971-7168",
       "email": "",
       "kids_due_count": 2,
-      "kids_due_names": "Jeremiah Rios (13); Joan Rios (17)",
+      "kids_due_names": "Joan Rios (17); Jeremiah Rios (13)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-01-27",
       "oldest_hygiene": "2025-01-27",
@@ -3914,11 +3928,11 @@
     },
     {
       "household_id": 121380.0,
-      "household": "Caiden Martinson (12); Taitum Martinson (8); Noa Martinson (10) Family",
+      "household": "Noa Martinson (10); Taitum Martinson (8); Caiden Martinson (12) Family",
       "phone": "(425) 949-9971",
       "email": "zenamartinson@gmail.com",
       "kids_due_count": 3,
-      "kids_due_names": "Caiden Martinson (12); Taitum Martinson (8); Noa Martinson (10)",
+      "kids_due_names": "Noa Martinson (10); Taitum Martinson (8); Caiden Martinson (12)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-02-04",
       "oldest_hygiene": "2025-02-04",
@@ -3942,11 +3956,11 @@
     },
     {
       "household_id": 103286.0,
-      "household": "Isabelle O'Shay (13); Aurora Silva (8) Family",
+      "household": "Aurora Silva (8); Isabelle O'Shay (13) Family",
       "phone": "(425) 367-3910",
       "email": "aporter1299@yahoo.com",
       "kids_due_count": 2,
-      "kids_due_names": "Isabelle O'Shay (13); Aurora Silva (8)",
+      "kids_due_names": "Aurora Silva (8); Isabelle O'Shay (13)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-02-12",
       "oldest_hygiene": "2025-02-12",
@@ -4655,26 +4669,12 @@
       "days_overdue": 365
     },
     {
-      "household_id": 122022.0,
-      "household": "Austin Clemens (11) Family",
-      "phone": "(425) 758-3427",
-      "email": "brittanichole@hotmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Austin Clemens (11)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-03-17",
-      "oldest_hygiene": "2025-03-17",
-      "last_visit_date": "2025-03-17",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 365
-    },
-    {
       "household_id": 119028.0,
-      "household": "Cali Hell (12); Saviour Hell (15); Oakley Hell (10) Family",
+      "household": "Saviour Hell (15); Cali Hell (12); Oakley Hell (10) Family",
       "phone": "(425) 375-5969",
       "email": "megalina.kayle@gmail.com",
       "kids_due_count": 3,
-      "kids_due_names": "Cali Hell (12); Saviour Hell (15); Oakley Hell (10)",
+      "kids_due_names": "Saviour Hell (15); Cali Hell (12); Oakley Hell (10)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-03-18",
       "oldest_hygiene": "2025-03-18",
@@ -4949,20 +4949,6 @@
       "days_overdue": 363
     },
     {
-      "household_id": 121170.0,
-      "household": "Hawk Davis (14) Family",
-      "phone": "(425) 760-5164",
-      "email": "camigreen2014@outlook.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Hawk Davis (14)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-03-19",
-      "oldest_hygiene": "2025-03-19",
-      "last_visit_date": "2025-03-19",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 363
-    },
-    {
       "household_id": 126661.0,
       "household": "Edward Lopez-Sanchez (10) Family",
       "phone": "(360) 743-9190",
@@ -4974,6 +4960,20 @@
       "oldest_hygiene": "2025-03-19",
       "last_visit_date": "2025-04-01",
       "last_visit_office": "STANWOOD",
+      "days_overdue": 363
+    },
+    {
+      "household_id": 121170.0,
+      "household": "Hawk Davis (14) Family",
+      "phone": "(425) 760-5164",
+      "email": "camigreen2014@outlook.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Hawk Davis (14)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-03-19",
+      "oldest_hygiene": "2025-03-19",
+      "last_visit_date": "2025-03-19",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 363
     },
     {
@@ -5104,11 +5104,11 @@
     },
     {
       "household_id": 122886.0,
-      "household": "Genaro Garcia (8); Esperanza Garcia Mendez (6) Family",
+      "household": "Esperanza Garcia Mendez (6); Genaro Garcia (8) Family",
       "phone": "(425) 382-1102",
       "email": "florm1849@gmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Genaro Garcia (8); Esperanza Garcia Mendez (6)",
+      "kids_due_names": "Esperanza Garcia Mendez (6); Genaro Garcia (8)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-03-20",
       "oldest_hygiene": "2025-03-20",
@@ -5118,11 +5118,11 @@
     },
     {
       "household_id": 119442.0,
-      "household": "Logan Smith (15); Quinn Smith (17) Family",
+      "household": "Quinn Smith (17); Logan Smith (15) Family",
       "phone": "(425) 219-1636",
       "email": "kaulana.cicardini@icloud.com",
       "kids_due_count": 2,
-      "kids_due_names": "Logan Smith (15); Quinn Smith (17)",
+      "kids_due_names": "Quinn Smith (17); Logan Smith (15)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-03-20",
       "oldest_hygiene": "2025-03-20",
@@ -5384,30 +5384,16 @@
     },
     {
       "household_id": 109895.0,
-      "household": "Gabriel West (17); Hunter West (15) Family",
+      "household": "Hunter West (15); Gabriel West (17) Family",
       "phone": "(425) 244-7298",
       "email": "cunha0504@yahoo.com",
       "kids_due_count": 2,
-      "kids_due_names": "Gabriel West (17); Hunter West (15)",
+      "kids_due_names": "Hunter West (15); Gabriel West (17)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-03-25",
       "oldest_hygiene": "2025-03-25",
       "last_visit_date": "2025-03-25",
       "last_visit_office": "STANWOOD",
-      "days_overdue": 357
-    },
-    {
-      "household_id": 120846.0,
-      "household": "Alexandra Koryachek (15) Family",
-      "phone": "(425) 329-5642",
-      "email": "mariya_koryachek@yahoo.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Alexandra Koryachek (15)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-03-25",
-      "oldest_hygiene": "2025-03-25",
-      "last_visit_date": "2025-03-25",
-      "last_visit_office": "MONROE",
       "days_overdue": 357
     },
     {
@@ -5422,6 +5408,20 @@
       "oldest_hygiene": "2025-03-25",
       "last_visit_date": "2025-03-25",
       "last_visit_office": "LAKE STEVENS",
+      "days_overdue": 357
+    },
+    {
+      "household_id": 120846.0,
+      "household": "Alexandra Koryachek (15) Family",
+      "phone": "(425) 329-5642",
+      "email": "mariya_koryachek@yahoo.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Alexandra Koryachek (15)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-03-25",
+      "oldest_hygiene": "2025-03-25",
+      "last_visit_date": "2025-03-25",
+      "last_visit_office": "MONROE",
       "days_overdue": 357
     },
     {
@@ -5692,11 +5692,11 @@
     },
     {
       "household_id": 116997.0,
-      "household": "Lilly Laffey (7); Richard Laffey (6); River Laffey (4) Family",
+      "household": "Richard Laffey (6); Lilly Laffey (7); River Laffey (4) Family",
       "phone": "(360) 707-1904",
       "email": "rickylaffey1998@gmail.com",
       "kids_due_count": 3,
-      "kids_due_names": "Lilly Laffey (7); Richard Laffey (6); River Laffey (4)",
+      "kids_due_names": "Richard Laffey (6); Lilly Laffey (7); River Laffey (4)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-03-28",
       "oldest_hygiene": "2025-03-28",
@@ -5789,6 +5789,20 @@
       "days_overdue": 351
     },
     {
+      "household_id": 119955.0,
+      "household": "Connor Griffiths (17); Cohen Griffiths (13) Family",
+      "phone": "(425) 205-5060",
+      "email": "n.rich67@yahoo.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Connor Griffiths (17); Cohen Griffiths (13)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-04-01",
+      "oldest_hygiene": "2025-04-01",
+      "last_visit_date": "2025-04-01",
+      "last_visit_office": "MONROE",
+      "days_overdue": 350
+    },
+    {
       "household_id": 115121.0,
       "household": "Jordan Mccotter (16); Mavryk Mccotter (7) Family",
       "phone": "(206) 335-8707",
@@ -5809,20 +5823,6 @@
       "email": "theshorts052415@gmail.com",
       "kids_due_count": 2,
       "kids_due_names": "Chloe Short (3); Corbin Short (7)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-04-01",
-      "oldest_hygiene": "2025-04-01",
-      "last_visit_date": "2025-04-01",
-      "last_visit_office": "MONROE",
-      "days_overdue": 350
-    },
-    {
-      "household_id": 119955.0,
-      "household": "Connor Griffiths (17); Cohen Griffiths (13) Family",
-      "phone": "(425) 205-5060",
-      "email": "n.rich67@yahoo.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Connor Griffiths (17); Cohen Griffiths (13)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-04-01",
       "oldest_hygiene": "2025-04-01",
@@ -5915,20 +5915,6 @@
       "days_overdue": 350
     },
     {
-      "household_id": 108118.0,
-      "household": "Jasmine Burnett (11) Family",
-      "phone": "(425) 330-3225",
-      "email": "jeffburnett@aol.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Jasmine Burnett (11)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-04-01",
-      "oldest_hygiene": "2025-04-01",
-      "last_visit_date": "2025-04-01",
-      "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 350
-    },
-    {
       "household_id": 120500.0,
       "household": "Mark Ruddell (6) Family",
       "phone": "(509) 741-6404",
@@ -5940,6 +5926,20 @@
       "oldest_hygiene": "2025-04-01",
       "last_visit_date": "2025-04-01",
       "last_visit_office": "STANWOOD",
+      "days_overdue": 350
+    },
+    {
+      "household_id": 108118.0,
+      "household": "Jasmine Burnett (11) Family",
+      "phone": "(425) 330-3225",
+      "email": "jeffburnett@aol.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Jasmine Burnett (11)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-04-01",
+      "oldest_hygiene": "2025-04-01",
+      "last_visit_date": "2025-04-01",
+      "last_visit_office": "LAKE STEVENS",
       "days_overdue": 350
     },
     {
@@ -6028,11 +6028,11 @@
     },
     {
       "household_id": 108662.0,
-      "household": "Jessie Niemela (12); Calvin Niemela (16) Family",
+      "household": "Calvin Niemela (16); Jessie Niemela (12) Family",
       "phone": "(425) 327-2528",
       "email": "tarabyman@hotmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Jessie Niemela (12); Calvin Niemela (16)",
+      "kids_due_names": "Calvin Niemela (16); Jessie Niemela (12)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-04-01",
       "oldest_hygiene": "2025-04-01",
@@ -6069,20 +6069,6 @@
       "days_overdue": 350
     },
     {
-      "household_id": 115526.0,
-      "household": "Jaxon Simons (12) Family",
-      "phone": "(360) 403-5555",
-      "email": "milsimons@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Jaxon Simons (12)",
-      "last_office": "STANWOOD",
-      "most_recent_hygiene": "2025-04-01",
-      "oldest_hygiene": "2025-04-01",
-      "last_visit_date": "2025-04-01",
-      "last_visit_office": "STANWOOD",
-      "days_overdue": 350
-    },
-    {
       "household_id": 100996.0,
       "household": "Truman LeMay (17) Family",
       "phone": "(206) 979-3187",
@@ -6097,12 +6083,26 @@
       "days_overdue": 350
     },
     {
+      "household_id": 115526.0,
+      "household": "Jaxon Simons (12) Family",
+      "phone": "(360) 403-5555",
+      "email": "milsimons@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Jaxon Simons (12)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-04-01",
+      "oldest_hygiene": "2025-04-01",
+      "last_visit_date": "2025-04-01",
+      "last_visit_office": "STANWOOD",
+      "days_overdue": 350
+    },
+    {
       "household_id": 113734.0,
-      "household": "Damian Partida (13); Samantha Partida (15); Adrian Partida Ibarra (12) Family",
+      "household": "Samantha Partida (15); Damian Partida (13); Adrian Partida Ibarra (12) Family",
       "phone": "(425) 345-6496",
       "email": "",
       "kids_due_count": 3,
-      "kids_due_names": "Damian Partida (13); Samantha Partida (15); Adrian Partida Ibarra (12)",
+      "kids_due_names": "Samantha Partida (15); Damian Partida (13); Adrian Partida Ibarra (12)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-08-28",
       "oldest_hygiene": "2025-04-01",
@@ -6294,11 +6294,11 @@
     },
     {
       "household_id": 126984.0,
-      "household": "Alijah Strong (6); Joe Driscol (13); Kazar Crowder (17) Family",
+      "household": "Joe Driscol (13); Alijah Strong (6); Kazar Crowder (17) Family",
       "phone": "(360) 386-8728",
       "email": "katieo@bridgereceivingcenter.org",
       "kids_due_count": 3,
-      "kids_due_names": "Alijah Strong (6); Joe Driscol (13); Kazar Crowder (17)",
+      "kids_due_names": "Joe Driscol (13); Alijah Strong (6); Kazar Crowder (17)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-06-25",
       "oldest_hygiene": "2025-04-03",
@@ -6447,20 +6447,6 @@
       "days_overdue": 347
     },
     {
-      "household_id": 116840.0,
-      "household": "Fernando Martinez (19) Family",
-      "phone": "(253) 370-8946",
-      "email": "orosco_maria@hotmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Fernando Martinez (19)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-04-04",
-      "oldest_hygiene": "2025-04-04",
-      "last_visit_date": "2025-04-04",
-      "last_visit_office": "MONROE",
-      "days_overdue": 347
-    },
-    {
       "household_id": 108826.0,
       "household": "Luke Henry (17) Family",
       "phone": "(425) 231-6384",
@@ -6472,6 +6458,20 @@
       "oldest_hygiene": "2025-04-04",
       "last_visit_date": "2025-04-04",
       "last_visit_office": "STANWOOD",
+      "days_overdue": 347
+    },
+    {
+      "household_id": 116840.0,
+      "household": "Fernando Martinez (19) Family",
+      "phone": "(253) 370-8946",
+      "email": "orosco_maria@hotmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Fernando Martinez (19)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-04-04",
+      "oldest_hygiene": "2025-04-04",
+      "last_visit_date": "2025-04-04",
+      "last_visit_office": "MONROE",
       "days_overdue": 347
     },
     {
@@ -6909,12 +6909,12 @@
       "days_overdue": 341
     },
     {
-      "household_id": 126995.0,
-      "household": "Emiliano Hernandez (10) Family",
-      "phone": "(425) 948-5520",
-      "email": "danny@carrilloconstruction.com",
+      "household_id": 107159.0,
+      "household": "Holland Floyd (16) Family",
+      "phone": "(971) 275-4863",
+      "email": "adumont112@gmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Emiliano Hernandez (10)",
+      "kids_due_names": "Holland Floyd (16)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-04-10",
       "oldest_hygiene": "2025-04-10",
@@ -6937,12 +6937,12 @@
       "days_overdue": 341
     },
     {
-      "household_id": 107159.0,
-      "household": "Holland Floyd (16) Family",
-      "phone": "(971) 275-4863",
-      "email": "adumont112@gmail.com",
+      "household_id": 126995.0,
+      "household": "Emiliano Hernandez (10) Family",
+      "phone": "(425) 948-5520",
+      "email": "danny@carrilloconstruction.com",
       "kids_due_count": 1,
-      "kids_due_names": "Holland Floyd (16)",
+      "kids_due_names": "Emiliano Hernandez (10)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-04-10",
       "oldest_hygiene": "2025-04-10",
@@ -7022,29 +7022,15 @@
     },
     {
       "household_id": 112481.0,
-      "household": "Vienna Patino (17); Caelum Patino (8); Elliana Patino (13); Elijah Patino (15); Zebulon Patino (11); Mitchell Patino (10) Family",
+      "household": "Vienna Patino (17); Caelum Patino (8); Elliana Patino (13); Elijah Patino (15); Mitchell Patino (10); Zebulon Patino (11) Family",
       "phone": "(206) 334-7129",
       "email": "cspatino@outlook.com",
       "kids_due_count": 6,
-      "kids_due_names": "Vienna Patino (17); Caelum Patino (8); Elliana Patino (13); Elijah Patino (15); Zebulon Patino (11); Mitchell Patino (10)",
+      "kids_due_names": "Vienna Patino (17); Caelum Patino (8); Elliana Patino (13); Elijah Patino (15); Mitchell Patino (10); Zebulon Patino (11)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-04-25",
       "oldest_hygiene": "2025-04-11",
       "last_visit_date": "2025-10-01",
-      "last_visit_office": "MONROE",
-      "days_overdue": 340
-    },
-    {
-      "household_id": 127057.0,
-      "household": "Aurora Mccowan (8) Family",
-      "phone": "(206) 948-7009",
-      "email": "luke77@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Aurora Mccowan (8)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-04-11",
-      "oldest_hygiene": "2025-04-11",
-      "last_visit_date": "2025-04-11",
       "last_visit_office": "MONROE",
       "days_overdue": 340
     },
@@ -7055,6 +7041,20 @@
       "email": "ladyee14@hotmail.com",
       "kids_due_count": 1,
       "kids_due_names": "Milah Mancillas (9)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-04-11",
+      "oldest_hygiene": "2025-04-11",
+      "last_visit_date": "2025-04-11",
+      "last_visit_office": "MONROE",
+      "days_overdue": 340
+    },
+    {
+      "household_id": 127057.0,
+      "household": "Aurora Mccowan (8) Family",
+      "phone": "(206) 948-7009",
+      "email": "luke77@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Aurora Mccowan (8)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-04-11",
       "oldest_hygiene": "2025-04-11",
@@ -7203,17 +7203,17 @@
       "days_overdue": 336
     },
     {
-      "household_id": 118138.0,
-      "household": "Kaj Simpson (17); Kai Simpson (17) Family",
-      "phone": "(509) 470-1497",
-      "email": "",
+      "household_id": 100239.0,
+      "household": "Allyson Neri (16); Adam Neri (13) Family",
+      "phone": "(917) 769-2690",
+      "email": "agnesjune2001@yahoo.com",
       "kids_due_count": 2,
-      "kids_due_names": "Kaj Simpson (17); Kai Simpson (17)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-04-15",
+      "kids_due_names": "Allyson Neri (16); Adam Neri (13)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-07-24",
       "oldest_hygiene": "2025-04-15",
-      "last_visit_date": "2025-04-15",
-      "last_visit_office": "MARYSVILLE",
+      "last_visit_date": "2025-07-24",
+      "last_visit_office": "MONROE",
       "days_overdue": 336
     },
     {
@@ -7231,17 +7231,17 @@
       "days_overdue": 336
     },
     {
-      "household_id": 100239.0,
-      "household": "Allyson Neri (16); Adam Neri (13) Family",
-      "phone": "(917) 769-2690",
-      "email": "agnesjune2001@yahoo.com",
+      "household_id": 118138.0,
+      "household": "Kaj Simpson (17); Kai Simpson (17) Family",
+      "phone": "(509) 470-1497",
+      "email": "",
       "kids_due_count": 2,
-      "kids_due_names": "Allyson Neri (16); Adam Neri (13)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-07-24",
+      "kids_due_names": "Kaj Simpson (17); Kai Simpson (17)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-04-15",
       "oldest_hygiene": "2025-04-15",
-      "last_visit_date": "2025-07-24",
-      "last_visit_office": "MONROE",
+      "last_visit_date": "2025-04-15",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 336
     },
     {
@@ -7427,20 +7427,6 @@
       "days_overdue": 334
     },
     {
-      "household_id": 116952.0,
-      "household": "Noah Mesele (8) Family",
-      "phone": "(425) 772-7261",
-      "email": "",
-      "kids_due_count": 1,
-      "kids_due_names": "Noah Mesele (8)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-04-17",
-      "oldest_hygiene": "2025-04-17",
-      "last_visit_date": "2025-04-17",
-      "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 334
-    },
-    {
       "household_id": 119640.0,
       "household": "Edith Stedman (7) Family",
       "phone": "(360) 322-8740",
@@ -7452,6 +7438,20 @@
       "oldest_hygiene": "2025-04-17",
       "last_visit_date": "2025-04-17",
       "last_visit_office": "MARYSVILLE",
+      "days_overdue": 334
+    },
+    {
+      "household_id": 116952.0,
+      "household": "Noah Mesele (8) Family",
+      "phone": "(425) 772-7261",
+      "email": "",
+      "kids_due_count": 1,
+      "kids_due_names": "Noah Mesele (8)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-04-17",
+      "oldest_hygiene": "2025-04-17",
+      "last_visit_date": "2025-04-17",
+      "last_visit_office": "LAKE STEVENS",
       "days_overdue": 334
     },
     {
@@ -7834,11 +7834,11 @@
     },
     {
       "household_id": 106622.0,
-      "household": "Camdyn Castle (3); Jace Castle (9) Family",
+      "household": "Jace Castle (9); Camdyn Castle (3) Family",
       "phone": "(425) 530-8300",
       "email": "hope.tigerlilly@gmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Camdyn Castle (3); Jace Castle (9)",
+      "kids_due_names": "Jace Castle (9); Camdyn Castle (3)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-04-23",
       "oldest_hygiene": "2025-04-23",
@@ -7862,11 +7862,11 @@
     },
     {
       "household_id": 109654.0,
-      "household": "Benjamin Cross (11); Noah Cross (12) Family",
+      "household": "Noah Cross (12); Benjamin Cross (11) Family",
       "phone": "(425) 274-6782",
       "email": "wallawam@yahoo.com",
       "kids_due_count": 2,
-      "kids_due_names": "Benjamin Cross (11); Noah Cross (12)",
+      "kids_due_names": "Noah Cross (12); Benjamin Cross (11)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-04-24",
       "oldest_hygiene": "2025-04-24",
@@ -7917,20 +7917,6 @@
       "days_overdue": 327
     },
     {
-      "household_id": 120949.0,
-      "household": "Paxton Mannino (8) Family",
-      "phone": "(360) 348-7461",
-      "email": "jessica.burnett@live.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Paxton Mannino (8)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-04-24",
-      "oldest_hygiene": "2025-04-24",
-      "last_visit_date": "2025-04-24",
-      "last_visit_office": "MONROE",
-      "days_overdue": 327
-    },
-    {
       "household_id": 119495.0,
       "household": "Ava Burrell (16) Family",
       "phone": "(206) 427-8699",
@@ -7942,6 +7928,20 @@
       "oldest_hygiene": "2025-04-24",
       "last_visit_date": "2025-09-29",
       "last_visit_office": "MARYSVILLE",
+      "days_overdue": 327
+    },
+    {
+      "household_id": 120949.0,
+      "household": "Paxton Mannino (8) Family",
+      "phone": "(360) 348-7461",
+      "email": "jessica.burnett@live.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Paxton Mannino (8)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-04-24",
+      "oldest_hygiene": "2025-04-24",
+      "last_visit_date": "2025-04-24",
+      "last_visit_office": "MONROE",
       "days_overdue": 327
     },
     {
@@ -8114,11 +8114,11 @@
     },
     {
       "household_id": 107436.0,
-      "household": "Joshua Stevens (16); Daniel Stevens (14); Judah Stevens (8); Noah Stevens (19); Eliza Stevens (6) Family",
+      "household": "Joshua Stevens (16); Noah Stevens (19); Judah Stevens (8); Daniel Stevens (14); Eliza Stevens (6) Family",
       "phone": "(425) 359-4690",
       "email": "Lyndie1206@gmail.com",
       "kids_due_count": 5,
-      "kids_due_names": "Joshua Stevens (16); Daniel Stevens (14); Judah Stevens (8); Noah Stevens (19); Eliza Stevens (6)",
+      "kids_due_names": "Joshua Stevens (16); Noah Stevens (19); Judah Stevens (8); Daniel Stevens (14); Eliza Stevens (6)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-05-01",
       "oldest_hygiene": "2025-04-28",
@@ -8169,20 +8169,6 @@
       "days_overdue": 322
     },
     {
-      "household_id": 127143.0,
-      "household": "Edgar Navarro (15) Family",
-      "phone": "(206) 948-0527",
-      "email": "",
-      "kids_due_count": 1,
-      "kids_due_names": "Edgar Navarro (15)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-04-29",
-      "oldest_hygiene": "2025-04-29",
-      "last_visit_date": "2025-04-29",
-      "last_visit_office": "MONROE",
-      "days_overdue": 322
-    },
-    {
       "household_id": 116480.0,
       "household": "Meadow Paulson-Parsons (4) Family",
       "phone": "(425) 446-0073",
@@ -8194,6 +8180,20 @@
       "oldest_hygiene": "2025-04-29",
       "last_visit_date": "2025-04-29",
       "last_visit_office": "STANWOOD",
+      "days_overdue": 322
+    },
+    {
+      "household_id": 127143.0,
+      "household": "Edgar Navarro (15) Family",
+      "phone": "(206) 948-0527",
+      "email": "",
+      "kids_due_count": 1,
+      "kids_due_names": "Edgar Navarro (15)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-04-29",
+      "oldest_hygiene": "2025-04-29",
+      "last_visit_date": "2025-04-29",
+      "last_visit_office": "MONROE",
       "days_overdue": 322
     },
     {
@@ -8365,20 +8365,6 @@
       "days_overdue": 321
     },
     {
-      "household_id": 127100.0,
-      "household": "Brilynnie Bun (13) Family",
-      "phone": "(425) 530-4909",
-      "email": "hychanth1015@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Brilynnie Bun (13)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-04-30",
-      "oldest_hygiene": "2025-04-30",
-      "last_visit_date": "2025-08-06",
-      "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 321
-    },
-    {
       "household_id": 107748.0,
       "household": "Natalia Niebuhr (16) Family",
       "phone": "(206) 200-6488",
@@ -8390,6 +8376,20 @@
       "oldest_hygiene": "2025-04-30",
       "last_visit_date": "2025-10-29",
       "last_visit_office": "MONROE",
+      "days_overdue": 321
+    },
+    {
+      "household_id": 127100.0,
+      "household": "Brilynnie Bun (13) Family",
+      "phone": "(425) 530-4909",
+      "email": "hychanth1015@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Brilynnie Bun (13)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-04-30",
+      "oldest_hygiene": "2025-04-30",
+      "last_visit_date": "2025-08-06",
+      "last_visit_office": "LAKE STEVENS",
       "days_overdue": 321
     },
     {
@@ -8589,6 +8589,20 @@
       "days_overdue": 319
     },
     {
+      "household_id": 125594.0,
+      "household": "Evelin Solis-Mejia (17) Family",
+      "phone": "(319) 202-4798",
+      "email": "alexandcourtney.wa@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Evelin Solis-Mejia (17)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-05-02",
+      "oldest_hygiene": "2025-05-02",
+      "last_visit_date": "2025-05-02",
+      "last_visit_office": "MONROE",
+      "days_overdue": 319
+    },
+    {
       "household_id": 123947.0,
       "household": "Brennan Bettis (14) Family",
       "phone": "(206) 245-9077",
@@ -8603,12 +8617,12 @@
       "days_overdue": 319
     },
     {
-      "household_id": 125594.0,
-      "household": "Evelin Solis-Mejia (17) Family",
-      "phone": "(319) 202-4798",
-      "email": "alexandcourtney.wa@gmail.com",
+      "household_id": 102771.0,
+      "household": "Alex Monterrosa (16) Family",
+      "phone": "(425) 366-0750",
+      "email": "",
       "kids_due_count": 1,
-      "kids_due_names": "Evelin Solis-Mejia (17)",
+      "kids_due_names": "Alex Monterrosa (16)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-05-02",
       "oldest_hygiene": "2025-05-02",
@@ -8674,11 +8688,11 @@
     },
     {
       "household_id": 115594.0,
-      "household": "Tamiko Perez (12); Takeo Perez (13) Family",
+      "household": "Takeo Perez (13); Tamiko Perez (12) Family",
       "phone": "(425) 583-0069",
       "email": "mariko.perez@gmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Tamiko Perez (12); Takeo Perez (13)",
+      "kids_due_names": "Takeo Perez (13); Tamiko Perez (12)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-05-05",
       "oldest_hygiene": "2025-05-05",
@@ -8884,11 +8898,11 @@
     },
     {
       "household_id": 125248.0,
-      "household": "Advik Katta (5) Family",
-      "phone": "(609) 509-0938",
-      "email": "pkk0731@gmail.com",
+      "household": "Aadhya Katta (9) Family",
+      "phone": "(609) 509-8866",
+      "email": "Gade.Madhuri416@gmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Advik Katta (5)",
+      "kids_due_names": "Aadhya Katta (9)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-05-07",
       "oldest_hygiene": "2025-05-07",
@@ -8898,11 +8912,11 @@
     },
     {
       "household_id": 125248.0,
-      "household": "Aadhya Katta (9) Family",
-      "phone": "(609) 509-8866",
-      "email": "Gade.Madhuri416@gmail.com",
+      "household": "Advik Katta (5) Family",
+      "phone": "(609) 509-0938",
+      "email": "pkk0731@gmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Aadhya Katta (9)",
+      "kids_due_names": "Advik Katta (5)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-05-07",
       "oldest_hygiene": "2025-05-07",
@@ -9163,20 +9177,6 @@
       "days_overdue": 309
     },
     {
-      "household_id": 113072.0,
-      "household": "William Flowers (19) Family",
-      "phone": "(360) 722-6888",
-      "email": "wendylynnflowers@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "William Flowers (19)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-05-12",
-      "oldest_hygiene": "2025-05-12",
-      "last_visit_date": "2025-05-12",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 309
-    },
-    {
       "household_id": 101769.0,
       "household": "Porter Kenyon (16) Family",
       "phone": "(206) 459-7379",
@@ -9188,6 +9188,20 @@
       "oldest_hygiene": "2025-05-12",
       "last_visit_date": "2025-05-12",
       "last_visit_office": "LAKE STEVENS",
+      "days_overdue": 309
+    },
+    {
+      "household_id": 113072.0,
+      "household": "William Flowers (19) Family",
+      "phone": "(360) 722-6888",
+      "email": "wendylynnflowers@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "William Flowers (19)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-05-12",
+      "oldest_hygiene": "2025-05-12",
+      "last_visit_date": "2025-05-12",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 309
     },
     {
@@ -9289,20 +9303,6 @@
       "days_overdue": 308
     },
     {
-      "household_id": 107702.0,
-      "household": "Zoee Selby (10); Ronald Olberg (5) Family",
-      "phone": "(425) 238-7694",
-      "email": "selbyamber28@gmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Zoee Selby (10); Ronald Olberg (5)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-05-13",
-      "oldest_hygiene": "2025-05-13",
-      "last_visit_date": "2025-05-13",
-      "last_visit_office": "MONROE",
-      "days_overdue": 308
-    },
-    {
       "household_id": 114137.0,
       "household": "Kaleb Cullen (18); Malakai Cullen (16) Family",
       "phone": "(360) 724-8731",
@@ -9317,17 +9317,17 @@
       "days_overdue": 308
     },
     {
-      "household_id": 114921.0,
-      "household": "Christian Kashcheyev (12) Family",
-      "phone": "(425) 389-0951",
-      "email": "",
-      "kids_due_count": 1,
-      "kids_due_names": "Christian Kashcheyev (12)",
-      "last_office": "LAKE STEVENS",
+      "household_id": 107702.0,
+      "household": "Zoee Selby (10); Ronald Olberg (5) Family",
+      "phone": "(425) 238-7694",
+      "email": "selbyamber28@gmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Zoee Selby (10); Ronald Olberg (5)",
+      "last_office": "MONROE",
       "most_recent_hygiene": "2025-05-13",
       "oldest_hygiene": "2025-05-13",
       "last_visit_date": "2025-05-13",
-      "last_visit_office": "LAKE STEVENS",
+      "last_visit_office": "MONROE",
       "days_overdue": 308
     },
     {
@@ -9337,6 +9337,20 @@
       "email": "rykerj12@icloud.com",
       "kids_due_count": 1,
       "kids_due_names": "Ryker Henry (14)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-05-13",
+      "oldest_hygiene": "2025-05-13",
+      "last_visit_date": "2025-05-13",
+      "last_visit_office": "LAKE STEVENS",
+      "days_overdue": 308
+    },
+    {
+      "household_id": 114921.0,
+      "household": "Christian Kashcheyev (12) Family",
+      "phone": "(425) 389-0951",
+      "email": "",
+      "kids_due_count": 1,
+      "kids_due_names": "Christian Kashcheyev (12)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-05-13",
       "oldest_hygiene": "2025-05-13",
@@ -9499,20 +9513,6 @@
       "days_overdue": 307
     },
     {
-      "household_id": 122168.0,
-      "household": "Theus Belcher (15) Family",
-      "phone": "(425) 218-1229",
-      "email": "theusbelcher@yahoo.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Theus Belcher (15)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-05-14",
-      "oldest_hygiene": "2025-05-14",
-      "last_visit_date": "2025-05-14",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 307
-    },
-    {
       "household_id": 109826.0,
       "household": "Amelia Corson (14) Family",
       "phone": "(425) 346-3313",
@@ -9538,6 +9538,20 @@
       "oldest_hygiene": "2025-05-14",
       "last_visit_date": "2025-07-30",
       "last_visit_office": "MONROE",
+      "days_overdue": 307
+    },
+    {
+      "household_id": 122168.0,
+      "household": "Theus Belcher (15) Family",
+      "phone": "(425) 218-1229",
+      "email": "theusbelcher@yahoo.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Theus Belcher (15)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-05-14",
+      "oldest_hygiene": "2025-05-14",
+      "last_visit_date": "2025-05-14",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 307
     },
     {
@@ -9569,20 +9583,6 @@
       "days_overdue": 306
     },
     {
-      "household_id": 100792.0,
-      "household": "Finn Thetford (3) Family",
-      "phone": "(425) 985-1253",
-      "email": "maya.kurita@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Finn Thetford (3)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-05-15",
-      "oldest_hygiene": "2025-05-15",
-      "last_visit_date": "2025-05-15",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 306
-    },
-    {
       "household_id": 124857.0,
       "household": "Logan Tsaruk (3) Family",
       "phone": "(425) 308-8637",
@@ -9594,6 +9594,20 @@
       "oldest_hygiene": "2025-05-15",
       "last_visit_date": "2025-05-15",
       "last_visit_office": "MONROE",
+      "days_overdue": 306
+    },
+    {
+      "household_id": 100792.0,
+      "household": "Finn Thetford (3) Family",
+      "phone": "(425) 985-1253",
+      "email": "maya.kurita@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Finn Thetford (3)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-05-15",
+      "oldest_hygiene": "2025-05-15",
+      "last_visit_date": "2025-05-15",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 306
     },
     {
@@ -9807,20 +9821,6 @@
       "days_overdue": 302
     },
     {
-      "household_id": 107958.0,
-      "household": "Andrew Franklin (16) Family",
-      "phone": "(425) 232-2021",
-      "email": "wendylion.com@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Andrew Franklin (16)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-05-19",
-      "oldest_hygiene": "2025-05-19",
-      "last_visit_date": "2025-06-09",
-      "last_visit_office": "EVERETT",
-      "days_overdue": 302
-    },
-    {
       "household_id": 127271.0,
       "household": "Alexander Johnson (14) Family",
       "phone": "(954) 600-2558",
@@ -9835,26 +9835,26 @@
       "days_overdue": 302
     },
     {
+      "household_id": 107958.0,
+      "household": "Andrew Franklin (16) Family",
+      "phone": "(425) 232-2021",
+      "email": "wendylion.com@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Andrew Franklin (16)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-05-19",
+      "oldest_hygiene": "2025-05-19",
+      "last_visit_date": "2025-06-09",
+      "last_visit_office": "EVERETT",
+      "days_overdue": 302
+    },
+    {
       "household_id": 127253.0,
       "household": "Michael Swecker (15) Family",
       "phone": "(206) 359-1186",
       "email": "ruckert83@gmail.com",
       "kids_due_count": 1,
       "kids_due_names": "Michael Swecker (15)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-05-19",
-      "oldest_hygiene": "2025-05-19",
-      "last_visit_date": "2025-05-19",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 302
-    },
-    {
-      "household_id": 100061.0,
-      "household": "Colin Pierce (14) Family",
-      "phone": "(425) 268-9217",
-      "email": "",
-      "kids_due_count": 1,
-      "kids_due_names": "Colin Pierce (14)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-05-19",
       "oldest_hygiene": "2025-05-19",
@@ -9874,6 +9874,20 @@
       "oldest_hygiene": "2025-05-19",
       "last_visit_date": "2025-05-19",
       "last_visit_office": "LAKE STEVENS",
+      "days_overdue": 302
+    },
+    {
+      "household_id": 100061.0,
+      "household": "Colin Pierce (14) Family",
+      "phone": "(425) 268-9217",
+      "email": "",
+      "kids_due_count": 1,
+      "kids_due_names": "Colin Pierce (14)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-05-19",
+      "oldest_hygiene": "2025-05-19",
+      "last_visit_date": "2025-05-19",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 302
     },
     {
@@ -9976,11 +9990,11 @@
     },
     {
       "household_id": 101544.0,
-      "household": "Sydney Austin (14); Aksel Austin (17) Family",
+      "household": "Aksel Austin (17); Sydney Austin (14) Family",
       "phone": "(425) 666-8756",
       "email": "wearetheaustins@gmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Sydney Austin (14); Aksel Austin (17)",
+      "kids_due_names": "Aksel Austin (17); Sydney Austin (14)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-05-20",
       "oldest_hygiene": "2025-05-20",
@@ -10017,20 +10031,6 @@
       "days_overdue": 301
     },
     {
-      "household_id": 102788.0,
-      "household": "Joshua Sanders (18) Family",
-      "phone": "(425) 399-2804",
-      "email": "wanda.1971@yahoo.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Joshua Sanders (18)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-05-20",
-      "oldest_hygiene": "2025-05-20",
-      "last_visit_date": "2025-06-06",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 301
-    },
-    {
       "household_id": 127215.0,
       "household": "Elizabeth Lam (5) Family",
       "phone": "(206) 619-3509",
@@ -10042,6 +10042,20 @@
       "oldest_hygiene": "2025-05-20",
       "last_visit_date": "2025-05-20",
       "last_visit_office": "LAKE STEVENS",
+      "days_overdue": 301
+    },
+    {
+      "household_id": 102788.0,
+      "household": "Joshua Sanders (18) Family",
+      "phone": "(425) 399-2804",
+      "email": "wanda.1971@yahoo.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Joshua Sanders (18)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-05-20",
+      "oldest_hygiene": "2025-05-20",
+      "last_visit_date": "2025-06-06",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 301
     },
     {
@@ -10437,20 +10451,6 @@
       "days_overdue": 299
     },
     {
-      "household_id": 126755.0,
-      "household": "Scarlett Costello (11) Family",
-      "phone": "(602) 500-9778",
-      "email": "sofiasophia2012@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Scarlett Costello (11)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-05-22",
-      "oldest_hygiene": "2025-05-22",
-      "last_visit_date": "2025-07-21",
-      "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 299
-    },
-    {
       "household_id": 115442.0,
       "household": "Naomi Sawyers (16) Family",
       "phone": "(425) 501-3374",
@@ -10462,6 +10462,20 @@
       "oldest_hygiene": "2025-05-22",
       "last_visit_date": "2025-05-22",
       "last_visit_office": "MARYSVILLE",
+      "days_overdue": 299
+    },
+    {
+      "household_id": 126755.0,
+      "household": "Scarlett Costello (11) Family",
+      "phone": "(602) 500-9778",
+      "email": "sofiasophia2012@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Scarlett Costello (11)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-05-22",
+      "oldest_hygiene": "2025-05-22",
+      "last_visit_date": "2025-07-21",
+      "last_visit_office": "LAKE STEVENS",
       "days_overdue": 299
     },
     {
@@ -10550,11 +10564,11 @@
     },
     {
       "household_id": 124092.0,
-      "household": "Keenan Dewald (12); Zenya Dewald (13); Jameson Dewald (9) Family",
+      "household": "Zenya Dewald (13); Keenan Dewald (12); Jameson Dewald (9) Family",
       "phone": "(425) 419-7044",
       "email": "ltinsley206@gmail.com",
       "kids_due_count": 3,
-      "kids_due_names": "Keenan Dewald (12); Zenya Dewald (13); Jameson Dewald (9)",
+      "kids_due_names": "Zenya Dewald (13); Keenan Dewald (12); Jameson Dewald (9)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-05-23",
       "oldest_hygiene": "2025-05-23",
@@ -10872,11 +10886,11 @@
     },
     {
       "household_id": 119423.0,
-      "household": "Rebecca Griffin (10); Amanda Griffin (16); Emily Griffin (17); Seth Griffin (12) Family",
+      "household": "Rebecca Griffin (10); Amanda Griffin (16); Seth Griffin (12); Emily Griffin (17) Family",
       "phone": "(425) 268-2182",
       "email": "susie13031@gmail.com",
       "kids_due_count": 4,
-      "kids_due_names": "Rebecca Griffin (10); Amanda Griffin (16); Emily Griffin (17); Seth Griffin (12)",
+      "kids_due_names": "Rebecca Griffin (10); Amanda Griffin (16); Seth Griffin (12); Emily Griffin (17)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-08-07",
       "oldest_hygiene": "2025-05-29",
@@ -10913,20 +10927,6 @@
       "days_overdue": 292
     },
     {
-      "household_id": 127149.0,
-      "household": "Shalom Brown (9); Junior Tabu (17) Family",
-      "phone": "(425) 521-7230",
-      "email": "amity_tabu@hotmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Shalom Brown (9); Junior Tabu (17)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-05-29",
-      "oldest_hygiene": "2025-05-29",
-      "last_visit_date": "2025-11-03",
-      "last_visit_office": "MONROE",
-      "days_overdue": 292
-    },
-    {
       "household_id": 120480.0,
       "household": "Lucy Swanberg (5); Benson Swanberg (7) Family",
       "phone": "(425) 985-0519",
@@ -10937,6 +10937,20 @@
       "most_recent_hygiene": "2025-05-29",
       "oldest_hygiene": "2025-05-29",
       "last_visit_date": "2025-05-29",
+      "last_visit_office": "MONROE",
+      "days_overdue": 292
+    },
+    {
+      "household_id": 127149.0,
+      "household": "Shalom Brown (9); Junior Tabu (17) Family",
+      "phone": "(425) 521-7230",
+      "email": "amity_tabu@hotmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Shalom Brown (9); Junior Tabu (17)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-05-29",
+      "oldest_hygiene": "2025-05-29",
+      "last_visit_date": "2025-11-03",
       "last_visit_office": "MONROE",
       "days_overdue": 292
     },
@@ -11096,11 +11110,11 @@
     },
     {
       "household_id": 124793.0,
-      "household": "Ivan Alaniz (14); Luis Alaniz (16); Heriberto Alaniz (10) Family",
+      "household": "Ivan Alaniz (14); Heriberto Alaniz (10); Luis Alaniz (16) Family",
       "phone": "(360) 854-8087",
       "email": "",
       "kids_due_count": 3,
-      "kids_due_names": "Ivan Alaniz (14); Luis Alaniz (16); Heriberto Alaniz (10)",
+      "kids_due_names": "Ivan Alaniz (14); Heriberto Alaniz (10); Luis Alaniz (16)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-07-11",
       "oldest_hygiene": "2025-05-30",
@@ -11264,11 +11278,11 @@
     },
     {
       "household_id": 117832.0,
-      "household": "Zoey Zettlemoyer (9); Finnley Zettlemoyer (4); Bentley Zettlemoyer (14); Shelby Zettlemoyer (13); Hudson Zettlemoyer (8) Family",
+      "household": "Zoey Zettlemoyer (9); Finnley Zettlemoyer (4); Shelby Zettlemoyer (13); Hudson Zettlemoyer (8); Bentley Zettlemoyer (14) Family",
       "phone": "(425) 232-4211",
       "email": "jessizettlemoyer@gmail.com",
       "kids_due_count": 5,
-      "kids_due_names": "Zoey Zettlemoyer (9); Finnley Zettlemoyer (4); Bentley Zettlemoyer (14); Shelby Zettlemoyer (13); Hudson Zettlemoyer (8)",
+      "kids_due_names": "Zoey Zettlemoyer (9); Finnley Zettlemoyer (4); Shelby Zettlemoyer (13); Hudson Zettlemoyer (8); Bentley Zettlemoyer (14)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-06-03",
       "oldest_hygiene": "2025-06-03",
@@ -11936,11 +11950,11 @@
     },
     {
       "household_id": 106840.0,
-      "household": "Parker Gregory (12); Jacob Gregory (10) Family",
+      "household": "Jacob Gregory (10); Parker Gregory (12) Family",
       "phone": "(425) 314-3070",
       "email": "Tiphany0128@gmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Parker Gregory (12); Jacob Gregory (10)",
+      "kids_due_names": "Jacob Gregory (10); Parker Gregory (12)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-06-11",
       "oldest_hygiene": "2025-06-11",
@@ -12145,20 +12159,6 @@
       "days_overdue": 277
     },
     {
-      "household_id": 123017.0,
-      "household": "Roman Hager (14) Family",
-      "phone": "(425) 314-6581",
-      "email": "",
-      "kids_due_count": 1,
-      "kids_due_names": "Roman Hager (14)",
-      "last_office": "STANWOOD",
-      "most_recent_hygiene": "2025-06-13",
-      "oldest_hygiene": "2025-06-13",
-      "last_visit_date": "2025-06-13",
-      "last_visit_office": "STANWOOD",
-      "days_overdue": 277
-    },
-    {
       "household_id": 100186.0,
       "household": "Katelyn Le (18) Family",
       "phone": "(425) 530-0657",
@@ -12184,6 +12184,20 @@
       "oldest_hygiene": "2025-06-13",
       "last_visit_date": "2025-06-13",
       "last_visit_office": "LAKE STEVENS",
+      "days_overdue": 277
+    },
+    {
+      "household_id": 123017.0,
+      "household": "Roman Hager (14) Family",
+      "phone": "(425) 314-6581",
+      "email": "",
+      "kids_due_count": 1,
+      "kids_due_names": "Roman Hager (14)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-06-13",
+      "oldest_hygiene": "2025-06-13",
+      "last_visit_date": "2025-06-13",
+      "last_visit_office": "STANWOOD",
       "days_overdue": 277
     },
     {
@@ -12314,11 +12328,11 @@
     },
     {
       "household_id": 122581.0,
-      "household": "Ella Gemmer (8); Eli Gemmer (11); Alia Gemmer (12) Family",
+      "household": "Eli Gemmer (11); Alia Gemmer (12); Ella Gemmer (8) Family",
       "phone": "(425) 327-8232",
       "email": "tiff.gemmer@gmail.com",
       "kids_due_count": 3,
-      "kids_due_names": "Ella Gemmer (8); Eli Gemmer (11); Alia Gemmer (12)",
+      "kids_due_names": "Eli Gemmer (11); Alia Gemmer (12); Ella Gemmer (8)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-06-16",
       "oldest_hygiene": "2025-06-16",
@@ -12496,11 +12510,11 @@
     },
     {
       "household_id": 108903.0,
-      "household": "Fatima Sawaneh (10); Mariam Sawaneh (12); Bunja Sawaneh (8); Aisha Sawaneh (5) Family",
+      "household": "Mariam Sawaneh (12); Fatima Sawaneh (10); Bunja Sawaneh (8); Aisha Sawaneh (5) Family",
       "phone": "(425) 350-4539",
       "email": "fatimah.touray@yahoo.com",
       "kids_due_count": 4,
-      "kids_due_names": "Fatima Sawaneh (10); Mariam Sawaneh (12); Bunja Sawaneh (8); Aisha Sawaneh (5)",
+      "kids_due_names": "Mariam Sawaneh (12); Fatima Sawaneh (10); Bunja Sawaneh (8); Aisha Sawaneh (5)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-06-17",
       "oldest_hygiene": "2025-06-17",
@@ -12593,6 +12607,20 @@
       "days_overdue": 273
     },
     {
+      "household_id": 113433.0,
+      "household": "Ethan Howell (12); Leanna Howell (14) Family",
+      "phone": "(425) 346-3755",
+      "email": "bowmaker324@gmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Ethan Howell (12); Leanna Howell (14)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-06-17",
+      "oldest_hygiene": "2025-06-17",
+      "last_visit_date": "2025-06-17",
+      "last_visit_office": "STANWOOD",
+      "days_overdue": 273
+    },
+    {
       "household_id": 101445.0,
       "household": "Olivia Nuttall (12); Jackson Nuttall (16) Family",
       "phone": "(425) 443-5742",
@@ -12618,20 +12646,6 @@
       "oldest_hygiene": "2025-06-17",
       "last_visit_date": "2025-10-31",
       "last_visit_office": "MONROE",
-      "days_overdue": 273
-    },
-    {
-      "household_id": 113433.0,
-      "household": "Ethan Howell (12); Leanna Howell (14) Family",
-      "phone": "(425) 346-3755",
-      "email": "bowmaker324@gmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Ethan Howell (12); Leanna Howell (14)",
-      "last_office": "STANWOOD",
-      "most_recent_hygiene": "2025-06-17",
-      "oldest_hygiene": "2025-06-17",
-      "last_visit_date": "2025-06-17",
-      "last_visit_office": "STANWOOD",
       "days_overdue": 273
     },
     {
@@ -12663,20 +12677,6 @@
       "days_overdue": 271
     },
     {
-      "household_id": 127396.0,
-      "household": "Tyson Watene (17); Angelina Watene (15) Family",
-      "phone": "(360) 982-8265",
-      "email": "shwnhaggerd@yahoo.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Tyson Watene (17); Angelina Watene (15)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-06-19",
-      "oldest_hygiene": "2025-06-19",
-      "last_visit_date": "2025-06-19",
-      "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 271
-    },
-    {
       "household_id": 100800.0,
       "household": "Caiden Bernstein (19); Chloe Bernstein (17) Family",
       "phone": "(360) 631-0659",
@@ -12688,6 +12688,20 @@
       "oldest_hygiene": "2025-06-19",
       "last_visit_date": "2025-07-24",
       "last_visit_office": "MARYSVILLE",
+      "days_overdue": 271
+    },
+    {
+      "household_id": 127396.0,
+      "household": "Tyson Watene (17); Angelina Watene (15) Family",
+      "phone": "(360) 982-8265",
+      "email": "shwnhaggerd@yahoo.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Tyson Watene (17); Angelina Watene (15)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-06-19",
+      "oldest_hygiene": "2025-06-19",
+      "last_visit_date": "2025-06-19",
+      "last_visit_office": "LAKE STEVENS",
       "days_overdue": 271
     },
     {
@@ -12789,20 +12803,6 @@
       "days_overdue": 271
     },
     {
-      "household_id": 112023.0,
-      "household": "Mason Candey (2); Isaiah Buenrostro (14) Family",
-      "phone": "(425) 244-9739",
-      "email": "jazminvandall@gmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Mason Candey (2); Isaiah Buenrostro (14)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-06-19",
-      "oldest_hygiene": "2025-06-19",
-      "last_visit_date": "2025-06-19",
-      "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 271
-    },
-    {
       "household_id": 122944.0,
       "household": "Isabella Gerhard (11); Alexis Gerhard (13) Family",
       "phone": "(425) 341-5572",
@@ -12831,17 +12831,17 @@
       "days_overdue": 271
     },
     {
-      "household_id": 118180.0,
-      "household": "Leia Barraclough (13); Lily Barraclough (15) Family",
-      "phone": "(775) 309-7626",
-      "email": "mellowgreetings@gmail.com",
+      "household_id": 112023.0,
+      "household": "Mason Candey (2); Isaiah Buenrostro (14) Family",
+      "phone": "(425) 244-9739",
+      "email": "jazminvandall@gmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Leia Barraclough (13); Lily Barraclough (15)",
-      "last_office": "MARYSVILLE",
+      "kids_due_names": "Mason Candey (2); Isaiah Buenrostro (14)",
+      "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-06-19",
       "oldest_hygiene": "2025-06-19",
       "last_visit_date": "2025-06-19",
-      "last_visit_office": "MARYSVILLE",
+      "last_visit_office": "LAKE STEVENS",
       "days_overdue": 271
     },
     {
@@ -12856,6 +12856,20 @@
       "oldest_hygiene": "2025-06-19",
       "last_visit_date": "2025-09-04",
       "last_visit_office": "STANWOOD",
+      "days_overdue": 271
+    },
+    {
+      "household_id": 118180.0,
+      "household": "Leia Barraclough (13); Lily Barraclough (15) Family",
+      "phone": "(775) 309-7626",
+      "email": "mellowgreetings@gmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Leia Barraclough (13); Lily Barraclough (15)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-06-19",
+      "oldest_hygiene": "2025-06-19",
+      "last_visit_date": "2025-06-19",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 271
     },
     {
@@ -12957,12 +12971,12 @@
       "days_overdue": 270
     },
     {
-      "household_id": 112275.0,
-      "household": "Liam Woodford (8) Family",
-      "phone": "(425) 765-1859",
-      "email": "ncverbeck@gmail.com",
+      "household_id": 125370.0,
+      "household": "Olivia Knoblock (3) Family",
+      "phone": "(406) 407-6541",
+      "email": "burnham.candy@gmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Liam Woodford (8)",
+      "kids_due_names": "Olivia Knoblock (3)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-06-20",
       "oldest_hygiene": "2025-06-20",
@@ -12971,12 +12985,12 @@
       "days_overdue": 270
     },
     {
-      "household_id": 125370.0,
-      "household": "Olivia Knoblock (3) Family",
-      "phone": "(406) 407-6541",
-      "email": "burnham.candy@gmail.com",
+      "household_id": 112275.0,
+      "household": "Liam Woodford (8) Family",
+      "phone": "(425) 765-1859",
+      "email": "ncverbeck@gmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Olivia Knoblock (3)",
+      "kids_due_names": "Liam Woodford (8)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-06-20",
       "oldest_hygiene": "2025-06-20",
@@ -13223,20 +13237,6 @@
       "days_overdue": 267
     },
     {
-      "household_id": 105440.0,
-      "household": "Zaydin Twine (14); Makenna Twine (14) Family",
-      "phone": "(252) 425-3999",
-      "email": "demetratparker@yahoo.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Zaydin Twine (14); Makenna Twine (14)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-06-23",
-      "oldest_hygiene": "2025-06-23",
-      "last_visit_date": "2025-06-23",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 267
-    },
-    {
       "household_id": 103232.0,
       "household": "Blakely Brown (9); Bennett Brown (13) Family",
       "phone": "(425) 344-4124",
@@ -13247,6 +13247,20 @@
       "most_recent_hygiene": "2025-06-23",
       "oldest_hygiene": "2025-06-23",
       "last_visit_date": "2025-10-15",
+      "last_visit_office": "MARYSVILLE",
+      "days_overdue": 267
+    },
+    {
+      "household_id": 105440.0,
+      "household": "Zaydin Twine (14); Makenna Twine (14) Family",
+      "phone": "(252) 425-3999",
+      "email": "demetratparker@yahoo.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Zaydin Twine (14); Makenna Twine (14)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-06-23",
+      "oldest_hygiene": "2025-06-23",
+      "last_visit_date": "2025-06-23",
       "last_visit_office": "MARYSVILLE",
       "days_overdue": 267
     },
@@ -13307,20 +13321,6 @@
       "days_overdue": 267
     },
     {
-      "household_id": 114692.0,
-      "household": "Reed Langley (11) Family",
-      "phone": "(206) 854-4376",
-      "email": "Rich@cloudcapglass.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Reed Langley (11)",
-      "last_office": "EVERETT",
-      "most_recent_hygiene": "2025-06-23",
-      "oldest_hygiene": "2025-06-23",
-      "last_visit_date": "2025-06-23",
-      "last_visit_office": "EVERETT",
-      "days_overdue": 267
-    },
-    {
       "household_id": 113805.0,
       "household": "Fernanda Torres-Salas (9) Family",
       "phone": "(206) 574-8758",
@@ -13335,18 +13335,18 @@
       "days_overdue": 267
     },
     {
-      "household_id": 120285.0,
-      "household": "Pedro Calderon-Salinas (18) Family",
-      "phone": "(360) 610-9428",
-      "email": "",
+      "household_id": 114692.0,
+      "household": "Reed Langley (11) Family",
+      "phone": "(206) 854-4376",
+      "email": "Rich@cloudcapglass.com",
       "kids_due_count": 1,
-      "kids_due_names": "Pedro Calderon-Salinas (18)",
-      "last_office": "STANWOOD",
-      "most_recent_hygiene": "2025-06-24",
-      "oldest_hygiene": "2025-06-24",
-      "last_visit_date": "2025-06-24",
-      "last_visit_office": "STANWOOD",
-      "days_overdue": 266
+      "kids_due_names": "Reed Langley (11)",
+      "last_office": "EVERETT",
+      "most_recent_hygiene": "2025-06-23",
+      "oldest_hygiene": "2025-06-23",
+      "last_visit_date": "2025-06-23",
+      "last_visit_office": "EVERETT",
+      "days_overdue": 267
     },
     {
       "household_id": 127405.0,
@@ -13363,12 +13363,26 @@
       "days_overdue": 266
     },
     {
+      "household_id": 120285.0,
+      "household": "Pedro Calderon-Salinas (18) Family",
+      "phone": "(360) 610-9428",
+      "email": "",
+      "kids_due_count": 1,
+      "kids_due_names": "Pedro Calderon-Salinas (18)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-06-24",
+      "oldest_hygiene": "2025-06-24",
+      "last_visit_date": "2025-06-24",
+      "last_visit_office": "STANWOOD",
+      "days_overdue": 266
+    },
+    {
       "household_id": 123128.0,
-      "household": "Lincoln Chun (10); Logan Chun (5); Leonardo Chun (8) Family",
+      "household": "Leonardo Chun (8); Lincoln Chun (10); Logan Chun (5) Family",
       "phone": "(206) 412-0047",
       "email": "paulchun82@gmail.com",
       "kids_due_count": 3,
-      "kids_due_names": "Lincoln Chun (10); Logan Chun (5); Leonardo Chun (8)",
+      "kids_due_names": "Leonardo Chun (8); Lincoln Chun (10); Logan Chun (5)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-06-24",
       "oldest_hygiene": "2025-06-24",
@@ -13419,12 +13433,12 @@
       "days_overdue": 266
     },
     {
-      "household_id": 103438.0,
-      "household": "Kennedy Baggen (17) Family",
-      "phone": "(206) 902-6717",
-      "email": "shannonqb28@yahoo.com",
+      "household_id": 118432.0,
+      "household": "Malia Couevas (19) Family",
+      "phone": "(425) 501-9825",
+      "email": "nicole.couevas@gmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Kennedy Baggen (17)",
+      "kids_due_names": "Malia Couevas (19)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-06-24",
       "oldest_hygiene": "2025-06-24",
@@ -13433,12 +13447,12 @@
       "days_overdue": 266
     },
     {
-      "household_id": 118432.0,
-      "household": "Malia Couevas (19) Family",
-      "phone": "(425) 501-9825",
-      "email": "nicole.couevas@gmail.com",
+      "household_id": 103438.0,
+      "household": "Kennedy Baggen (17) Family",
+      "phone": "(206) 902-6717",
+      "email": "shannonqb28@yahoo.com",
       "kids_due_count": 1,
-      "kids_due_names": "Malia Couevas (19)",
+      "kids_due_names": "Kennedy Baggen (17)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-06-24",
       "oldest_hygiene": "2025-06-24",
@@ -13560,11 +13574,11 @@
     },
     {
       "household_id": 109058.0,
-      "household": "Abigail Zelinsky (14); Avery Zelinsky (19) Family",
+      "household": "Avery Zelinsky (19); Abigail Zelinsky (14) Family",
       "phone": "(425) 419-3344",
       "email": "gzelinsky@yahoo.com",
       "kids_due_count": 2,
-      "kids_due_names": "Abigail Zelinsky (14); Avery Zelinsky (19)",
+      "kids_due_names": "Avery Zelinsky (19); Abigail Zelinsky (14)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-06-25",
       "oldest_hygiene": "2025-06-25",
@@ -13700,11 +13714,11 @@
     },
     {
       "household_id": 111496.0,
-      "household": "Ezra Kirk (13); Veyah Kirk (9) Family",
+      "household": "Veyah Kirk (9); Ezra Kirk (13) Family",
       "phone": "(425) 344-3918",
       "email": "surferbrynn@hotmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Ezra Kirk (13); Veyah Kirk (9)",
+      "kids_due_names": "Veyah Kirk (9); Ezra Kirk (13)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-06-25",
       "oldest_hygiene": "2025-06-25",
@@ -13714,11 +13728,11 @@
     },
     {
       "household_id": 115471.0,
-      "household": "Destiny Mbatai (18); Shalom Mbatai (14) Family",
+      "household": "Shalom Mbatai (14); Destiny Mbatai (18) Family",
       "phone": "(206) 913-3944",
       "email": "kabuism@hotmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Destiny Mbatai (18); Shalom Mbatai (14)",
+      "kids_due_names": "Shalom Mbatai (14); Destiny Mbatai (18)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-06-26",
       "oldest_hygiene": "2025-06-26",
@@ -13728,30 +13742,16 @@
     },
     {
       "household_id": 124618.0,
-      "household": "Cooper Olsen (15); Brody Olsen (18) Family",
+      "household": "Brody Olsen (18); Cooper Olsen (15) Family",
       "phone": "(425) 327-1145",
       "email": "michelle.olsen21@gmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Cooper Olsen (15); Brody Olsen (18)",
+      "kids_due_names": "Brody Olsen (18); Cooper Olsen (15)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-06-26",
       "oldest_hygiene": "2025-06-26",
       "last_visit_date": "2025-06-26",
       "last_visit_office": "MARYSVILLE",
-      "days_overdue": 264
-    },
-    {
-      "household_id": 117702.0,
-      "household": "Kiyrees Sherman (8) Family",
-      "phone": "(360) 488-7754",
-      "email": "shermanrachelle@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Kiyrees Sherman (8)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-06-26",
-      "oldest_hygiene": "2025-06-26",
-      "last_visit_date": "2025-11-24",
-      "last_visit_office": "MONROE",
       "days_overdue": 264
     },
     {
@@ -13769,16 +13769,16 @@
       "days_overdue": 264
     },
     {
-      "household_id": 104252.0,
-      "household": "Maren Godfrey (9); Everly Hogan (12) Family",
-      "phone": "(425) 876-0787",
-      "email": "dschmidt609@gmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Maren Godfrey (9); Everly Hogan (12)",
-      "last_office": "MONROE",
+      "household_id": 117702.0,
+      "household": "Kiyrees Sherman (8) Family",
+      "phone": "(360) 488-7754",
+      "email": "shermanrachelle@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Kiyrees Sherman (8)",
+      "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-06-26",
       "oldest_hygiene": "2025-06-26",
-      "last_visit_date": "2025-06-26",
+      "last_visit_date": "2025-11-24",
       "last_visit_office": "MONROE",
       "days_overdue": 264
     },
@@ -13794,6 +13794,20 @@
       "oldest_hygiene": "2025-06-26",
       "last_visit_date": "2025-06-26",
       "last_visit_office": "STANWOOD",
+      "days_overdue": 264
+    },
+    {
+      "household_id": 104252.0,
+      "household": "Maren Godfrey (9); Everly Hogan (12) Family",
+      "phone": "(425) 876-0787",
+      "email": "dschmidt609@gmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Maren Godfrey (9); Everly Hogan (12)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-06-26",
+      "oldest_hygiene": "2025-06-26",
+      "last_visit_date": "2025-06-26",
+      "last_visit_office": "MONROE",
       "days_overdue": 264
     },
     {
@@ -13994,11 +14008,11 @@
     },
     {
       "household_id": 108426.0,
-      "household": "Emaline Hollingsworth (16); Kohen Hollingsworth (13) Family",
+      "household": "Kohen Hollingsworth (13); Emaline Hollingsworth (16) Family",
       "phone": "(360) 929-0670",
       "email": "adamhollingsworth@hotmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Emaline Hollingsworth (16); Kohen Hollingsworth (13)",
+      "kids_due_names": "Kohen Hollingsworth (13); Emaline Hollingsworth (16)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-06-27",
       "oldest_hygiene": "2025-06-27",
@@ -14232,11 +14246,11 @@
     },
     {
       "household_id": 107169.0,
-      "household": "Halle Richardson (13); Linkin Richardson (16); Luke Richardson (10) Family",
+      "household": "Linkin Richardson (16); Halle Richardson (13); Luke Richardson (10) Family",
       "phone": "(425) 220-1967",
       "email": "leslie_richardson@msvl.k12.wa.us",
       "kids_due_count": 3,
-      "kids_due_names": "Halle Richardson (13); Linkin Richardson (16); Luke Richardson (10)",
+      "kids_due_names": "Linkin Richardson (16); Halle Richardson (13); Luke Richardson (10)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-07-01",
       "oldest_hygiene": "2025-07-01",
@@ -14329,20 +14343,6 @@
       "days_overdue": 259
     },
     {
-      "household_id": 126435.0,
-      "household": "Logan Conner (6) Family",
-      "phone": "(949) 228-4341",
-      "email": "kmaduell9@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Logan Conner (6)",
-      "last_office": "STANWOOD",
-      "most_recent_hygiene": "2025-07-01",
-      "oldest_hygiene": "2025-07-01",
-      "last_visit_date": "2025-07-01",
-      "last_visit_office": "STANWOOD",
-      "days_overdue": 259
-    },
-    {
       "household_id": 114113.0,
       "household": "Atlas Harding-Mueller (4) Family",
       "phone": "(360) 920-5014",
@@ -14354,6 +14354,20 @@
       "oldest_hygiene": "2025-07-01",
       "last_visit_date": "2025-07-01",
       "last_visit_office": "MONROE",
+      "days_overdue": 259
+    },
+    {
+      "household_id": 126435.0,
+      "household": "Logan Conner (6) Family",
+      "phone": "(949) 228-4341",
+      "email": "kmaduell9@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Logan Conner (6)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-07-01",
+      "oldest_hygiene": "2025-07-01",
+      "last_visit_date": "2025-07-01",
+      "last_visit_office": "STANWOOD",
       "days_overdue": 259
     },
     {
@@ -14469,20 +14483,6 @@
       "days_overdue": 258
     },
     {
-      "household_id": 113993.0,
-      "household": "Garrett Moore (16) Family",
-      "phone": "(425) 948-0297",
-      "email": "dogmom1982@oulook.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Garrett Moore (16)",
-      "last_office": "STANWOOD",
-      "most_recent_hygiene": "2025-07-02",
-      "oldest_hygiene": "2025-07-02",
-      "last_visit_date": "2025-07-02",
-      "last_visit_office": "STANWOOD",
-      "days_overdue": 258
-    },
-    {
       "household_id": 101153.0,
       "household": "Jaden Smith (17) Family",
       "phone": "(425) 327-7270",
@@ -14497,12 +14497,12 @@
       "days_overdue": 258
     },
     {
-      "household_id": 124533.0,
-      "household": "Katelynn McKenzie (8) Family",
-      "phone": "(425) 535-1268",
-      "email": "Jennikayt@gmail.com",
+      "household_id": 113993.0,
+      "household": "Garrett Moore (16) Family",
+      "phone": "(425) 948-0297",
+      "email": "dogmom1982@oulook.com",
       "kids_due_count": 1,
-      "kids_due_names": "Katelynn McKenzie (8)",
+      "kids_due_names": "Garrett Moore (16)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-07-02",
       "oldest_hygiene": "2025-07-02",
@@ -14522,6 +14522,20 @@
       "oldest_hygiene": "2025-07-02",
       "last_visit_date": "2025-07-02",
       "last_visit_office": "MARYSVILLE",
+      "days_overdue": 258
+    },
+    {
+      "household_id": 124533.0,
+      "household": "Katelynn McKenzie (8) Family",
+      "phone": "(425) 535-1268",
+      "email": "Jennikayt@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Katelynn McKenzie (8)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-07-02",
+      "oldest_hygiene": "2025-07-02",
+      "last_visit_date": "2025-07-02",
+      "last_visit_office": "STANWOOD",
       "days_overdue": 258
     },
     {
@@ -14651,6 +14665,20 @@
       "days_overdue": 257
     },
     {
+      "household_id": 105669.0,
+      "household": "Nova Draman (4); Isaiah Lopez Flores (9) Family",
+      "phone": "(360) 913-7866",
+      "email": "chyanne.jones16@gmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Nova Draman (4); Isaiah Lopez Flores (9)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-08-15",
+      "oldest_hygiene": "2025-07-03",
+      "last_visit_date": "2025-08-28",
+      "last_visit_office": "MONROE",
+      "days_overdue": 257
+    },
+    {
       "household_id": 107848.0,
       "household": "Kaido Trinidad (5); La'akea Alfonzo (10); Mahina Alfonzo (13) Family",
       "phone": "(425) 923-9928",
@@ -14680,11 +14708,11 @@
     },
     {
       "household_id": 104822.0,
-      "household": "Jubliee Songstad (10); Jude Songstad (15); Journey Songstad (12); Jericho Songstad (17) Family",
+      "household": "Journey Songstad (12); Jubliee Songstad (10); Jude Songstad (15); Jericho Songstad (17) Family",
       "phone": "(425) 299-7002",
       "email": "heathersongstad@gmail.com",
       "kids_due_count": 4,
-      "kids_due_names": "Jubliee Songstad (10); Jude Songstad (15); Journey Songstad (12); Jericho Songstad (17)",
+      "kids_due_names": "Journey Songstad (12); Jubliee Songstad (10); Jude Songstad (15); Jericho Songstad (17)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-07-03",
       "oldest_hygiene": "2025-07-03",
@@ -14778,11 +14806,11 @@
     },
     {
       "household_id": 118426.0,
-      "household": "Falle Konate (14); Dialla Konate (8); Lassana Konate (12); Ousmane Konate (14) Family",
+      "household": "Falle Konate (14); Lassana Konate (12); Dialla Konate (8); Ousmane Konate (14) Family",
       "phone": "(206) 779-5577",
       "email": "coumbakonate41@yahoo.com",
       "kids_due_count": 4,
-      "kids_due_names": "Falle Konate (14); Dialla Konate (8); Lassana Konate (12); Ousmane Konate (14)",
+      "kids_due_names": "Falle Konate (14); Lassana Konate (12); Dialla Konate (8); Ousmane Konate (14)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-07-07",
       "oldest_hygiene": "2025-07-07",
@@ -14806,11 +14834,11 @@
     },
     {
       "household_id": 103952.0,
-      "household": "Kayden Williams (12); Tenley Williams (10); Archer Williams (7) Family",
+      "household": "Tenley Williams (10); Kayden Williams (12); Archer Williams (7) Family",
       "phone": "(425) 870-8630",
       "email": "chelseywilliams90@yahoo.com",
       "kids_due_count": 3,
-      "kids_due_names": "Kayden Williams (12); Tenley Williams (10); Archer Williams (7)",
+      "kids_due_names": "Tenley Williams (10); Kayden Williams (12); Archer Williams (7)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-07-08",
       "oldest_hygiene": "2025-07-08",
@@ -14889,20 +14917,6 @@
       "days_overdue": 252
     },
     {
-      "household_id": 116050.0,
-      "household": "Maleeka Elriza (14); Maryam Elriza (16) Family",
-      "phone": "(425) 876-0005",
-      "email": "",
-      "kids_due_count": 2,
-      "kids_due_names": "Maleeka Elriza (14); Maryam Elriza (16)",
-      "last_office": "EVERETT",
-      "most_recent_hygiene": "2025-07-08",
-      "oldest_hygiene": "2025-07-08",
-      "last_visit_date": "2025-07-08",
-      "last_visit_office": "EVERETT",
-      "days_overdue": 252
-    },
-    {
       "household_id": 113359.0,
       "household": "Ivan Perez-Ramos (17); Daniel Perez-Ramos (17) Family",
       "phone": "(425) 346-6003",
@@ -14914,6 +14928,20 @@
       "oldest_hygiene": "2025-07-08",
       "last_visit_date": "2025-07-08",
       "last_visit_office": "MONROE",
+      "days_overdue": 252
+    },
+    {
+      "household_id": 116050.0,
+      "household": "Maryam Elriza (16); Maleeka Elriza (14) Family",
+      "phone": "(425) 876-0005",
+      "email": "",
+      "kids_due_count": 2,
+      "kids_due_names": "Maryam Elriza (16); Maleeka Elriza (14)",
+      "last_office": "EVERETT",
+      "most_recent_hygiene": "2025-07-08",
+      "oldest_hygiene": "2025-07-08",
+      "last_visit_date": "2025-07-08",
+      "last_visit_office": "EVERETT",
       "days_overdue": 252
     },
     {
@@ -14932,11 +14960,11 @@
     },
     {
       "household_id": 124100.0,
-      "household": "Garrett Sipma (11); Andrik Sipma (9) Family",
+      "household": "Andrik Sipma (9); Garrett Sipma (11) Family",
       "phone": "(360) 913-4286",
       "email": "",
       "kids_due_count": 2,
-      "kids_due_names": "Garrett Sipma (11); Andrik Sipma (9)",
+      "kids_due_names": "Andrik Sipma (9); Garrett Sipma (11)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-07-09",
       "oldest_hygiene": "2025-07-09",
@@ -14973,20 +15001,6 @@
       "days_overdue": 251
     },
     {
-      "household_id": 101219.0,
-      "household": "MacKenzie Munro (19) Family",
-      "phone": "(206) 300-4713",
-      "email": "munro.alec@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "MacKenzie Munro (19)",
-      "last_office": "STANWOOD",
-      "most_recent_hygiene": "2025-07-09",
-      "oldest_hygiene": "2025-07-09",
-      "last_visit_date": "2025-07-09",
-      "last_visit_office": "STANWOOD",
-      "days_overdue": 251
-    },
-    {
       "household_id": 114768.0,
       "household": "Aliya Hardesty (18) Family",
       "phone": "(425) 563-8999",
@@ -14998,6 +15012,20 @@
       "oldest_hygiene": "2025-07-09",
       "last_visit_date": "2025-07-09",
       "last_visit_office": "MONROE",
+      "days_overdue": 251
+    },
+    {
+      "household_id": 101219.0,
+      "household": "MacKenzie Munro (19) Family",
+      "phone": "(206) 300-4713",
+      "email": "munro.alec@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "MacKenzie Munro (19)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-07-09",
+      "oldest_hygiene": "2025-07-09",
+      "last_visit_date": "2025-07-09",
+      "last_visit_office": "STANWOOD",
       "days_overdue": 251
     },
     {
@@ -15365,20 +15393,6 @@
       "days_overdue": 249
     },
     {
-      "household_id": 127482.0,
-      "household": "Benjamin Baker (12) Family",
-      "phone": "(360) 708-8568",
-      "email": "hithergail@yahoo.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Benjamin Baker (12)",
-      "last_office": "STANWOOD",
-      "most_recent_hygiene": "2025-07-11",
-      "oldest_hygiene": "2025-07-11",
-      "last_visit_date": "2025-07-11",
-      "last_visit_office": "STANWOOD",
-      "days_overdue": 249
-    },
-    {
       "household_id": 124827.0,
       "household": "Adriana Villagomez (15) Family",
       "phone": "(425) 268-0393",
@@ -15390,6 +15404,20 @@
       "oldest_hygiene": "2025-07-11",
       "last_visit_date": "2025-07-11",
       "last_visit_office": "MONROE",
+      "days_overdue": 249
+    },
+    {
+      "household_id": 127482.0,
+      "household": "Benjamin Baker (12) Family",
+      "phone": "(360) 708-8568",
+      "email": "hithergail@yahoo.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Benjamin Baker (12)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-07-11",
+      "oldest_hygiene": "2025-07-11",
+      "last_visit_date": "2025-07-11",
+      "last_visit_office": "STANWOOD",
       "days_overdue": 249
     },
     {
@@ -15645,20 +15673,6 @@
       "days_overdue": 245
     },
     {
-      "household_id": 105069.0,
-      "household": "Savannah Espitia (19) Family",
-      "phone": "(425) 737-3533",
-      "email": "acma2901@yahoo.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Savannah Espitia (19)",
-      "last_office": "STANWOOD",
-      "most_recent_hygiene": "2025-07-15",
-      "oldest_hygiene": "2025-07-15",
-      "last_visit_date": "2025-07-15",
-      "last_visit_office": "STANWOOD",
-      "days_overdue": 245
-    },
-    {
       "household_id": 127403.0,
       "household": "Ariana Osorio Lacan (10) Family",
       "phone": "(425) 528-3779",
@@ -15687,6 +15701,34 @@
       "days_overdue": 245
     },
     {
+      "household_id": 105069.0,
+      "household": "Savannah Espitia (19) Family",
+      "phone": "(425) 737-3533",
+      "email": "acma2901@yahoo.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Savannah Espitia (19)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-07-15",
+      "oldest_hygiene": "2025-07-15",
+      "last_visit_date": "2025-07-15",
+      "last_visit_office": "STANWOOD",
+      "days_overdue": 245
+    },
+    {
+      "household_id": 121395.0,
+      "household": "Brooklynn Westrick (11); Olivia Westrick (9) Family",
+      "phone": "(425) 246-7052",
+      "email": "Comptonfamily2007@gmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Brooklynn Westrick (11); Olivia Westrick (9)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-07-15",
+      "oldest_hygiene": "2025-07-15",
+      "last_visit_date": "2025-07-15",
+      "last_visit_office": "MONROE",
+      "days_overdue": 245
+    },
+    {
       "household_id": 117560.0,
       "household": "Theodore Olberg (7); Benjamin Olberg (5) Family",
       "phone": "(360) 913-3720",
@@ -15698,20 +15740,6 @@
       "oldest_hygiene": "2025-07-15",
       "last_visit_date": "2025-07-15",
       "last_visit_office": "MARYSVILLE",
-      "days_overdue": 245
-    },
-    {
-      "household_id": 121395.0,
-      "household": "Olivia Westrick (9); Brooklynn Westrick (11) Family",
-      "phone": "(425) 246-7052",
-      "email": "Comptonfamily2007@gmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Olivia Westrick (9); Brooklynn Westrick (11)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-07-15",
-      "oldest_hygiene": "2025-07-15",
-      "last_visit_date": "2025-07-15",
-      "last_visit_office": "MONROE",
       "days_overdue": 245
     },
     {
@@ -16205,6 +16233,20 @@
       "days_overdue": 239
     },
     {
+      "household_id": 127521.0,
+      "household": "Aliaunah Strong (11) Family",
+      "phone": "(360) 510-2674",
+      "email": "",
+      "kids_due_count": 1,
+      "kids_due_names": "Aliaunah Strong (11)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-07-21",
+      "oldest_hygiene": "2025-07-21",
+      "last_visit_date": "2025-07-21",
+      "last_visit_office": "LAKE STEVENS",
+      "days_overdue": 239
+    },
+    {
       "household_id": 124026.0,
       "household": "Mia Ostrander (18) Family",
       "phone": "(425) 330-1292",
@@ -16219,12 +16261,12 @@
       "days_overdue": 239
     },
     {
-      "household_id": 127521.0,
-      "household": "Aliaunah Strong (11) Family",
-      "phone": "(360) 510-2674",
-      "email": "",
+      "household_id": 106483.0,
+      "household": "Ava Burns (12) Family",
+      "phone": "(425) 273-3773",
+      "email": "susanne.burns76@gmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Aliaunah Strong (11)",
+      "kids_due_names": "Ava Burns (12)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-07-21",
       "oldest_hygiene": "2025-07-21",
@@ -16247,26 +16289,26 @@
       "days_overdue": 239
     },
     {
-      "household_id": 106483.0,
-      "household": "Ava Burns (12) Family",
-      "phone": "(425) 273-3773",
-      "email": "susanne.burns76@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Ava Burns (12)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-07-21",
-      "oldest_hygiene": "2025-07-21",
-      "last_visit_date": "2025-07-21",
-      "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 239
-    },
-    {
       "household_id": 127530.0,
       "household": "Ezekiael Mitchell (3) Family",
       "phone": "(425) 626-4765",
       "email": "mgorbunov0@icloud.com",
       "kids_due_count": 1,
       "kids_due_names": "Ezekiael Mitchell (3)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-07-21",
+      "oldest_hygiene": "2025-07-21",
+      "last_visit_date": "2025-07-21",
+      "last_visit_office": "MARYSVILLE",
+      "days_overdue": 239
+    },
+    {
+      "household_id": 116750.0,
+      "household": "Ayden Kerr (3) Family",
+      "phone": "(425) 760-7784",
+      "email": "ken7471@msn.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Ayden Kerr (3)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-07-21",
       "oldest_hygiene": "2025-07-21",
@@ -16286,20 +16328,6 @@
       "oldest_hygiene": "2025-07-21",
       "last_visit_date": "2025-07-21",
       "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 239
-    },
-    {
-      "household_id": 116750.0,
-      "household": "Ayden Kerr (3) Family",
-      "phone": "(425) 760-7784",
-      "email": "ken7471@msn.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Ayden Kerr (3)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-07-21",
-      "oldest_hygiene": "2025-07-21",
-      "last_visit_date": "2025-07-21",
-      "last_visit_office": "MARYSVILLE",
       "days_overdue": 239
     },
     {
@@ -16360,11 +16388,11 @@
     },
     {
       "household_id": 127525.0,
-      "household": "Oliver Martinez (18); Louis Martinez (11) Family",
+      "household": "Louis Martinez (11); Oliver Martinez (18) Family",
       "phone": "(425) 261-9609",
       "email": "",
       "kids_due_count": 2,
-      "kids_due_names": "Oliver Martinez (18); Louis Martinez (11)",
+      "kids_due_names": "Louis Martinez (11); Oliver Martinez (18)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-07-25",
       "oldest_hygiene": "2025-07-22",
@@ -16499,20 +16527,6 @@
       "days_overdue": 237
     },
     {
-      "household_id": 114286.0,
-      "household": "Jaicee Bunnell (10) Family",
-      "phone": "(425) 530-4841",
-      "email": "kendrabunnell@yahoo.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Jaicee Bunnell (10)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-07-23",
-      "oldest_hygiene": "2025-07-23",
-      "last_visit_date": "2025-12-02",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 237
-    },
-    {
       "household_id": 119457.0,
       "household": "Lilly Lynn (18) Family",
       "phone": "(425) 750-3030",
@@ -16527,12 +16541,26 @@
       "days_overdue": 237
     },
     {
+      "household_id": 114286.0,
+      "household": "Jaicee Bunnell (10) Family",
+      "phone": "(425) 530-4841",
+      "email": "kendrabunnell@yahoo.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Jaicee Bunnell (10)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-07-23",
+      "oldest_hygiene": "2025-07-23",
+      "last_visit_date": "2025-12-02",
+      "last_visit_office": "MARYSVILLE",
+      "days_overdue": 237
+    },
+    {
       "household_id": 114736.0,
-      "household": "Rhett Tarran (4); Wyatt Tarran (8); Avery Tarran (11) Family",
+      "household": "Wyatt Tarran (8); Rhett Tarran (4); Avery Tarran (11) Family",
       "phone": "(208) 985-3651",
       "email": "",
       "kids_due_count": 3,
-      "kids_due_names": "Rhett Tarran (4); Wyatt Tarran (8); Avery Tarran (11)",
+      "kids_due_names": "Wyatt Tarran (8); Rhett Tarran (4); Avery Tarran (11)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-07-23",
       "oldest_hygiene": "2025-07-23",
@@ -16598,11 +16626,11 @@
     },
     {
       "household_id": 100579.0,
-      "household": "Britton Domaingue (15); Addison Domaingue (18); Tessa Domaingue (13); Elsie Domaingue (13) Family",
+      "household": "Addison Domaingue (18); Britton Domaingue (15); Tessa Domaingue (13); Elsie Domaingue (13) Family",
       "phone": "(425) 320-8619",
       "email": "tiffanyg172004@msn.com",
       "kids_due_count": 4,
-      "kids_due_names": "Britton Domaingue (15); Addison Domaingue (18); Tessa Domaingue (13); Elsie Domaingue (13)",
+      "kids_due_names": "Addison Domaingue (18); Britton Domaingue (15); Tessa Domaingue (13); Elsie Domaingue (13)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-08-07",
       "oldest_hygiene": "2025-07-24",
@@ -16653,20 +16681,6 @@
       "days_overdue": 236
     },
     {
-      "household_id": 123358.0,
-      "household": "Lettie Peizer (9) Family",
-      "phone": "(703) 722-4856",
-      "email": "peizer.jason@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Lettie Peizer (9)",
-      "last_office": "STANWOOD",
-      "most_recent_hygiene": "2025-07-24",
-      "oldest_hygiene": "2025-07-24",
-      "last_visit_date": "2025-07-24",
-      "last_visit_office": "STANWOOD",
-      "days_overdue": 236
-    },
-    {
       "household_id": 103906.0,
       "household": "Callie Johnson (18) Family",
       "phone": "(425) 512-2262",
@@ -16677,6 +16691,20 @@
       "most_recent_hygiene": "2025-07-24",
       "oldest_hygiene": "2025-07-24",
       "last_visit_date": "2025-08-01",
+      "last_visit_office": "STANWOOD",
+      "days_overdue": 236
+    },
+    {
+      "household_id": 123358.0,
+      "household": "Lettie Peizer (9) Family",
+      "phone": "(703) 722-4856",
+      "email": "peizer.jason@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Lettie Peizer (9)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-07-24",
+      "oldest_hygiene": "2025-07-24",
+      "last_visit_date": "2025-07-24",
       "last_visit_office": "STANWOOD",
       "days_overdue": 236
     },
@@ -16737,20 +16765,6 @@
       "days_overdue": 235
     },
     {
-      "household_id": 113552.0,
-      "household": "Kendall Kerley (17); Taylor Kerley (15) Family",
-      "phone": "(425) 220-5540",
-      "email": "mketernalgardens@gmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Kendall Kerley (17); Taylor Kerley (15)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-07-25",
-      "oldest_hygiene": "2025-07-25",
-      "last_visit_date": "2025-09-18",
-      "last_visit_office": "MONROE",
-      "days_overdue": 235
-    },
-    {
       "household_id": 126530.0,
       "household": "Taylor Carter (17); Aidan Carter (14) Family",
       "phone": "(318) 880-2323",
@@ -16762,6 +16776,20 @@
       "oldest_hygiene": "2025-07-25",
       "last_visit_date": "2025-07-25",
       "last_visit_office": "STANWOOD",
+      "days_overdue": 235
+    },
+    {
+      "household_id": 113552.0,
+      "household": "Kendall Kerley (17); Taylor Kerley (15) Family",
+      "phone": "(425) 220-5540",
+      "email": "mketernalgardens@gmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Kendall Kerley (17); Taylor Kerley (15)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-07-25",
+      "oldest_hygiene": "2025-07-25",
+      "last_visit_date": "2025-09-18",
+      "last_visit_office": "MONROE",
       "days_overdue": 235
     },
     {
@@ -16891,20 +16919,6 @@
       "days_overdue": 231
     },
     {
-      "household_id": 119034.0,
-      "household": "Malachi Weaver (6); Courtney Weaver (13) Family",
-      "phone": "(425) 420-8273",
-      "email": "kristin62386@hotmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Malachi Weaver (6); Courtney Weaver (13)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-07-29",
-      "oldest_hygiene": "2025-07-29",
-      "last_visit_date": "2025-10-15",
-      "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 231
-    },
-    {
       "household_id": 116762.0,
       "household": "Brittany Hernandez Ramirez (9); Rihanna Hernandez Ramirez (13) Family",
       "phone": "(425) 528-3199",
@@ -16916,6 +16930,20 @@
       "oldest_hygiene": "2025-07-29",
       "last_visit_date": "2025-07-29",
       "last_visit_office": "EVERETT",
+      "days_overdue": 231
+    },
+    {
+      "household_id": 119034.0,
+      "household": "Malachi Weaver (6); Courtney Weaver (13) Family",
+      "phone": "(425) 420-8273",
+      "email": "kristin62386@hotmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Malachi Weaver (6); Courtney Weaver (13)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-07-29",
+      "oldest_hygiene": "2025-07-29",
+      "last_visit_date": "2025-10-15",
+      "last_visit_office": "LAKE STEVENS",
       "days_overdue": 231
     },
     {
@@ -17158,11 +17186,11 @@
     },
     {
       "household_id": 112984.0,
-      "household": "Connor Tilton (12); Jack Tilton (8); Olivia Tilton (10) Family",
+      "household": "Connor Tilton (12); Olivia Tilton (10); Jack Tilton (8) Family",
       "phone": "(425) 387-8036",
       "email": "jessicaftilton@gmail.com",
       "kids_due_count": 3,
-      "kids_due_names": "Connor Tilton (12); Jack Tilton (8); Olivia Tilton (10)",
+      "kids_due_names": "Connor Tilton (12); Olivia Tilton (10); Jack Tilton (8)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-07-30",
       "oldest_hygiene": "2025-07-30",
@@ -17353,20 +17381,6 @@
       "days_overdue": 229
     },
     {
-      "household_id": 122344.0,
-      "household": "Gianna Velazquez-Alvarado (17) Family",
-      "phone": "(206) 355-7723",
-      "email": "dilerisolary@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Gianna Velazquez-Alvarado (17)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-07-31",
-      "oldest_hygiene": "2025-07-31",
-      "last_visit_date": "2025-08-22",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 229
-    },
-    {
       "household_id": 125925.0,
       "household": "Cody Chadwick (6) Family",
       "phone": "(425) 532-6534",
@@ -17378,6 +17392,20 @@
       "oldest_hygiene": "2025-07-31",
       "last_visit_date": "2025-07-31",
       "last_visit_office": "MONROE",
+      "days_overdue": 229
+    },
+    {
+      "household_id": 122344.0,
+      "household": "Gianna Velazquez-Alvarado (17) Family",
+      "phone": "(206) 355-7723",
+      "email": "dilerisolary@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Gianna Velazquez-Alvarado (17)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-07-31",
+      "oldest_hygiene": "2025-07-31",
+      "last_visit_date": "2025-08-22",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 229
     },
     {
@@ -17395,16 +17423,16 @@
       "days_overdue": 228
     },
     {
-      "household_id": 126297.0,
-      "household": "Elijah Harvey (2) Family",
-      "phone": "(707) 799-7416",
-      "email": "pure.israel420@gmail.com",
+      "household_id": 110366.0,
+      "household": "Noah Zabel (14) Family",
+      "phone": "(425) 387-2076",
+      "email": "johnniesgirl96@yahoo.com",
       "kids_due_count": 1,
-      "kids_due_names": "Elijah Harvey (2)",
+      "kids_due_names": "Noah Zabel (14)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-08-01",
       "oldest_hygiene": "2025-08-01",
-      "last_visit_date": "2025-08-01",
+      "last_visit_date": "2025-08-15",
       "last_visit_office": "STANWOOD",
       "days_overdue": 228
     },
@@ -17423,16 +17451,16 @@
       "days_overdue": 228
     },
     {
-      "household_id": 110366.0,
-      "household": "Noah Zabel (14) Family",
-      "phone": "(425) 387-2076",
-      "email": "johnniesgirl96@yahoo.com",
+      "household_id": 126297.0,
+      "household": "Elijah Harvey (2) Family",
+      "phone": "(707) 799-7416",
+      "email": "pure.israel420@gmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Noah Zabel (14)",
+      "kids_due_names": "Elijah Harvey (2)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-08-01",
       "oldest_hygiene": "2025-08-01",
-      "last_visit_date": "2025-08-15",
+      "last_visit_date": "2025-08-01",
       "last_visit_office": "STANWOOD",
       "days_overdue": 228
     },
@@ -17479,20 +17507,6 @@
       "days_overdue": 228
     },
     {
-      "household_id": 115720.0,
-      "household": "Vedansh Vaidya (4) Family",
-      "phone": "(817) 946-9491",
-      "email": "anicaidya99@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Vedansh Vaidya (4)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-08-01",
-      "oldest_hygiene": "2025-08-01",
-      "last_visit_date": "2025-08-01",
-      "last_visit_office": "MONROE",
-      "days_overdue": 228
-    },
-    {
       "household_id": 127599.0,
       "household": "Daemien Wagner (13) Family",
       "phone": "(808) 292-3836",
@@ -17504,6 +17518,20 @@
       "oldest_hygiene": "2025-08-01",
       "last_visit_date": "2025-08-01",
       "last_visit_office": "STANWOOD",
+      "days_overdue": 228
+    },
+    {
+      "household_id": 115720.0,
+      "household": "Vedansh Vaidya (4) Family",
+      "phone": "(817) 946-9491",
+      "email": "anicaidya99@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Vedansh Vaidya (4)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-08-01",
+      "oldest_hygiene": "2025-08-01",
+      "last_visit_date": "2025-08-01",
+      "last_visit_office": "MONROE",
       "days_overdue": 228
     },
     {
@@ -17577,20 +17605,6 @@
       "days_overdue": 225
     },
     {
-      "household_id": 121785.0,
-      "household": "Lillian Johnson (8) Family",
-      "phone": "(612) 423-5973",
-      "email": "kathryn.maude.johnson@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Lillian Johnson (8)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-08-04",
-      "oldest_hygiene": "2025-08-04",
-      "last_visit_date": "2025-08-04",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 225
-    },
-    {
       "household_id": 115753.0,
       "household": "Mary Jane Newman (18) Family",
       "phone": "(360) 899-8815",
@@ -17602,6 +17616,20 @@
       "oldest_hygiene": "2025-08-04",
       "last_visit_date": "2025-08-04",
       "last_visit_office": "LAKE STEVENS",
+      "days_overdue": 225
+    },
+    {
+      "household_id": 121785.0,
+      "household": "Lillian Johnson (8) Family",
+      "phone": "(612) 423-5973",
+      "email": "kathryn.maude.johnson@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Lillian Johnson (8)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-08-04",
+      "oldest_hygiene": "2025-08-04",
+      "last_visit_date": "2025-08-04",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 225
     },
     {
@@ -17647,12 +17675,12 @@
       "days_overdue": 225
     },
     {
-      "household_id": 108638.0,
-      "household": "Peyton Morales (17) Family",
-      "phone": "(425) 210-2560",
-      "email": "brty24@hotmail.com",
+      "household_id": 123364.0,
+      "household": "Elizabeth Wilcox (10) Family",
+      "phone": "(425) 450-9614",
+      "email": "wilcoxfamily727@gmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Peyton Morales (17)",
+      "kids_due_names": "Elizabeth Wilcox (10)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-08-04",
       "oldest_hygiene": "2025-08-04",
@@ -17661,12 +17689,12 @@
       "days_overdue": 225
     },
     {
-      "household_id": 123364.0,
-      "household": "Elizabeth Wilcox (10) Family",
-      "phone": "(425) 450-9614",
-      "email": "wilcoxfamily727@gmail.com",
+      "household_id": 108638.0,
+      "household": "Peyton Morales (17) Family",
+      "phone": "(425) 210-2560",
+      "email": "brty24@hotmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Elizabeth Wilcox (10)",
+      "kids_due_names": "Peyton Morales (17)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-08-04",
       "oldest_hygiene": "2025-08-04",
@@ -17801,20 +17829,6 @@
       "days_overdue": 224
     },
     {
-      "household_id": 127504.0,
-      "household": "Andrew Norris (7); Makenzie Norris (5) Family",
-      "phone": "(626) 755-9582",
-      "email": "",
-      "kids_due_count": 2,
-      "kids_due_names": "Andrew Norris (7); Makenzie Norris (5)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-08-05",
-      "oldest_hygiene": "2025-08-05",
-      "last_visit_date": "2025-08-05",
-      "last_visit_office": "MONROE",
-      "days_overdue": 224
-    },
-    {
       "household_id": 118761.0,
       "household": "Olive Alejandro (11); Esme Alejandro (9) Family",
       "phone": "(425) 953-0682",
@@ -17826,6 +17840,20 @@
       "oldest_hygiene": "2025-08-05",
       "last_visit_date": "2025-10-07",
       "last_visit_office": "EVERETT",
+      "days_overdue": 224
+    },
+    {
+      "household_id": 127504.0,
+      "household": "Andrew Norris (7); Makenzie Norris (5) Family",
+      "phone": "(626) 755-9582",
+      "email": "",
+      "kids_due_count": 2,
+      "kids_due_names": "Andrew Norris (7); Makenzie Norris (5)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-08-05",
+      "oldest_hygiene": "2025-08-05",
+      "last_visit_date": "2025-08-05",
+      "last_visit_office": "MONROE",
       "days_overdue": 224
     },
     {
@@ -17899,20 +17927,6 @@
       "days_overdue": 223
     },
     {
-      "household_id": 127557.0,
-      "household": "Gabriel Bishop (11) Family",
-      "phone": "(425) 754-9277",
-      "email": "",
-      "kids_due_count": 1,
-      "kids_due_names": "Gabriel Bishop (11)",
-      "last_office": "STANWOOD",
-      "most_recent_hygiene": "2025-08-06",
-      "oldest_hygiene": "2025-08-06",
-      "last_visit_date": "2025-09-02",
-      "last_visit_office": "STANWOOD",
-      "days_overdue": 223
-    },
-    {
       "household_id": 127024.0,
       "household": "Emilia Marc (15) Family",
       "phone": "(206) 849-5678",
@@ -17924,6 +17938,20 @@
       "oldest_hygiene": "2025-08-06",
       "last_visit_date": "2025-11-17",
       "last_visit_office": "MARYSVILLE",
+      "days_overdue": 223
+    },
+    {
+      "household_id": 127557.0,
+      "household": "Gabriel Bishop (11) Family",
+      "phone": "(425) 754-9277",
+      "email": "",
+      "kids_due_count": 1,
+      "kids_due_names": "Gabriel Bishop (11)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-08-06",
+      "oldest_hygiene": "2025-08-06",
+      "last_visit_date": "2025-09-02",
+      "last_visit_office": "STANWOOD",
       "days_overdue": 223
     },
     {
@@ -17983,12 +18011,12 @@
       "days_overdue": 223
     },
     {
-      "household_id": 126634.0,
-      "household": "Kollins Stenstrom (3) Family",
-      "phone": "(425) 314-0270",
-      "email": "lexiebarker423@gmail.com",
+      "household_id": 114399.0,
+      "household": "Chase Daughtry (11) Family",
+      "phone": "(425) 583-2217",
+      "email": "randidaughtry@gmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Kollins Stenstrom (3)",
+      "kids_due_names": "Chase Daughtry (11)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-08-06",
       "oldest_hygiene": "2025-08-06",
@@ -17997,12 +18025,12 @@
       "days_overdue": 223
     },
     {
-      "household_id": 114399.0,
-      "household": "Chase Daughtry (11) Family",
-      "phone": "(425) 583-2217",
-      "email": "randidaughtry@gmail.com",
+      "household_id": 126634.0,
+      "household": "Kollins Stenstrom (3) Family",
+      "phone": "(425) 314-0270",
+      "email": "lexiebarker423@gmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Chase Daughtry (11)",
+      "kids_due_names": "Kollins Stenstrom (3)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-08-06",
       "oldest_hygiene": "2025-08-06",
@@ -18151,20 +18179,6 @@
       "days_overdue": 222
     },
     {
-      "household_id": 115198.0,
-      "household": "Mila Cushing (6); Zoey Cushing (3) Family",
-      "phone": "(425) 260-4939",
-      "email": "kaitlyn.renee10@icloud.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Mila Cushing (6); Zoey Cushing (3)",
-      "last_office": "STANWOOD",
-      "most_recent_hygiene": "2025-08-07",
-      "oldest_hygiene": "2025-08-07",
-      "last_visit_date": "2025-08-07",
-      "last_visit_office": "STANWOOD",
-      "days_overdue": 222
-    },
-    {
       "household_id": 122130.0,
       "household": "Jackson Underwood (16); June Underwood (14) Family",
       "phone": "(425) 321-4077",
@@ -18176,6 +18190,20 @@
       "oldest_hygiene": "2025-08-07",
       "last_visit_date": "2025-09-10",
       "last_visit_office": "MARYSVILLE",
+      "days_overdue": 222
+    },
+    {
+      "household_id": 115198.0,
+      "household": "Mila Cushing (6); Zoey Cushing (3) Family",
+      "phone": "(425) 260-4939",
+      "email": "kaitlyn.renee10@icloud.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Mila Cushing (6); Zoey Cushing (3)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-08-07",
+      "oldest_hygiene": "2025-08-07",
+      "last_visit_date": "2025-08-07",
+      "last_visit_office": "STANWOOD",
       "days_overdue": 222
     },
     {
@@ -18235,20 +18263,6 @@
       "days_overdue": 222
     },
     {
-      "household_id": 127603.0,
-      "household": "Claire Norton (8); Graham Norton (5) Family",
-      "phone": "(425) 328-6154",
-      "email": "melodyketchum@gmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Claire Norton (8); Graham Norton (5)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-08-07",
-      "oldest_hygiene": "2025-08-07",
-      "last_visit_date": "2025-08-07",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 222
-    },
-    {
       "household_id": 118933.0,
       "household": "Ryder Seyss (8); Lillie Seyss (9) Family",
       "phone": "(206) 348-8263",
@@ -18260,6 +18274,20 @@
       "oldest_hygiene": "2025-08-07",
       "last_visit_date": "2025-11-21",
       "last_visit_office": "MONROE",
+      "days_overdue": 222
+    },
+    {
+      "household_id": 127603.0,
+      "household": "Claire Norton (8); Graham Norton (5) Family",
+      "phone": "(425) 328-6154",
+      "email": "melodyketchum@gmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Claire Norton (8); Graham Norton (5)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-08-07",
+      "oldest_hygiene": "2025-08-07",
+      "last_visit_date": "2025-08-07",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 222
     },
     {
@@ -18292,11 +18320,11 @@
     },
     {
       "household_id": 117735.0,
-      "household": "Victoria Michel Barba (8); Andrea Michel- Barba (13) Family",
+      "household": "Andrea Michel- Barba (13); Victoria Michel Barba (8) Family",
       "phone": "(360) 502-5256",
       "email": "susybluna@gmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Victoria Michel Barba (8); Andrea Michel- Barba (13)",
+      "kids_due_names": "Andrea Michel- Barba (13); Victoria Michel Barba (8)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-08-28",
       "oldest_hygiene": "2025-08-08",
@@ -18333,20 +18361,6 @@
       "days_overdue": 221
     },
     {
-      "household_id": 108831.0,
-      "household": "Emma Reems (18) Family",
-      "phone": "(425) 238-4565",
-      "email": "amyreems@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Emma Reems (18)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-08-08",
-      "oldest_hygiene": "2025-08-08",
-      "last_visit_date": "2025-08-08",
-      "last_visit_office": "MONROE",
-      "days_overdue": 221
-    },
-    {
       "household_id": 127242.0,
       "household": "Luke Petree (6) Family",
       "phone": "(253) 241-3375",
@@ -18358,6 +18372,20 @@
       "oldest_hygiene": "2025-08-08",
       "last_visit_date": "2025-08-08",
       "last_visit_office": "STANWOOD",
+      "days_overdue": 221
+    },
+    {
+      "household_id": 108831.0,
+      "household": "Emma Reems (18) Family",
+      "phone": "(425) 238-4565",
+      "email": "amyreems@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Emma Reems (18)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-08-08",
+      "oldest_hygiene": "2025-08-08",
+      "last_visit_date": "2025-08-08",
+      "last_visit_office": "MONROE",
       "days_overdue": 221
     },
     {
@@ -18487,20 +18515,6 @@
       "days_overdue": 218
     },
     {
-      "household_id": 106646.0,
-      "household": "Evangelista Lewis (14) Family",
-      "phone": "(360) 913-3389",
-      "email": "jnalewis@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Evangelista Lewis (14)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-08-11",
-      "oldest_hygiene": "2025-08-11",
-      "last_visit_date": "2025-08-11",
-      "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 218
-    },
-    {
       "household_id": 121863.0,
       "household": "Annuo Liang (5) Family",
       "phone": "(425) 426-6541",
@@ -18512,6 +18526,20 @@
       "oldest_hygiene": "2025-08-11",
       "last_visit_date": "2025-11-26",
       "last_visit_office": "EVERETT",
+      "days_overdue": 218
+    },
+    {
+      "household_id": 106646.0,
+      "household": "Evangelista Lewis (14) Family",
+      "phone": "(360) 913-3389",
+      "email": "jnalewis@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Evangelista Lewis (14)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-08-11",
+      "oldest_hygiene": "2025-08-11",
+      "last_visit_date": "2025-08-11",
+      "last_visit_office": "LAKE STEVENS",
       "days_overdue": 218
     },
     {
@@ -18627,6 +18655,20 @@
       "days_overdue": 218
     },
     {
+      "household_id": 100246.0,
+      "household": "Austin Klam (18); Preston Klam (18) Family",
+      "phone": "(425) 879-7314",
+      "email": "chhaydenn@hotmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Austin Klam (18); Preston Klam (18)",
+      "last_office": "EVERETT",
+      "most_recent_hygiene": "2025-08-11",
+      "oldest_hygiene": "2025-08-11",
+      "last_visit_date": "2025-08-11",
+      "last_visit_office": "EVERETT",
+      "days_overdue": 218
+    },
+    {
       "household_id": 115388.0,
       "household": "Aria Boyd (5); Kaliyah Boyd (10) Family",
       "phone": "(425) 750-1367",
@@ -18638,20 +18680,6 @@
       "oldest_hygiene": "2025-08-11",
       "last_visit_date": "2025-10-08",
       "last_visit_office": "MARYSVILLE",
-      "days_overdue": 218
-    },
-    {
-      "household_id": 100246.0,
-      "household": "Preston Klam (18); Austin Klam (18) Family",
-      "phone": "(425) 879-7314",
-      "email": "chhaydenn@hotmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Preston Klam (18); Austin Klam (18)",
-      "last_office": "EVERETT",
-      "most_recent_hygiene": "2025-08-11",
-      "oldest_hygiene": "2025-08-11",
-      "last_visit_date": "2025-08-11",
-      "last_visit_office": "EVERETT",
       "days_overdue": 218
     },
     {
@@ -18795,20 +18823,6 @@
       "days_overdue": 217
     },
     {
-      "household_id": 115447.0,
-      "household": "Chase Little (16); Luke Little (10) Family",
-      "phone": "(206) 883-4687",
-      "email": "meriklittle@gmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Chase Little (16); Luke Little (10)",
-      "last_office": "STANWOOD",
-      "most_recent_hygiene": "2025-08-12",
-      "oldest_hygiene": "2025-08-12",
-      "last_visit_date": "2025-08-12",
-      "last_visit_office": "STANWOOD",
-      "days_overdue": 217
-    },
-    {
       "household_id": 108878.0,
       "household": "Delanie Anderson-Olson (5); Levi Olson (12) Family",
       "phone": "(425) 315-5849",
@@ -18819,6 +18833,20 @@
       "most_recent_hygiene": "2025-08-12",
       "oldest_hygiene": "2025-08-12",
       "last_visit_date": "2025-10-07",
+      "last_visit_office": "STANWOOD",
+      "days_overdue": 217
+    },
+    {
+      "household_id": 115447.0,
+      "household": "Chase Little (16); Luke Little (10) Family",
+      "phone": "(206) 883-4687",
+      "email": "meriklittle@gmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Chase Little (16); Luke Little (10)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-08-12",
+      "oldest_hygiene": "2025-08-12",
+      "last_visit_date": "2025-08-12",
       "last_visit_office": "STANWOOD",
       "days_overdue": 217
     },
@@ -18852,11 +18880,11 @@
     },
     {
       "household_id": 102125.0,
-      "household": "Ryan Brown (14); Carver Brown (12); Bennett Brown (6) Family",
+      "household": "Carver Brown (12); Ryan Brown (14); Bennett Brown (6) Family",
       "phone": "(206) 940-8159",
       "email": "deannab1@hotmail.com",
       "kids_due_count": 3,
-      "kids_due_names": "Ryan Brown (14); Carver Brown (12); Bennett Brown (6)",
+      "kids_due_names": "Carver Brown (12); Ryan Brown (14); Bennett Brown (6)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-08-12",
       "oldest_hygiene": "2025-08-12",
@@ -18921,20 +18949,6 @@
       "days_overdue": 217
     },
     {
-      "household_id": 124955.0,
-      "household": "Caden Miller (13); Chandler Miller (10) Family",
-      "phone": "(425) 308-5516",
-      "email": "m22miller2001@yahoo.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Caden Miller (13); Chandler Miller (10)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-08-12",
-      "oldest_hygiene": "2025-08-12",
-      "last_visit_date": "2025-08-12",
-      "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 217
-    },
-    {
       "household_id": 106659.0,
       "household": "Xiomara Moreno-Medina (10); Julio Moreno-Medina (14) Family",
       "phone": "(206) 693-0030",
@@ -18946,6 +18960,20 @@
       "oldest_hygiene": "2025-08-12",
       "last_visit_date": "2025-08-12",
       "last_visit_office": "MONROE",
+      "days_overdue": 217
+    },
+    {
+      "household_id": 124955.0,
+      "household": "Caden Miller (13); Chandler Miller (10) Family",
+      "phone": "(425) 308-5516",
+      "email": "m22miller2001@yahoo.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Caden Miller (13); Chandler Miller (10)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-08-12",
+      "oldest_hygiene": "2025-08-12",
+      "last_visit_date": "2025-08-12",
+      "last_visit_office": "LAKE STEVENS",
       "days_overdue": 217
     },
     {
@@ -19020,11 +19048,11 @@
     },
     {
       "household_id": 115230.0,
-      "household": "Kayden Howell (17); Kaylee Howell (15) Family",
+      "household": "Kaylee Howell (15); Kayden Howell (17) Family",
       "phone": "(425) 623-0085",
       "email": "howell2kids@gmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Kayden Howell (17); Kaylee Howell (15)",
+      "kids_due_names": "Kaylee Howell (15); Kayden Howell (17)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-08-13",
       "oldest_hygiene": "2025-08-13",
@@ -19104,11 +19132,11 @@
     },
     {
       "household_id": 122976.0,
-      "household": "Charles Snel (6); Carter Snel (16); Kadynce Snel (13) Family",
+      "household": "Charles Snel (6); Kadynce Snel (13); Carter Snel (16) Family",
       "phone": "(425) 327-5587",
       "email": "crvillines2@gmail.com",
       "kids_due_count": 3,
-      "kids_due_names": "Charles Snel (6); Carter Snel (16); Kadynce Snel (13)",
+      "kids_due_names": "Charles Snel (6); Kadynce Snel (13); Carter Snel (16)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-08-13",
       "oldest_hygiene": "2025-08-13",
@@ -19146,11 +19174,11 @@
     },
     {
       "household_id": 124968.0,
-      "household": "Clara Howerton (5) Family",
-      "phone": "(808) 866-4984",
+      "household": "Lilah Howerton (3) Family",
+      "phone": "(425) 315-3135",
       "email": "",
       "kids_due_count": 1,
-      "kids_due_names": "Clara Howerton (5)",
+      "kids_due_names": "Lilah Howerton (3)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-08-14",
       "oldest_hygiene": "2025-08-14",
@@ -19160,11 +19188,11 @@
     },
     {
       "household_id": 124968.0,
-      "household": "Lilah Howerton (3) Family",
-      "phone": "(425) 315-3135",
+      "household": "Clara Howerton (5) Family",
+      "phone": "(808) 866-4984",
       "email": "",
       "kids_due_count": 1,
-      "kids_due_names": "Lilah Howerton (3)",
+      "kids_due_names": "Clara Howerton (5)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-08-14",
       "oldest_hygiene": "2025-08-14",
@@ -19229,17 +19257,17 @@
       "days_overdue": 215
     },
     {
-      "household_id": 120592.0,
-      "household": "Zoe Alfaro (17) Family",
-      "phone": "(425) 931-9526",
-      "email": "jmknife@hotmail.com",
+      "household_id": 106635.0,
+      "household": "Landon Nelke (16) Family",
+      "phone": "(360) 540-1201",
+      "email": "tanya.nelke@gmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Zoe Alfaro (17)",
-      "last_office": "STANWOOD",
+      "kids_due_names": "Landon Nelke (16)",
+      "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-08-14",
       "oldest_hygiene": "2025-08-14",
       "last_visit_date": "2025-08-14",
-      "last_visit_office": "STANWOOD",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 215
     },
     {
@@ -19257,17 +19285,17 @@
       "days_overdue": 215
     },
     {
-      "household_id": 106635.0,
-      "household": "Landon Nelke (16) Family",
-      "phone": "(360) 540-1201",
-      "email": "tanya.nelke@gmail.com",
+      "household_id": 120592.0,
+      "household": "Zoe Alfaro (17) Family",
+      "phone": "(425) 931-9526",
+      "email": "jmknife@hotmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Landon Nelke (16)",
-      "last_office": "MARYSVILLE",
+      "kids_due_names": "Zoe Alfaro (17)",
+      "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-08-14",
       "oldest_hygiene": "2025-08-14",
       "last_visit_date": "2025-08-14",
-      "last_visit_office": "MARYSVILLE",
+      "last_visit_office": "STANWOOD",
       "days_overdue": 215
     },
     {
@@ -19327,17 +19355,17 @@
       "days_overdue": 215
     },
     {
-      "household_id": 115274.0,
-      "household": "Lucy Ford (17) Family",
-      "phone": "(206) 551-1712",
-      "email": "hay_coon@hotmail.com",
+      "household_id": 115635.0,
+      "household": "Braydin Day (16) Family",
+      "phone": "(425) 524-9885",
+      "email": "ashleybrownsmith386@gmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Lucy Ford (17)",
-      "last_office": "MONROE",
+      "kids_due_names": "Braydin Day (16)",
+      "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-08-14",
       "oldest_hygiene": "2025-08-14",
       "last_visit_date": "2025-08-14",
-      "last_visit_office": "MONROE",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 215
     },
     {
@@ -19355,31 +19383,17 @@
       "days_overdue": 215
     },
     {
-      "household_id": 115635.0,
-      "household": "Braydin Day (16) Family",
-      "phone": "(425) 524-9885",
-      "email": "ashleybrownsmith386@gmail.com",
+      "household_id": 115274.0,
+      "household": "Lucy Ford (17) Family",
+      "phone": "(206) 551-1712",
+      "email": "hay_coon@hotmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Braydin Day (16)",
-      "last_office": "MARYSVILLE",
+      "kids_due_names": "Lucy Ford (17)",
+      "last_office": "MONROE",
       "most_recent_hygiene": "2025-08-14",
       "oldest_hygiene": "2025-08-14",
       "last_visit_date": "2025-08-14",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 215
-    },
-    {
-      "household_id": 104603.0,
-      "household": "Aylan Llamas Meza (10); Ezra Llamas Meza (13); Eylan Llamas Meza (10) Family",
-      "phone": "(425) 299-6850",
-      "email": "lumi899@hotmail.com",
-      "kids_due_count": 3,
-      "kids_due_names": "Aylan Llamas Meza (10); Ezra Llamas Meza (13); Eylan Llamas Meza (10)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-08-14",
-      "oldest_hygiene": "2025-08-14",
-      "last_visit_date": "2025-08-14",
-      "last_visit_office": "LAKE STEVENS",
+      "last_visit_office": "MONROE",
       "days_overdue": 215
     },
     {
@@ -19394,6 +19408,20 @@
       "oldest_hygiene": "2025-08-14",
       "last_visit_date": "2025-12-05",
       "last_visit_office": "MONROE",
+      "days_overdue": 215
+    },
+    {
+      "household_id": 104603.0,
+      "household": "Eylan Llamas Meza (10); Aylan Llamas Meza (10); Ezra Llamas Meza (13) Family",
+      "phone": "(425) 299-6850",
+      "email": "lumi899@hotmail.com",
+      "kids_due_count": 3,
+      "kids_due_names": "Eylan Llamas Meza (10); Aylan Llamas Meza (10); Ezra Llamas Meza (13)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-08-14",
+      "oldest_hygiene": "2025-08-14",
+      "last_visit_date": "2025-08-14",
+      "last_visit_office": "LAKE STEVENS",
       "days_overdue": 215
     },
     {
@@ -19439,20 +19467,6 @@
       "days_overdue": 214
     },
     {
-      "household_id": 126535.0,
-      "household": "Sofia Hernandez (3) Family",
-      "phone": "(425) 512-4739",
-      "email": "jhjuanhernan21@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Sofia Hernandez (3)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-08-15",
-      "oldest_hygiene": "2025-08-15",
-      "last_visit_date": "2025-08-15",
-      "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 214
-    },
-    {
       "household_id": 102773.0,
       "household": "Daniela Merwede (15) Family",
       "phone": "(425) 876-3546",
@@ -19464,6 +19478,20 @@
       "oldest_hygiene": "2025-08-15",
       "last_visit_date": "2025-08-15",
       "last_visit_office": "STANWOOD",
+      "days_overdue": 214
+    },
+    {
+      "household_id": 126535.0,
+      "household": "Sofia Hernandez (3) Family",
+      "phone": "(425) 512-4739",
+      "email": "jhjuanhernan21@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Sofia Hernandez (3)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-08-15",
+      "oldest_hygiene": "2025-08-15",
+      "last_visit_date": "2025-08-15",
+      "last_visit_office": "LAKE STEVENS",
       "days_overdue": 214
     },
     {
@@ -19495,12 +19523,12 @@
       "days_overdue": 214
     },
     {
-      "household_id": 125658.0,
-      "household": "Emerson Allen (6) Family",
-      "phone": "(832) 247-8992",
-      "email": "mistere1@zoho.com",
+      "household_id": 116953.0,
+      "household": "Caiden Butchar (6) Family",
+      "phone": "(805) 300-2938",
+      "email": "",
       "kids_due_count": 1,
-      "kids_due_names": "Emerson Allen (6)",
+      "kids_due_names": "Caiden Butchar (6)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-08-15",
       "oldest_hygiene": "2025-08-15",
@@ -19509,12 +19537,12 @@
       "days_overdue": 214
     },
     {
-      "household_id": 116953.0,
-      "household": "Caiden Butchar (6) Family",
-      "phone": "(805) 300-2938",
-      "email": "",
+      "household_id": 125658.0,
+      "household": "Emerson Allen (6) Family",
+      "phone": "(832) 247-8992",
+      "email": "mistere1@zoho.com",
       "kids_due_count": 1,
-      "kids_due_names": "Caiden Butchar (6)",
+      "kids_due_names": "Emerson Allen (6)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-08-15",
       "oldest_hygiene": "2025-08-15",
@@ -19538,11 +19566,11 @@
     },
     {
       "household_id": 120964.0,
-      "household": "Teegan Bennett (11); Trinity Bennett (10) Family",
+      "household": "Trinity Bennett (10); Teegan Bennett (11) Family",
       "phone": "(559) 356-0109",
       "email": "taliacheri16@gmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Teegan Bennett (11); Trinity Bennett (10)",
+      "kids_due_names": "Trinity Bennett (10); Teegan Bennett (11)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-08-15",
       "oldest_hygiene": "2025-08-15",
@@ -19593,20 +19621,6 @@
       "days_overdue": 211
     },
     {
-      "household_id": 120425.0,
-      "household": "Casen Gustavson (10) Family",
-      "phone": "(360) 386-8331",
-      "email": "diann.gustavson@comcast.net",
-      "kids_due_count": 1,
-      "kids_due_names": "Casen Gustavson (10)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-08-18",
-      "oldest_hygiene": "2025-08-18",
-      "last_visit_date": "2025-08-18",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 211
-    },
-    {
       "household_id": 111389.0,
       "household": "Mason Skartved (15) Family",
       "phone": "(425) 327-7426",
@@ -19618,6 +19632,20 @@
       "oldest_hygiene": "2025-08-18",
       "last_visit_date": "2025-08-18",
       "last_visit_office": "LAKE STEVENS",
+      "days_overdue": 211
+    },
+    {
+      "household_id": 120425.0,
+      "household": "Casen Gustavson (10) Family",
+      "phone": "(360) 386-8331",
+      "email": "diann.gustavson@comcast.net",
+      "kids_due_count": 1,
+      "kids_due_names": "Casen Gustavson (10)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-08-18",
+      "oldest_hygiene": "2025-08-18",
+      "last_visit_date": "2025-08-18",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 211
     },
     {
@@ -19636,11 +19664,11 @@
     },
     {
       "household_id": 119190.0,
-      "household": "Jayden Mendoza Garnica (11); Jesus Mendoza Garnica (13) Family",
+      "household": "Jesus Mendoza Garnica (13); Jayden Mendoza Garnica (11) Family",
       "phone": "(425) 404-0251",
       "email": "mendoza_jessica2013@icloud.com",
       "kids_due_count": 2,
-      "kids_due_names": "Jayden Mendoza Garnica (11); Jesus Mendoza Garnica (13)",
+      "kids_due_names": "Jesus Mendoza Garnica (13); Jayden Mendoza Garnica (11)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-08-18",
       "oldest_hygiene": "2025-08-18",
@@ -19733,20 +19761,6 @@
       "days_overdue": 210
     },
     {
-      "household_id": 123824.0,
-      "household": "Ezekiel Warner (17) Family",
-      "phone": "(425) 359-7512",
-      "email": "whitneyhoyle80@comcast.net",
-      "kids_due_count": 1,
-      "kids_due_names": "Ezekiel Warner (17)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-08-19",
-      "oldest_hygiene": "2025-08-19",
-      "last_visit_date": "2025-08-19",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 210
-    },
-    {
       "household_id": 117068.0,
       "household": "Parker Hattenbach (7) Family",
       "phone": "(360) 503-9612",
@@ -19757,6 +19771,20 @@
       "most_recent_hygiene": "2025-08-19",
       "oldest_hygiene": "2025-08-19",
       "last_visit_date": "2025-12-05",
+      "last_visit_office": "MARYSVILLE",
+      "days_overdue": 210
+    },
+    {
+      "household_id": 123824.0,
+      "household": "Ezekiel Warner (17) Family",
+      "phone": "(425) 359-7512",
+      "email": "whitneyhoyle80@comcast.net",
+      "kids_due_count": 1,
+      "kids_due_names": "Ezekiel Warner (17)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-08-19",
+      "oldest_hygiene": "2025-08-19",
+      "last_visit_date": "2025-08-19",
       "last_visit_office": "MARYSVILLE",
       "days_overdue": 210
     },
@@ -19817,20 +19845,6 @@
       "days_overdue": 210
     },
     {
-      "household_id": 126951.0,
-      "household": "Lucas Kimble (12); Amelia Kimble (10) Family",
-      "phone": "(425) 971-4782",
-      "email": "nyssa.kimble@hotmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Lucas Kimble (12); Amelia Kimble (10)",
-      "last_office": "EVERETT",
-      "most_recent_hygiene": "2025-08-19",
-      "oldest_hygiene": "2025-08-19",
-      "last_visit_date": "2025-08-19",
-      "last_visit_office": "EVERETT",
-      "days_overdue": 210
-    },
-    {
       "household_id": 102297.0,
       "household": "Mason Miller (16); Dane Miller (18) Family",
       "phone": "(425) 466-4672",
@@ -19842,6 +19856,20 @@
       "oldest_hygiene": "2025-08-19",
       "last_visit_date": "2025-09-16",
       "last_visit_office": "STANWOOD",
+      "days_overdue": 210
+    },
+    {
+      "household_id": 126951.0,
+      "household": "Lucas Kimble (12); Amelia Kimble (10) Family",
+      "phone": "(425) 971-4782",
+      "email": "nyssa.kimble@hotmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Lucas Kimble (12); Amelia Kimble (10)",
+      "last_office": "EVERETT",
+      "most_recent_hygiene": "2025-08-19",
+      "oldest_hygiene": "2025-08-19",
+      "last_visit_date": "2025-08-19",
+      "last_visit_office": "EVERETT",
       "days_overdue": 210
     },
     {
@@ -19860,11 +19888,11 @@
     },
     {
       "household_id": 115945.0,
-      "household": "Dahlia Kovalyuk (4); Roza Kovalyuk (5) Family",
+      "household": "Roza Kovalyuk (5); Dahlia Kovalyuk (4) Family",
       "phone": "(425) 343-6567",
       "email": "kovalyuk.leanna@gmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Dahlia Kovalyuk (4); Roza Kovalyuk (5)",
+      "kids_due_names": "Roza Kovalyuk (5); Dahlia Kovalyuk (4)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-08-19",
       "oldest_hygiene": "2025-08-19",
@@ -19943,6 +19971,20 @@
       "days_overdue": 210
     },
     {
+      "household_id": 118227.0,
+      "household": "Paxton Jury (14) Family",
+      "phone": "(360) 762-8397",
+      "email": "mataliemorgan988@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Paxton Jury (14)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-08-19",
+      "oldest_hygiene": "2025-08-19",
+      "last_visit_date": "2025-08-19",
+      "last_visit_office": "MONROE",
+      "days_overdue": 210
+    },
+    {
       "household_id": 124575.0,
       "household": "Bryan Lopez-Vargas (12) Family",
       "phone": "(425) 210-6605",
@@ -19968,20 +20010,6 @@
       "oldest_hygiene": "2025-08-19",
       "last_visit_date": "2025-08-19",
       "last_visit_office": "STANWOOD",
-      "days_overdue": 210
-    },
-    {
-      "household_id": 118227.0,
-      "household": "Paxton Jury (14) Family",
-      "phone": "(360) 762-8397",
-      "email": "mataliemorgan988@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Paxton Jury (14)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-08-19",
-      "oldest_hygiene": "2025-08-19",
-      "last_visit_date": "2025-08-19",
-      "last_visit_office": "MONROE",
       "days_overdue": 210
     },
     {
@@ -20083,20 +20111,6 @@
       "days_overdue": 209
     },
     {
-      "household_id": 121951.0,
-      "household": "Vanya Bhardwaj (13) Family",
-      "phone": "(425) 343-4718",
-      "email": "sharmaseem81@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Vanya Bhardwaj (13)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-08-20",
-      "oldest_hygiene": "2025-08-20",
-      "last_visit_date": "2025-10-10",
-      "last_visit_office": "MONROE",
-      "days_overdue": 209
-    },
-    {
       "household_id": 100338.0,
       "household": "Hunter Carle (18) Family",
       "phone": "(360) 421-6590",
@@ -20111,6 +20125,20 @@
       "days_overdue": 209
     },
     {
+      "household_id": 121951.0,
+      "household": "Vanya Bhardwaj (13) Family",
+      "phone": "(425) 343-4718",
+      "email": "sharmaseem81@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Vanya Bhardwaj (13)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-08-20",
+      "oldest_hygiene": "2025-08-20",
+      "last_visit_date": "2025-10-10",
+      "last_visit_office": "MONROE",
+      "days_overdue": 209
+    },
+    {
       "household_id": 115801.0,
       "household": "Genevieve Rassilyer (4); Joseph Rassilyer (2); Anthony Rassilyer (7) Family",
       "phone": "(360) 540-4544",
@@ -20122,20 +20150,6 @@
       "oldest_hygiene": "2025-08-20",
       "last_visit_date": "2025-08-20",
       "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 209
-    },
-    {
-      "household_id": 118784.0,
-      "household": "Gwenivere Eller (9) Family",
-      "phone": "(425) 327-5790",
-      "email": "umzeys@yahoo.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Gwenivere Eller (9)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-08-20",
-      "oldest_hygiene": "2025-08-20",
-      "last_visit_date": "2026-01-28",
-      "last_visit_office": "STANWOOD",
       "days_overdue": 209
     },
     {
@@ -20167,16 +20181,16 @@
       "days_overdue": 209
     },
     {
-      "household_id": 127680.0,
-      "household": "Elijah Meece (6) Family",
-      "phone": "(360) 631-0724",
-      "email": "missbuse64@gmail.com",
+      "household_id": 118784.0,
+      "household": "Gwenivere Eller (9) Family",
+      "phone": "(425) 327-5790",
+      "email": "umzeys@yahoo.com",
       "kids_due_count": 1,
-      "kids_due_names": "Elijah Meece (6)",
-      "last_office": "STANWOOD",
+      "kids_due_names": "Gwenivere Eller (9)",
+      "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-08-20",
       "oldest_hygiene": "2025-08-20",
-      "last_visit_date": "2025-09-16",
+      "last_visit_date": "2026-01-28",
       "last_visit_office": "STANWOOD",
       "days_overdue": 209
     },
@@ -20192,6 +20206,20 @@
       "oldest_hygiene": "2025-08-20",
       "last_visit_date": "2025-08-20",
       "last_visit_office": "MARYSVILLE",
+      "days_overdue": 209
+    },
+    {
+      "household_id": 127680.0,
+      "household": "Elijah Meece (6) Family",
+      "phone": "(360) 631-0724",
+      "email": "missbuse64@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Elijah Meece (6)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-08-20",
+      "oldest_hygiene": "2025-08-20",
+      "last_visit_date": "2025-09-16",
+      "last_visit_office": "STANWOOD",
       "days_overdue": 209
     },
     {
@@ -20629,20 +20657,6 @@
       "days_overdue": 204
     },
     {
-      "household_id": 100700.0,
-      "household": "Hunter Baker (10); Nathan Bruce (18) Family",
-      "phone": "(425) 275-7711",
-      "email": "chrystallynn425@gmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Hunter Baker (10); Nathan Bruce (18)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-08-25",
-      "oldest_hygiene": "2025-08-25",
-      "last_visit_date": "2025-10-07",
-      "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 204
-    },
-    {
       "household_id": 109199.0,
       "household": "William Ordaz Licona (13); Angie Ordaz (11) Family",
       "phone": "(425) 971-6122",
@@ -20657,16 +20671,16 @@
       "days_overdue": 204
     },
     {
-      "household_id": 107138.0,
-      "household": "Luke Valdes (18) Family",
-      "phone": "(425) 478-0435",
-      "email": "rladrian.valdes@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Luke Valdes (18)",
+      "household_id": 100700.0,
+      "household": "Hunter Baker (10); Nathan Bruce (18) Family",
+      "phone": "(425) 275-7711",
+      "email": "chrystallynn425@gmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Hunter Baker (10); Nathan Bruce (18)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-08-25",
       "oldest_hygiene": "2025-08-25",
-      "last_visit_date": "2025-08-25",
+      "last_visit_date": "2025-10-07",
       "last_visit_office": "LAKE STEVENS",
       "days_overdue": 204
     },
@@ -20682,6 +20696,20 @@
       "oldest_hygiene": "2025-08-25",
       "last_visit_date": "2025-08-25",
       "last_visit_office": "MARYSVILLE",
+      "days_overdue": 204
+    },
+    {
+      "household_id": 107138.0,
+      "household": "Luke Valdes (18) Family",
+      "phone": "(425) 478-0435",
+      "email": "rladrian.valdes@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Luke Valdes (18)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-08-25",
+      "oldest_hygiene": "2025-08-25",
+      "last_visit_date": "2025-08-25",
+      "last_visit_office": "LAKE STEVENS",
       "days_overdue": 204
     },
     {
@@ -20741,20 +20769,6 @@
       "days_overdue": 203
     },
     {
-      "household_id": 120009.0,
-      "household": "Freyja Weaver (15) Family",
-      "phone": "(619) 813-3924",
-      "email": "",
-      "kids_due_count": 1,
-      "kids_due_names": "Freyja Weaver (15)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-08-26",
-      "oldest_hygiene": "2025-08-26",
-      "last_visit_date": "2025-08-26",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 203
-    },
-    {
       "household_id": 114081.0,
       "household": "Gabriel Fluieraru (12) Family",
       "phone": "(916) 505-9648",
@@ -20766,6 +20780,20 @@
       "oldest_hygiene": "2025-08-26",
       "last_visit_date": "2025-08-26",
       "last_visit_office": "LAKE STEVENS",
+      "days_overdue": 203
+    },
+    {
+      "household_id": 120009.0,
+      "household": "Freyja Weaver (15) Family",
+      "phone": "(619) 813-3924",
+      "email": "",
+      "kids_due_count": 1,
+      "kids_due_names": "Freyja Weaver (15)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-08-26",
+      "oldest_hygiene": "2025-08-26",
+      "last_visit_date": "2025-08-26",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 203
     },
     {
@@ -20853,17 +20881,17 @@
       "days_overdue": 203
     },
     {
-      "household_id": 104141.0,
-      "household": "Holly Young (16) Family",
-      "phone": "(425) 359-2264",
-      "email": "ccossette@aol.com",
+      "household_id": 127616.0,
+      "household": "Noelle Garner (19) Family",
+      "phone": "(360) 391-7030",
+      "email": "",
       "kids_due_count": 1,
-      "kids_due_names": "Holly Young (16)",
-      "last_office": "LAKE STEVENS",
+      "kids_due_names": "Noelle Garner (19)",
+      "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-08-26",
       "oldest_hygiene": "2025-08-26",
       "last_visit_date": "2025-08-26",
-      "last_visit_office": "LAKE STEVENS",
+      "last_visit_office": "STANWOOD",
       "days_overdue": 203
     },
     {
@@ -20895,17 +20923,17 @@
       "days_overdue": 203
     },
     {
-      "household_id": 127616.0,
-      "household": "Noelle Garner (19) Family",
-      "phone": "(360) 391-7030",
-      "email": "",
+      "household_id": 104141.0,
+      "household": "Holly Young (16) Family",
+      "phone": "(425) 359-2264",
+      "email": "ccossette@aol.com",
       "kids_due_count": 1,
-      "kids_due_names": "Noelle Garner (19)",
-      "last_office": "STANWOOD",
+      "kids_due_names": "Holly Young (16)",
+      "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-08-26",
       "oldest_hygiene": "2025-08-26",
       "last_visit_date": "2025-08-26",
-      "last_visit_office": "STANWOOD",
+      "last_visit_office": "LAKE STEVENS",
       "days_overdue": 203
     },
     {
@@ -20979,20 +21007,6 @@
       "days_overdue": 202
     },
     {
-      "household_id": 126600.0,
-      "household": "Lore Stewart (6) Family",
-      "phone": "(425) 219-2776",
-      "email": "krosania@hotmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Lore Stewart (6)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-08-27",
-      "oldest_hygiene": "2025-08-27",
-      "last_visit_date": "2025-08-27",
-      "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 202
-    },
-    {
       "household_id": 126714.0,
       "household": "Mithran Perumalsamy (9) Family",
       "phone": "(248) 567-9062",
@@ -21004,6 +21018,20 @@
       "oldest_hygiene": "2025-08-27",
       "last_visit_date": "2025-10-22",
       "last_visit_office": "MONROE",
+      "days_overdue": 202
+    },
+    {
+      "household_id": 126600.0,
+      "household": "Lore Stewart (6) Family",
+      "phone": "(425) 219-2776",
+      "email": "krosania@hotmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Lore Stewart (6)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-08-27",
+      "oldest_hygiene": "2025-08-27",
+      "last_visit_date": "2025-08-27",
+      "last_visit_office": "LAKE STEVENS",
       "days_overdue": 202
     },
     {
@@ -21133,6 +21161,20 @@
       "days_overdue": 202
     },
     {
+      "household_id": 100421.0,
+      "household": "Kiah Hardy (15); Toni Hardy (13) Family",
+      "phone": "(360) 547-9738",
+      "email": "",
+      "kids_due_count": 2,
+      "kids_due_names": "Kiah Hardy (15); Toni Hardy (13)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-08-27",
+      "oldest_hygiene": "2025-08-27",
+      "last_visit_date": "2025-08-27",
+      "last_visit_office": "MONROE",
+      "days_overdue": 202
+    },
+    {
       "household_id": 112885.0,
       "household": "Kiner Solvberg (7); Kenna Solvberg (5) Family",
       "phone": "(425) 870-3878",
@@ -21259,20 +21301,6 @@
       "days_overdue": 201
     },
     {
-      "household_id": 109400.0,
-      "household": "Hunter Utsler (5); Andrew Scott (10) Family",
-      "phone": "(253) 422-0017",
-      "email": "taylor_scott17@hotmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Hunter Utsler (5); Andrew Scott (10)",
-      "last_office": "STANWOOD",
-      "most_recent_hygiene": "2025-08-28",
-      "oldest_hygiene": "2025-08-28",
-      "last_visit_date": "2026-02-03",
-      "last_visit_office": "STANWOOD",
-      "days_overdue": 201
-    },
-    {
       "household_id": 121268.0,
       "household": "Willow Lugg (5); Jude Lugg (3) Family",
       "phone": "(425) 315-3636",
@@ -21284,6 +21312,20 @@
       "oldest_hygiene": "2025-08-28",
       "last_visit_date": "2025-08-28",
       "last_visit_office": "MONROE",
+      "days_overdue": 201
+    },
+    {
+      "household_id": 109400.0,
+      "household": "Hunter Utsler (5); Andrew Scott (10) Family",
+      "phone": "(253) 422-0017",
+      "email": "taylor_scott17@hotmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Hunter Utsler (5); Andrew Scott (10)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-08-28",
+      "oldest_hygiene": "2025-08-28",
+      "last_visit_date": "2026-02-03",
+      "last_visit_office": "STANWOOD",
       "days_overdue": 201
     },
     {
@@ -21329,20 +21371,6 @@
       "days_overdue": 201
     },
     {
-      "household_id": 122641.0,
-      "household": "Lowenna Knauss (7); Jago Knauss (5) Family",
-      "phone": "(509) 919-0979",
-      "email": "",
-      "kids_due_count": 2,
-      "kids_due_names": "Lowenna Knauss (7); Jago Knauss (5)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-08-28",
-      "oldest_hygiene": "2025-08-28",
-      "last_visit_date": "2025-08-28",
-      "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 201
-    },
-    {
       "household_id": 119983.0,
       "household": "Steffano Cull (7); Charlotte Cull (4) Family",
       "phone": "(425) 666-8048",
@@ -21357,12 +21385,12 @@
       "days_overdue": 201
     },
     {
-      "household_id": 126469.0,
-      "household": "Hannah O'reilly (15) Family",
-      "phone": "(206) 766-0283",
-      "email": "entertheoasis@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Hannah O'reilly (15)",
+      "household_id": 122641.0,
+      "household": "Lowenna Knauss (7); Jago Knauss (5) Family",
+      "phone": "(509) 919-0979",
+      "email": "",
+      "kids_due_count": 2,
+      "kids_due_names": "Lowenna Knauss (7); Jago Knauss (5)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-08-28",
       "oldest_hygiene": "2025-08-28",
@@ -21385,18 +21413,18 @@
       "days_overdue": 201
     },
     {
-      "household_id": 120098.0,
-      "household": "Leo Anderson (3) Family",
-      "phone": "(425) 583-9514",
-      "email": "",
+      "household_id": 126469.0,
+      "household": "Hannah O'reilly (15) Family",
+      "phone": "(206) 766-0283",
+      "email": "entertheoasis@gmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Leo Anderson (3)",
+      "kids_due_names": "Hannah O'reilly (15)",
       "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-08-29",
-      "oldest_hygiene": "2025-08-29",
-      "last_visit_date": "2025-08-29",
+      "most_recent_hygiene": "2025-08-28",
+      "oldest_hygiene": "2025-08-28",
+      "last_visit_date": "2025-08-28",
       "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 200
+      "days_overdue": 201
     },
     {
       "household_id": 108834.0,
@@ -21405,6 +21433,20 @@
       "email": "",
       "kids_due_count": 1,
       "kids_due_names": "Pakkawat Rungruangsatian (19)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-08-29",
+      "oldest_hygiene": "2025-08-29",
+      "last_visit_date": "2025-08-29",
+      "last_visit_office": "LAKE STEVENS",
+      "days_overdue": 200
+    },
+    {
+      "household_id": 120098.0,
+      "household": "Leo Anderson (3) Family",
+      "phone": "(425) 583-9514",
+      "email": "",
+      "kids_due_count": 1,
+      "kids_due_names": "Leo Anderson (3)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-08-29",
       "oldest_hygiene": "2025-08-29",
@@ -21442,11 +21484,11 @@
     },
     {
       "household_id": 113369.0,
-      "household": "Willow Klimanowski (15); Leyla Klimanowski (18) Family",
+      "household": "Leyla Klimanowski (18); Willow Klimanowski (15) Family",
       "phone": "(425) 314-4988",
-      "email": "sapphiregypsy36@gmail.com",
+      "email": "Sapphiregypsy36@gmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Willow Klimanowski (15); Leyla Klimanowski (18)",
+      "kids_due_names": "Leyla Klimanowski (18); Willow Klimanowski (15)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-08-29",
       "oldest_hygiene": "2025-08-29",
@@ -21554,30 +21596,16 @@
     },
     {
       "household_id": 117338.0,
-      "household": "Cartier Gardner (16) Family",
+      "household": "Dijour Irvin (17); Cartier Gardner (16) Family",
       "phone": "(425) 474-0122",
       "email": "shaytif31@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Cartier Gardner (16)",
+      "kids_due_count": 2,
+      "kids_due_names": "Dijour Irvin (17); Cartier Gardner (16)",
       "last_office": "STANWOOD",
       "most_recent_hygiene": "2025-09-02",
       "oldest_hygiene": "2025-09-02",
-      "last_visit_date": "2025-09-02",
+      "last_visit_date": "2025-12-04",
       "last_visit_office": "STANWOOD",
-      "days_overdue": 196
-    },
-    {
-      "household_id": 112592.0,
-      "household": "Milda McCormick (18) Family",
-      "phone": "(425) 953-0807",
-      "email": "gabbymccormick@yahoo.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Milda McCormick (18)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-09-02",
-      "oldest_hygiene": "2025-09-02",
-      "last_visit_date": "2025-09-02",
-      "last_visit_office": "MONROE",
       "days_overdue": 196
     },
     {
@@ -21592,6 +21620,20 @@
       "oldest_hygiene": "2025-09-02",
       "last_visit_date": "2025-09-02",
       "last_visit_office": "MARYSVILLE",
+      "days_overdue": 196
+    },
+    {
+      "household_id": 112592.0,
+      "household": "Milda McCormick (18) Family",
+      "phone": "(425) 953-0807",
+      "email": "gabbymccormick@yahoo.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Milda McCormick (18)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-09-02",
+      "oldest_hygiene": "2025-09-02",
+      "last_visit_date": "2025-09-02",
+      "last_visit_office": "MONROE",
       "days_overdue": 196
     },
     {
@@ -21638,11 +21680,11 @@
     },
     {
       "household_id": 110850.0,
-      "household": "Naomi Kohrs (12); Eliana Kohrs (15) Family",
+      "household": "Eliana Kohrs (15); Naomi Kohrs (12) Family",
       "phone": "(425) 345-7221",
       "email": "takohrs@gmail.com",
       "kids_due_count": 2,
-      "kids_due_names": "Naomi Kohrs (12); Eliana Kohrs (15)",
+      "kids_due_names": "Eliana Kohrs (15); Naomi Kohrs (12)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-09-02",
       "oldest_hygiene": "2025-09-02",
@@ -21679,20 +21721,6 @@
       "days_overdue": 196
     },
     {
-      "household_id": 114818.0,
-      "household": "Henry Baima (9) Family",
-      "phone": "(425) 261-9870",
-      "email": "",
-      "kids_due_count": 1,
-      "kids_due_names": "Henry Baima (9)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-09-02",
-      "oldest_hygiene": "2025-09-02",
-      "last_visit_date": "2025-10-08",
-      "last_visit_office": "MONROE",
-      "days_overdue": 196
-    },
-    {
       "household_id": 117088.0,
       "household": "Donni Saldana (19) Family",
       "phone": "(425) 346-2223",
@@ -21704,6 +21732,20 @@
       "oldest_hygiene": "2025-09-02",
       "last_visit_date": "2025-09-02",
       "last_visit_office": "MARYSVILLE",
+      "days_overdue": 196
+    },
+    {
+      "household_id": 114818.0,
+      "household": "Henry Baima (9) Family",
+      "phone": "(425) 261-9870",
+      "email": "",
+      "kids_due_count": 1,
+      "kids_due_names": "Henry Baima (9)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-09-02",
+      "oldest_hygiene": "2025-09-02",
+      "last_visit_date": "2025-10-08",
+      "last_visit_office": "MONROE",
       "days_overdue": 196
     },
     {
@@ -21791,20 +21833,6 @@
       "days_overdue": 195
     },
     {
-      "household_id": 107976.0,
-      "household": "Kaleb Underwood (13); Maggie Underwood (16) Family",
-      "phone": "(425) 870-6487",
-      "email": "mikekim923@gmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Kaleb Underwood (13); Maggie Underwood (16)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-09-03",
-      "oldest_hygiene": "2025-09-03",
-      "last_visit_date": "2025-09-03",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 195
-    },
-    {
       "household_id": 113523.0,
       "household": "Dakkon Biggart (15); Aisha Biggart (14) Family",
       "phone": "(360) 842-9452",
@@ -21819,12 +21847,12 @@
       "days_overdue": 195
     },
     {
-      "household_id": 123373.0,
-      "household": "Mercedes Massin (15) Family",
-      "phone": "(360) 643-5617",
-      "email": "ashleesteeple@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Mercedes Massin (15)",
+      "household_id": 107976.0,
+      "household": "Kaleb Underwood (13); Maggie Underwood (16) Family",
+      "phone": "(425) 870-6487",
+      "email": "mikekim923@gmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Kaleb Underwood (13); Maggie Underwood (16)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-09-03",
       "oldest_hygiene": "2025-09-03",
@@ -21861,6 +21889,20 @@
       "days_overdue": 195
     },
     {
+      "household_id": 123373.0,
+      "household": "Mercedes Massin (15) Family",
+      "phone": "(360) 643-5617",
+      "email": "ashleesteeple@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Mercedes Massin (15)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-09-03",
+      "oldest_hygiene": "2025-09-03",
+      "last_visit_date": "2025-09-03",
+      "last_visit_office": "MARYSVILLE",
+      "days_overdue": 195
+    },
+    {
       "household_id": 120261.0,
       "household": "Julia Samson Torres (16) Family",
       "phone": "(425) 446-0422",
@@ -21889,20 +21931,6 @@
       "days_overdue": 195
     },
     {
-      "household_id": 114565.0,
-      "household": "Saylah Lopez (18) Family",
-      "phone": "(425) 366-9922",
-      "email": "myralopez599@outlook.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Saylah Lopez (18)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-09-03",
-      "oldest_hygiene": "2025-09-03",
-      "last_visit_date": "2025-09-03",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 195
-    },
-    {
       "household_id": 118179.0,
       "household": "Quinn Kronquest (14) Family",
       "phone": "(425) 691-0541",
@@ -21914,6 +21942,20 @@
       "oldest_hygiene": "2025-09-03",
       "last_visit_date": "2026-02-05",
       "last_visit_office": "LAKE STEVENS",
+      "days_overdue": 195
+    },
+    {
+      "household_id": 114565.0,
+      "household": "Saylah Lopez (18) Family",
+      "phone": "(425) 366-9922",
+      "email": "myralopez599@outlook.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Saylah Lopez (18)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-09-03",
+      "oldest_hygiene": "2025-09-03",
+      "last_visit_date": "2025-09-03",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 195
     },
     {
@@ -22071,20 +22113,6 @@
       "days_overdue": 194
     },
     {
-      "household_id": 105239.0,
-      "household": "Addison Ducker (16) Family",
-      "phone": "(425) 232-9412",
-      "email": "danalorraine222@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Addison Ducker (16)",
-      "last_office": "MARYSVILLE",
-      "most_recent_hygiene": "2025-09-04",
-      "oldest_hygiene": "2025-09-04",
-      "last_visit_date": "2025-09-04",
-      "last_visit_office": "MARYSVILLE",
-      "days_overdue": 194
-    },
-    {
       "household_id": 127701.0,
       "household": "William Splan (14) Family",
       "phone": "(360) 649-1735",
@@ -22099,17 +22127,17 @@
       "days_overdue": 194
     },
     {
-      "household_id": 109131.0,
-      "household": "Parker Nelson (6); Dayton Nelson (8) Family",
-      "phone": "(360) 990-4689",
-      "email": "drenamarsden18@gmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Parker Nelson (6); Dayton Nelson (8)",
-      "last_office": "MONROE",
+      "household_id": 105239.0,
+      "household": "Addison Ducker (16) Family",
+      "phone": "(425) 232-9412",
+      "email": "danalorraine222@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Addison Ducker (16)",
+      "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-09-04",
       "oldest_hygiene": "2025-09-04",
-      "last_visit_date": "2026-01-22",
-      "last_visit_office": "MONROE",
+      "last_visit_date": "2025-09-04",
+      "last_visit_office": "MARYSVILLE",
       "days_overdue": 194
     },
     {
@@ -22124,6 +22152,20 @@
       "oldest_hygiene": "2025-09-04",
       "last_visit_date": "2025-09-04",
       "last_visit_office": "MARYSVILLE",
+      "days_overdue": 194
+    },
+    {
+      "household_id": 109131.0,
+      "household": "Parker Nelson (6); Dayton Nelson (8) Family",
+      "phone": "(360) 990-4689",
+      "email": "drenamarsden18@gmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Parker Nelson (6); Dayton Nelson (8)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-09-04",
+      "oldest_hygiene": "2025-09-04",
+      "last_visit_date": "2026-01-22",
+      "last_visit_office": "MONROE",
       "days_overdue": 194
     },
     {
@@ -22155,20 +22197,6 @@
       "days_overdue": 193
     },
     {
-      "household_id": 115744.0,
-      "household": "Emilia Zuanich (6) Family",
-      "phone": "(206) 850-8110",
-      "email": "alycialynn92@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Emilia Zuanich (6)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-09-05",
-      "oldest_hygiene": "2025-09-05",
-      "last_visit_date": "2025-10-17",
-      "last_visit_office": "MONROE",
-      "days_overdue": 193
-    },
-    {
       "household_id": 127745.0,
       "household": "Kohei Bell (4) Family",
       "phone": "(858) 705-4875",
@@ -22180,6 +22208,20 @@
       "oldest_hygiene": "2025-09-05",
       "last_visit_date": "2025-09-05",
       "last_visit_office": "STANWOOD",
+      "days_overdue": 193
+    },
+    {
+      "household_id": 115744.0,
+      "household": "Emilia Zuanich (6) Family",
+      "phone": "(206) 850-8110",
+      "email": "alycialynn92@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Emilia Zuanich (6)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-09-05",
+      "oldest_hygiene": "2025-09-05",
+      "last_visit_date": "2025-10-17",
+      "last_visit_office": "MONROE",
       "days_overdue": 193
     },
     {
@@ -22323,20 +22365,6 @@
       "days_overdue": 190
     },
     {
-      "household_id": 127682.0,
-      "household": "Cassidy Adair (12) Family",
-      "phone": "(360) 610-0548",
-      "email": "jw33314@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Cassidy Adair (12)",
-      "last_office": "EVERETT",
-      "most_recent_hygiene": "2025-09-08",
-      "oldest_hygiene": "2025-09-08",
-      "last_visit_date": "2025-09-08",
-      "last_visit_office": "EVERETT",
-      "days_overdue": 190
-    },
-    {
       "household_id": 117019.0,
       "household": "Chad Greaby (18) Family",
       "phone": "(425) 308-4123",
@@ -22351,12 +22379,40 @@
       "days_overdue": 190
     },
     {
+      "household_id": 127682.0,
+      "household": "Cassidy Adair (12) Family",
+      "phone": "(360) 610-0548",
+      "email": "jw33314@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Cassidy Adair (12)",
+      "last_office": "EVERETT",
+      "most_recent_hygiene": "2025-09-08",
+      "oldest_hygiene": "2025-09-08",
+      "last_visit_date": "2025-09-08",
+      "last_visit_office": "EVERETT",
+      "days_overdue": 190
+    },
+    {
       "household_id": 119735.0,
       "household": "Leyla Hamedian (5) Family",
       "phone": "(559) 313-1533",
       "email": "jamiejoyryan@yahoo.com",
       "kids_due_count": 1,
       "kids_due_names": "Leyla Hamedian (5)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-09-09",
+      "oldest_hygiene": "2025-09-09",
+      "last_visit_date": "2025-09-09",
+      "last_visit_office": "MONROE",
+      "days_overdue": 189
+    },
+    {
+      "household_id": 126761.0,
+      "household": "Hudson Stieler (3) Family",
+      "phone": "(425) 309-9335",
+      "email": "amanda.lee.2016@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Hudson Stieler (3)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-09-09",
       "oldest_hygiene": "2025-09-09",
@@ -22379,40 +22435,12 @@
       "days_overdue": 189
     },
     {
-      "household_id": 126761.0,
-      "household": "Hudson Stieler (3) Family",
-      "phone": "(425) 309-9335",
-      "email": "amanda.lee.2016@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Hudson Stieler (3)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-09-09",
-      "oldest_hygiene": "2025-09-09",
-      "last_visit_date": "2025-09-09",
-      "last_visit_office": "MONROE",
-      "days_overdue": 189
-    },
-    {
       "household_id": 106346.0,
-      "household": "Keel Hunter (10); Ada Hunter (8) Family",
+      "household": "Ada Hunter (8); Keel Hunter (10) Family",
       "phone": "(503) 388-8687",
       "email": "lauramhunter@me.com",
       "kids_due_count": 2,
-      "kids_due_names": "Keel Hunter (10); Ada Hunter (8)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-09-09",
-      "oldest_hygiene": "2025-09-09",
-      "last_visit_date": "2025-09-09",
-      "last_visit_office": "MONROE",
-      "days_overdue": 189
-    },
-    {
-      "household_id": 120945.0,
-      "household": "Idrie Kovach (9) Family",
-      "phone": "(206) 805-9373",
-      "email": "tinypinecones@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Idrie Kovach (9)",
+      "kids_due_names": "Ada Hunter (8); Keel Hunter (10)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-09-09",
       "oldest_hygiene": "2025-09-09",
@@ -22446,6 +22474,20 @@
       "oldest_hygiene": "2025-09-09",
       "last_visit_date": "2025-09-09",
       "last_visit_office": "MARYSVILLE",
+      "days_overdue": 189
+    },
+    {
+      "household_id": 120945.0,
+      "household": "Idrie Kovach (9) Family",
+      "phone": "(206) 805-9373",
+      "email": "tinypinecones@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Idrie Kovach (9)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-09-09",
+      "oldest_hygiene": "2025-09-09",
+      "last_visit_date": "2025-09-09",
+      "last_visit_office": "MONROE",
       "days_overdue": 189
     },
     {
@@ -22505,20 +22547,6 @@
       "days_overdue": 189
     },
     {
-      "household_id": 104514.0,
-      "household": "Juan Santos Mendez (5); Keilany Santos Mendez (10) Family",
-      "phone": "(515) 619-3169",
-      "email": "cindymendezdm26@gmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Juan Santos Mendez (5); Keilany Santos Mendez (10)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-09-09",
-      "oldest_hygiene": "2025-09-09",
-      "last_visit_date": "2025-09-09",
-      "last_visit_office": "MONROE",
-      "days_overdue": 189
-    },
-    {
       "household_id": 111364.0,
       "household": "Jezlyn Saeteurn (17); Brooklin Sloy (10) Family",
       "phone": "(425) 766-5159",
@@ -22534,16 +22562,30 @@
     },
     {
       "household_id": 103271.0,
-      "household": "Mathew Naumchik (13); Mark Naumchik (13) Family",
+      "household": "Mark Naumchik (13); Mathew Naumchik (13) Family",
       "phone": "(425) 346-2519",
       "email": "",
       "kids_due_count": 2,
-      "kids_due_names": "Mathew Naumchik (13); Mark Naumchik (13)",
+      "kids_due_names": "Mark Naumchik (13); Mathew Naumchik (13)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-09-09",
       "oldest_hygiene": "2025-09-09",
       "last_visit_date": "2025-09-09",
       "last_visit_office": "MARYSVILLE",
+      "days_overdue": 189
+    },
+    {
+      "household_id": 104514.0,
+      "household": "Juan Santos Mendez (5); Keilany Santos Mendez (10) Family",
+      "phone": "(515) 619-3169",
+      "email": "cindymendezdm26@gmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Juan Santos Mendez (5); Keilany Santos Mendez (10)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-09-09",
+      "oldest_hygiene": "2025-09-09",
+      "last_visit_date": "2025-09-09",
+      "last_visit_office": "MONROE",
       "days_overdue": 189
     },
     {
@@ -22575,20 +22617,6 @@
       "days_overdue": 189
     },
     {
-      "household_id": 107765.0,
-      "household": "Johnathan Day (15) Family",
-      "phone": "(360) 794-8315",
-      "email": "flyfishroger@yahoo.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Johnathan Day (15)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-09-09",
-      "oldest_hygiene": "2025-09-09",
-      "last_visit_date": "2025-09-26",
-      "last_visit_office": "MONROE",
-      "days_overdue": 189
-    },
-    {
       "household_id": 124509.0,
       "household": "Lillian Collins (13) Family",
       "phone": "(425) 232-8543",
@@ -22600,6 +22628,20 @@
       "oldest_hygiene": "2025-09-09",
       "last_visit_date": "2025-09-09",
       "last_visit_office": "LAKE STEVENS",
+      "days_overdue": 189
+    },
+    {
+      "household_id": 107765.0,
+      "household": "Johnathan Day (15) Family",
+      "phone": "(360) 794-8315",
+      "email": "flyfishroger@yahoo.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Johnathan Day (15)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-09-09",
+      "oldest_hygiene": "2025-09-09",
+      "last_visit_date": "2025-09-26",
+      "last_visit_office": "MONROE",
       "days_overdue": 189
     },
     {
@@ -22646,11 +22688,11 @@
     },
     {
       "household_id": 109640.0,
-      "household": "Serenity Roth (14); Deacon Roth (18) Family",
+      "household": "Deacon Roth (18); Serenity Roth (14) Family",
       "phone": "(425) 530-8782",
       "email": "hollyroth3@icloud.com",
       "kids_due_count": 2,
-      "kids_due_names": "Serenity Roth (14); Deacon Roth (18)",
+      "kids_due_names": "Deacon Roth (18); Serenity Roth (14)",
       "last_office": "LAKE STEVENS",
       "most_recent_hygiene": "2025-09-11",
       "oldest_hygiene": "2025-09-10",
@@ -22799,12 +22841,12 @@
       "days_overdue": 187
     },
     {
-      "household_id": 127767.0,
-      "household": "Henry Breakey (4) Family",
-      "phone": "(682) 433-9930",
-      "email": "dick.breakey@gmail.com",
+      "household_id": 127734.0,
+      "household": "Quiava Knudtson (3) Family",
+      "phone": "(209) 900-7241",
+      "email": "",
       "kids_due_count": 1,
-      "kids_due_names": "Henry Breakey (4)",
+      "kids_due_names": "Quiava Knudtson (3)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-09-11",
       "oldest_hygiene": "2025-09-11",
@@ -22813,12 +22855,12 @@
       "days_overdue": 187
     },
     {
-      "household_id": 127734.0,
-      "household": "Quiava Knudtson (3) Family",
-      "phone": "(209) 900-7241",
-      "email": "",
+      "household_id": 127767.0,
+      "household": "Henry Breakey (4) Family",
+      "phone": "(682) 433-9930",
+      "email": "dick.breakey@gmail.com",
       "kids_due_count": 1,
-      "kids_due_names": "Quiava Knudtson (3)",
+      "kids_due_names": "Henry Breakey (4)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-09-11",
       "oldest_hygiene": "2025-09-11",
@@ -22855,20 +22897,6 @@
       "days_overdue": 187
     },
     {
-      "household_id": 125715.0,
-      "household": "Ezekiah Kargopoltsev (4) Family",
-      "phone": "(425) 638-9231",
-      "email": "boreesk@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Ezekiah Kargopoltsev (4)",
-      "last_office": "STANWOOD",
-      "most_recent_hygiene": "2025-09-11",
-      "oldest_hygiene": "2025-09-11",
-      "last_visit_date": "2025-09-11",
-      "last_visit_office": "STANWOOD",
-      "days_overdue": 187
-    },
-    {
       "household_id": 104285.0,
       "household": "Briggs Nagy (2) Family",
       "phone": "(501) 707-7784",
@@ -22880,6 +22908,20 @@
       "oldest_hygiene": "2025-09-11",
       "last_visit_date": "2025-09-11",
       "last_visit_office": "LAKE STEVENS",
+      "days_overdue": 187
+    },
+    {
+      "household_id": 125715.0,
+      "household": "Ezekiah Kargopoltsev (4) Family",
+      "phone": "(425) 638-9231",
+      "email": "boreesk@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Ezekiah Kargopoltsev (4)",
+      "last_office": "STANWOOD",
+      "most_recent_hygiene": "2025-09-11",
+      "oldest_hygiene": "2025-09-11",
+      "last_visit_date": "2025-09-11",
+      "last_visit_office": "STANWOOD",
       "days_overdue": 187
     },
     {
@@ -22995,20 +23037,6 @@
       "days_overdue": 187
     },
     {
-      "household_id": 127800.0,
-      "household": "Sylas Bomer-Beach (17) Family",
-      "phone": "(206) 940-1169",
-      "email": "ab.sweetandsimple@yahoo.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Sylas Bomer-Beach (17)",
-      "last_office": "LAKE STEVENS",
-      "most_recent_hygiene": "2025-09-11",
-      "oldest_hygiene": "2025-09-11",
-      "last_visit_date": "2025-09-11",
-      "last_visit_office": "LAKE STEVENS",
-      "days_overdue": 187
-    },
-    {
       "household_id": 106421.0,
       "household": "Thaddeus Delasandro (13) Family",
       "phone": "(425) 418-6844",
@@ -23020,6 +23048,20 @@
       "oldest_hygiene": "2025-09-11",
       "last_visit_date": "2025-09-11",
       "last_visit_office": "STANWOOD",
+      "days_overdue": 187
+    },
+    {
+      "household_id": 127800.0,
+      "household": "Sylas Bomer-Beach (17) Family",
+      "phone": "(206) 940-1169",
+      "email": "ab.sweetandsimple@yahoo.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Sylas Bomer-Beach (17)",
+      "last_office": "LAKE STEVENS",
+      "most_recent_hygiene": "2025-09-11",
+      "oldest_hygiene": "2025-09-11",
+      "last_visit_date": "2025-09-11",
+      "last_visit_office": "LAKE STEVENS",
       "days_overdue": 187
     },
     {
@@ -23052,11 +23094,11 @@
     },
     {
       "household_id": 113362.0,
-      "household": "Savanna Hervey (17); Shyann Hervey (17) Family",
+      "household": "Shyann Hervey (17); Savanna Hervey (17) Family",
       "phone": "(206) 755-7692",
       "email": "",
       "kids_due_count": 2,
-      "kids_due_names": "Savanna Hervey (17); Shyann Hervey (17)",
+      "kids_due_names": "Shyann Hervey (17); Savanna Hervey (17)",
       "last_office": "MONROE",
       "most_recent_hygiene": "2025-09-12",
       "oldest_hygiene": "2025-09-12",
@@ -23093,20 +23135,6 @@
       "days_overdue": 186
     },
     {
-      "household_id": 119622.0,
-      "household": "Ceejay Velasco (11) Family",
-      "phone": "(425) 231-8671",
-      "email": "chelsie.steffen@gmail.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Ceejay Velasco (11)",
-      "last_office": "MONROE",
-      "most_recent_hygiene": "2025-09-12",
-      "oldest_hygiene": "2025-09-12",
-      "last_visit_date": "2025-09-12",
-      "last_visit_office": "MONROE",
-      "days_overdue": 186
-    },
-    {
       "household_id": 121125.0,
       "household": "Isabella Weston (10) Family",
       "phone": "(360) 862-3033",
@@ -23118,6 +23146,20 @@
       "oldest_hygiene": "2025-09-12",
       "last_visit_date": "2025-09-12",
       "last_visit_office": "LAKE STEVENS",
+      "days_overdue": 186
+    },
+    {
+      "household_id": 119622.0,
+      "household": "Ceejay Velasco (11) Family",
+      "phone": "(425) 231-8671",
+      "email": "chelsie.steffen@gmail.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Ceejay Velasco (11)",
+      "last_office": "MONROE",
+      "most_recent_hygiene": "2025-09-12",
+      "oldest_hygiene": "2025-09-12",
+      "last_visit_date": "2025-09-12",
+      "last_visit_office": "MONROE",
       "days_overdue": 186
     },
     {
@@ -23177,20 +23219,6 @@
       "days_overdue": 186
     },
     {
-      "household_id": 120799.0,
-      "household": "Andrew-James Wilson (8); Tommie-Anne Wilson (7) Family",
-      "phone": "(425) 299-9726",
-      "email": "noodlezbugz@gmail.com",
-      "kids_due_count": 2,
-      "kids_due_names": "Andrew-James Wilson (8); Tommie-Anne Wilson (7)",
-      "last_office": "EVERETT",
-      "most_recent_hygiene": "2025-09-15",
-      "oldest_hygiene": "2025-09-15",
-      "last_visit_date": "2025-10-01",
-      "last_visit_office": "EVERETT",
-      "days_overdue": 183
-    },
-    {
       "household_id": 124154.0,
       "household": "Brae Reitan (12); Kaisen Reitan (10) Family",
       "phone": "(425) 971-0419",
@@ -23202,6 +23230,20 @@
       "oldest_hygiene": "2025-09-15",
       "last_visit_date": "2025-12-15",
       "last_visit_office": "MARYSVILLE",
+      "days_overdue": 183
+    },
+    {
+      "household_id": 120799.0,
+      "household": "Andrew-James Wilson (8); Tommie-Anne Wilson (7) Family",
+      "phone": "(425) 299-9726",
+      "email": "noodlezbugz@gmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Andrew-James Wilson (8); Tommie-Anne Wilson (7)",
+      "last_office": "EVERETT",
+      "most_recent_hygiene": "2025-09-15",
+      "oldest_hygiene": "2025-09-15",
+      "last_visit_date": "2025-10-01",
+      "last_visit_office": "EVERETT",
       "days_overdue": 183
     },
     {
@@ -23233,6 +23275,20 @@
       "days_overdue": 183
     },
     {
+      "household_id": 112950.0,
+      "household": "Carmen Beach (15) Family",
+      "phone": "(425) 879-7810",
+      "email": "ntriged34@yahoo.com",
+      "kids_due_count": 1,
+      "kids_due_names": "Carmen Beach (15)",
+      "last_office": "MARYSVILLE",
+      "most_recent_hygiene": "2025-09-15",
+      "oldest_hygiene": "2025-09-15",
+      "last_visit_date": "2025-09-15",
+      "last_visit_office": "MARYSVILLE",
+      "days_overdue": 183
+    },
+    {
       "household_id": 127198.0,
       "household": "Logan Van Winkle (2) Family",
       "phone": "(425) 314-0241",
@@ -23247,16 +23303,16 @@
       "days_overdue": 183
     },
     {
-      "household_id": 112950.0,
-      "household": "Carmen Beach (15) Family",
-      "phone": "(425) 879-7810",
-      "email": "ntriged34@yahoo.com",
-      "kids_due_count": 1,
-      "kids_due_names": "Carmen Beach (15)",
+      "household_id": 106689.0,
+      "household": "Julian Choi (4); Marcus Choi (9) Family",
+      "phone": "(206) 671-8334",
+      "email": "breahnaa@gmail.com",
+      "kids_due_count": 2,
+      "kids_due_names": "Julian Choi (4); Marcus Choi (9)",
       "last_office": "MARYSVILLE",
       "most_recent_hygiene": "2025-09-15",
       "oldest_hygiene": "2025-09-15",
-      "last_visit_date": "2025-09-15",
+      "last_visit_date": "2025-09-22",
       "last_visit_office": "MARYSVILLE",
       "days_overdue": 183
     },
@@ -38212,6 +38268,54 @@
         "total_tx_planned": 5,
         "tx_scheduled": 4,
         "scheduling_rate": 80.0
+      },
+      {
+        "provider": "103",
+        "mtd_production": 24179.63,
+        "mtd_collections": -19197.86,
+        "patients_seen_mtd": 77
+      },
+      {
+        "provider": "117",
+        "mtd_production": 20454.56,
+        "mtd_collections": -17460.88,
+        "patients_seen_mtd": 104
+      },
+      {
+        "provider": "126",
+        "mtd_production": 19031.08,
+        "mtd_collections": -14788.44,
+        "patients_seen_mtd": 78
+      },
+      {
+        "provider": "106",
+        "mtd_production": 15331.56,
+        "mtd_collections": -12773.43,
+        "patients_seen_mtd": 72
+      },
+      {
+        "provider": "104",
+        "mtd_production": 12123.6,
+        "mtd_collections": -9453.96,
+        "patients_seen_mtd": 53
+      },
+      {
+        "provider": "100",
+        "mtd_production": 7493.0,
+        "mtd_collections": -5540.17,
+        "patients_seen_mtd": 21
+      },
+      {
+        "provider": "125",
+        "mtd_production": 6216.92,
+        "mtd_collections": -3876.82,
+        "patients_seen_mtd": 19
+      },
+      {
+        "provider": "102",
+        "mtd_production": 6052.0,
+        "mtd_collections": -5230.3,
+        "patients_seen_mtd": 27
       }
     ],
     "discovered_views": [
@@ -38235,21 +38339,21 @@
       "vw_LastCompletedVisitNotes"
     ]
   },
-  "generated_at": "2026-03-17T13:13:05.631682Z",
-  "generated": "2026-03-17 13:13 UTC",
+  "generated_at": "2026-03-17T14:18:00.962553Z",
+  "generated": "2026-03-17 14:18 UTC",
   "data_as_of": {
     "recall": "2026-03-17",
     "treatment": "2026-03-17 03:54:09.640000"
   },
   "stats": {
     "recall_households": 208,
-    "overdue_households": 1490,
+    "overdue_households": 1494,
     "treatment_patients": 737,
     "total_tx_value": 490601.90000000014,
     "high_risk_patients": 0,
     "bad_phone_count": 0,
     "contact_log_entries": 0,
-    "leaderboard_providers": 12
+    "leaderboard_providers": 20
   },
   "filtering": {
     "recently_seen_patients": 169,
