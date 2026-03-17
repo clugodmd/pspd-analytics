@@ -1,16 +1,16 @@
 {
-  "last_updated": "2026-03-16T00:54:12.029517Z",
+  "last_updated": "2026-03-17T11:28:59.729655Z",
   "realm_id": "9130355740232106",
   "current_year": 2026,
   "prior_year": 2025,
   "ytd": {
     "current": {
       "totalIncome": 162663.88,
-      "totalExpenses": 1763565.19,
+      "totalExpenses": 1770729.63,
       "costOfGoods": 0,
-      "operatingExpenses": 1697203.51,
-      "otherExpenses": 66361.68,
-      "netIncome": 217139.74
+      "operatingExpenses": 1700874.3,
+      "otherExpenses": 69855.32999999999,
+      "netIncome": 209879.3
     },
     "prior": {
       "totalIncome": 776220.8099999999,
@@ -7283,11 +7283,11 @@
       "endDate": "2026-03-31",
       "pnl": {
         "totalIncome": 111887.43,
-        "totalExpenses": 340531.71,
-        "netIncome": 179226.4,
+        "totalExpenses": 347696.14999999997,
+        "netIncome": 171965.96,
         "costOfGoods": 0,
-        "operatingExpenses": 319245.76,
-        "otherExpenses": 21285.95,
+        "operatingExpenses": 322916.55,
+        "otherExpenses": 24779.6,
         "expenseBreakdown": [
           {
             "name": "6760 Associate  Wages",
@@ -7307,7 +7307,7 @@
           },
           {
             "name": "6930 Interest Expense",
-            "amount": 19676.35
+            "amount": 22748.48
           },
           {
             "name": "6780 Payroll Taxes",
@@ -7327,7 +7327,7 @@
           },
           {
             "name": "6870 Travel",
-            "amount": 4393.16
+            "amount": 4740.32
           },
           {
             "name": "6140 Dental Supplies",
@@ -7338,24 +7338,24 @@
             "amount": 2849.64
           },
           {
+            "name": "7000 Suspense",
+            "amount": 2031.12
+          },
+          {
             "name": "6755 Payroll Service Fees",
             "amount": 1808.48
           },
           {
-            "name": "7000 Suspense",
-            "amount": 1609.6
+            "name": "6540 Meals - 50%",
+            "amount": 1636.06
           },
           {
-            "name": "6540 Meals - 50%",
-            "amount": 1580.12
+            "name": "6230 Recruitment",
+            "amount": 999.66
           },
           {
             "name": "6500 Janitorial Expense",
             "amount": 950.0
-          },
-          {
-            "name": "6230 Recruitment",
-            "amount": 465.84
           },
           {
             "name": "6720 Employee Benefits",
@@ -7390,21 +7390,21 @@
           },
           {
             "name": "4500 Patient Refunds",
-            "amount": -437.0,
+            "amount": -533.0,
             "section": "Income",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "Total Income",
-            "amount": 407870.68,
+            "amount": 407774.68,
             "section": "",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "Gross Profit",
-            "amount": 407870.68,
+            "amount": 407774.68,
             "section": "",
             "isTotal": true,
             "depth": 0
@@ -7439,7 +7439,7 @@
           },
           {
             "name": "6230 Recruitment",
-            "amount": 465.84,
+            "amount": 999.66,
             "section": "Expenses",
             "isTotal": false,
             "depth": 1
@@ -7481,7 +7481,7 @@
           },
           {
             "name": "6540 Meals - 50%",
-            "amount": 1580.12,
+            "amount": 1636.06,
             "section": "Expenses",
             "isTotal": false,
             "depth": 1
@@ -7502,28 +7502,28 @@
           },
           {
             "name": "6280 Computer & Software Expenses",
-            "amount": 565.54,
+            "amount": 2687.78,
             "section": "6600 Office Supplies",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "6320 Dues & Subscriptions",
-            "amount": 7959.89,
+            "amount": 8034.59,
             "section": "6600 Office Supplies",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "6610 General Office Supplies",
-            "amount": 3103.65,
+            "amount": 3340.61,
             "section": "6600 Office Supplies",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "6620 Postage and Delivery",
-            "amount": 200.0,
+            "amount": 207.65,
             "section": "6600 Office Supplies",
             "isTotal": false,
             "depth": 1
@@ -7544,14 +7544,14 @@
           },
           {
             "name": "6880 Telephone Expense",
-            "amount": 63.57,
+            "amount": 288.33,
             "section": "6600 Office Supplies",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "Total 6600 Office Supplies",
-            "amount": 28831.07,
+            "amount": 31497.38,
             "section": "Expenses",
             "isTotal": true,
             "depth": 0
@@ -7635,21 +7635,21 @@
           },
           {
             "name": "6870 Travel",
-            "amount": 4393.16,
+            "amount": 4740.32,
             "section": "Expenses",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "6910 Security",
-            "amount": 168.67,
+            "amount": 236.23,
             "section": "6900 Utilities",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "Total 6900 Utilities",
-            "amount": 1553.09,
+            "amount": 1620.65,
             "section": "Expenses",
             "isTotal": true,
             "depth": 0
@@ -7663,14 +7663,14 @@
           },
           {
             "name": "Total Expenses",
-            "amount": 319245.76,
+            "amount": 322916.55,
             "section": "",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "Net Operating Income",
-            "amount": 88624.92,
+            "amount": 84858.13,
             "section": "",
             "isTotal": true,
             "depth": 0
@@ -7705,35 +7705,35 @@
           },
           {
             "name": "6930 Interest Expense",
-            "amount": 19676.35,
+            "amount": 22748.48,
             "section": "Other Expenses",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "7000 Suspense",
-            "amount": 1609.6,
+            "amount": 2031.12,
             "section": "Other Expenses",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "Total Other Expenses",
-            "amount": 21285.95,
+            "amount": 24779.6,
             "section": "",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "Net Other Income",
-            "amount": 90601.48,
+            "amount": 87107.83,
             "section": "",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "Net Income",
-            "amount": 179226.4,
+            "amount": 171965.96,
             "section": "",
             "isTotal": true,
             "depth": 0
@@ -7744,42 +7744,42 @@
         "lineItems": [
           {
             "name": "1000 PSPD Monroe  x4979- Timberland 4979",
-            "amount": 5805.61,
+            "amount": 4195.2,
             "section": "Bank Accounts",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "1001 Lake Stevens x4953- Timberland",
-            "amount": 5882.83,
+            "amount": 4822.79,
             "section": "Bank Accounts",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "1002 PSPD Everett x4944 - Timberland",
-            "amount": 5242.25,
+            "amount": 4255.17,
             "section": "Bank Accounts",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "1003 PSPD Marysville x4961 - Timberland",
-            "amount": 5394.8,
+            "amount": 4056.89,
             "section": "Bank Accounts",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "1004 PSPD Stanwood 4987- Timberland",
-            "amount": 4742.71,
+            "amount": 2942.46,
             "section": "Bank Accounts",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "1005 Scorp Mgmt - x0104 Timberland",
-            "amount": 73995.64,
+            "amount": 65826.18,
             "section": "Bank Accounts",
             "isTotal": false,
             "depth": 1
@@ -7842,7 +7842,7 @@
           },
           {
             "name": "Total Bank Accounts",
-            "amount": 213427.73,
+            "amount": 198462.58,
             "section": "Current Assets",
             "isTotal": true,
             "depth": 0
@@ -7884,7 +7884,7 @@
           },
           {
             "name": "Total Current Assets",
-            "amount": 213427.73,
+            "amount": 198462.58,
             "section": "ASSETS",
             "isTotal": true,
             "depth": 0
@@ -8052,7 +8052,7 @@
           },
           {
             "name": "TOTAL ASSETS",
-            "amount": 2881323.67,
+            "amount": 2866358.52,
             "section": "",
             "isTotal": true,
             "depth": 0
@@ -8073,7 +8073,7 @@
           },
           {
             "name": "2100 Chase x1527 C. LUGO (1527) - 5",
-            "amount": 39816.89,
+            "amount": 41047.78,
             "section": "Credit Cards",
             "isTotal": false,
             "depth": 1
@@ -8087,7 +8087,7 @@
           },
           {
             "name": "2115 Chase x2457",
-            "amount": 20600.34,
+            "amount": 23351.65,
             "section": "Credit Cards",
             "isTotal": false,
             "depth": 1
@@ -8136,14 +8136,14 @@
           },
           {
             "name": "2516 Chase x0219",
-            "amount": 1183.9,
+            "amount": 1294.01,
             "section": "Credit Cards",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "Total Credit Cards",
-            "amount": 101630.37,
+            "amount": 105722.68,
             "section": "Current Liabilities",
             "isTotal": true,
             "depth": 0
@@ -8304,7 +8304,7 @@
           },
           {
             "name": "Total Current Liabilities",
-            "amount": 154053.41,
+            "amount": 158145.72,
             "section": "Liabilities",
             "isTotal": true,
             "depth": 0
@@ -8374,7 +8374,7 @@
           },
           {
             "name": "2512 Loan Payable - TB 3880",
-            "amount": 572104.7,
+            "amount": 560307.68,
             "section": "Long-Term Liabilities",
             "isTotal": false,
             "depth": 1
@@ -8465,14 +8465,14 @@
           },
           {
             "name": "Total Long-Term Liabilities",
-            "amount": 5348364.64,
+            "amount": 5336567.62,
             "section": "Liabilities",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "Total Liabilities",
-            "amount": 5502418.05,
+            "amount": 5494713.34,
             "section": "LIABILITIES AND EQUITY",
             "isTotal": true,
             "depth": 0
@@ -8633,21 +8633,21 @@
           },
           {
             "name": "Net Income",
-            "amount": 234030.63,
+            "amount": 226770.19,
             "section": "Equity",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "Total Equity",
-            "amount": -2621094.38,
+            "amount": -2628354.82,
             "section": "LIABILITIES AND EQUITY",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "TOTAL LIABILITIES AND EQUITY",
-            "amount": 2881323.67,
+            "amount": 2866358.52,
             "section": "",
             "isTotal": true,
             "depth": 0
@@ -8659,7 +8659,7 @@
         "lineItems": [
           {
             "name": "Net Income",
-            "amount": 191541.62,
+            "amount": 184281.18,
             "section": "OPERATING ACTIVITIES",
             "isTotal": false,
             "depth": 1
@@ -8673,14 +8673,14 @@
           },
           {
             "name": "2100 Chase x1527 C. LUGO (1527) - 5",
-            "amount": -15284.38,
+            "amount": -14053.49,
             "section": "Adjustments to reconcile Net Income to Net Cash provided by operations:",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "2115 Chase x2457",
-            "amount": 1145.12,
+            "amount": 3896.43,
             "section": "Adjustments to reconcile Net Income to Net Cash provided by operations:",
             "isTotal": false,
             "depth": 1
@@ -8701,7 +8701,7 @@
           },
           {
             "name": "2516 Chase x0219",
-            "amount": 492.48,
+            "amount": 602.59,
             "section": "Adjustments to reconcile Net Income to Net Cash provided by operations:",
             "isTotal": false,
             "depth": 1
@@ -8729,14 +8729,14 @@
           },
           {
             "name": "Total Adjustments to reconcile Net Income to Net Cash provided by operations:",
-            "amount": -56422.51,
+            "amount": -52330.2,
             "section": "OPERATING ACTIVITIES",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "Net cash provided by operating activities",
-            "amount": 135119.11,
+            "amount": 131950.98,
             "section": "",
             "isTotal": true,
             "depth": 0
@@ -8758,6 +8758,13 @@
           {
             "name": "2511 Loan Payable - TB 4705",
             "amount": -2306.85,
+            "section": "FINANCING ACTIVITIES",
+            "isTotal": false,
+            "depth": 1
+          },
+          {
+            "name": "2512 Loan Payable - TB 3880",
+            "amount": -11797.02,
             "section": "FINANCING ACTIVITIES",
             "isTotal": false,
             "depth": 1
@@ -8792,21 +8799,21 @@
           },
           {
             "name": "Net cash provided by financing activities",
-            "amount": -25194.04,
+            "amount": -36991.06,
             "section": "",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "Net cash increase for period",
-            "amount": 109925.07,
+            "amount": 94959.92,
             "section": "",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "Cash at end of period",
-            "amount": 196536.84,
+            "amount": 181571.69,
             "section": "",
             "isTotal": true,
             "depth": 0
