@@ -1015,7 +1015,7 @@ function buildReviewList() {
       const name = r.name || (r.lname + ', ' + r.fname);
       const rowId = 'tx-' + r.patient_id;
       if (purgedSet.has(rowId)) return;
-      if (reviewedSet && reviewedSet.has(rowId)) return;
+      if (typeof reviewedSet !== 'undefined' && reviewedSet && reviewedSet.has(rowId)) return;
       reviewItems.push({
         name,
         phone: r.phone || '(none)',
