@@ -101,8 +101,46 @@ def rows_to_dicts(cursor):
 
 
 def query_recall(conn):
-    """Pull hygiene recall households due in the next 30 days."""
+    """Pull hygiene recall households due in the next 30 days.
+
+    Tries to exclude households that have already completed their
+    recall visit by checking for recent appointments in production data.
+    """
     cursor = conn.cursor()
+
+    # First try: query with NOT EXISTS against recent production (excludes
+    # households where any family member was seen in the last 30 days)
+    try:
+        cursor.execute("""
+            SELECT
+                r.RPID                        AS household_id,
+                r.RPID                        AS household,
+                r.PrimaryPhone                AS phone,
+                r.Email                       AS email,
+                r.KidsDueCount                AS kids_due_count,
+                r.KidsDueList                 AS kids_due_names,
+                r.SuggestedFamilyDate         AS suggest_date,
+                r.LastHygieneOfficeName       AS last_office,
+                r.MostFrequentOfficeName      AS most_frequent_office,
+                r.LastProviderName            AS last_provider
+            FROM vw_RecallHouseholdDueNext30Days_PBI r
+            WHERE NOT EXISTS (
+                -- Exclude if ANY patient in this household had a visit
+                -- in the last 30 days (they've already been seen)
+                SELECT 1 FROM rpt.vw_income_allocation ia
+                JOIN dbo.tbl_patient p ON ia.patient_id = p.PatID
+                WHERE p.RPID = r.RPID
+                  AND ia.service_date >= DATEADD(day, -30, GETDATE())
+            )
+            ORDER BY r.KidsDueCount DESC, r.SuggestedFamilyDate ASC
+        """)
+        rows = rows_to_dicts(cursor)
+        print(f"  Recall (next 30 days): {len(rows)} households (filtered — excludes recently seen)")
+        return rows
+    except Exception as e:
+        print(f"  ⚠ Recall filtered query failed ({e}), falling back to unfiltered...")
+
+    # Fallback: original unfiltered query (post-processing will still catch some)
     try:
         cursor.execute("""
             SELECT
@@ -120,7 +158,7 @@ def query_recall(conn):
             ORDER BY KidsDueCount DESC, SuggestedFamilyDate ASC
         """)
         rows = rows_to_dicts(cursor)
-        print(f"  Recall (next 30 days): {len(rows)} households")
+        print(f"  Recall (next 30 days): {len(rows)} households (UNFILTERED — will post-process)")
         return rows
     except Exception as e:
         print(f"  ✗ Recall query failed: {e}")
@@ -158,6 +196,10 @@ def query_overdue(conn):
                 END                               AS days_overdue
             FROM vw_RecallHouseholdDue
             WHERE HouseholdLastVisitAnyDate >= DATEADD(year, -1, GETDATE())
+              -- Exclude households whose most recent hygiene is within the
+              -- last 30 days — they've already been seen and are NOT overdue
+              AND (MostRecentHygieneDate IS NULL
+                   OR MostRecentHygieneDate < DATEADD(day, -30, GETDATE()))
             ORDER BY OldestHygieneDate ASC, KidsDueCount DESC
         """)
         rows = rows_to_dicts(cursor)
@@ -623,6 +665,168 @@ def query_daily_production(conn):
     return result
 
 
+# ── Production by Patient Zip Code ──────────────────────────────────────────
+# Aggregates production by patient zip code for geographic heatmap visualization.
+
+def query_production_by_zip(conn):
+    """Pull production aggregated by patient zip code for current month."""
+    cursor = conn.cursor()
+    result = []
+
+    try:
+        cursor.execute("""
+            SELECT
+                LEFT(LTRIM(RTRIM(p.Zip)), 5)   AS zip_code,
+                p.City                           AS city,
+                p.State                          AS state,
+                ia.office_name                   AS office,
+                SUM(ia.net_production)           AS net_production,
+                SUM(ia.gross_production)         AS gross_production,
+                COUNT(DISTINCT ia.patient_id)    AS patient_count
+            FROM rpt.vw_income_allocation ia
+            JOIN dbo.tbl_patient p ON ia.patient_id = p.PatID
+            WHERE ia.service_date >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
+              AND p.Zip IS NOT NULL
+              AND LEN(LTRIM(RTRIM(p.Zip))) >= 5
+              AND ia.provider_name IS NOT NULL
+            GROUP BY LEFT(LTRIM(RTRIM(p.Zip)), 5), p.City, p.State, ia.office_name
+            HAVING SUM(ia.net_production) > 0
+            ORDER BY SUM(ia.net_production) DESC
+        """)
+        for row in rows_to_dicts(cursor):
+            result.append({
+                'zip': str(row.get('zip_code', '')).strip(),
+                'city': str(row.get('city', '')).strip(),
+                'state': str(row.get('state', '')).strip(),
+                'office': normalize_office(str(row.get('office', ''))),
+                'net': round(float(row.get('net_production', 0) or 0), 2),
+                'gross': round(float(row.get('gross_production', 0) or 0), 2),
+                'patients': int(row.get('patient_count', 0)),
+            })
+        print(f"  Production by zip: {len(result)} zip codes")
+    except Exception as e:
+        print(f"  ⚠ Production by zip failed (table join may not exist): {e}")
+
+    return result
+
+
+# ── Recently-Seen Patient Filtering ────────────────────────────────────────
+# Patients who have had a hygiene/recall visit completed recently should
+# NOT appear on the call sheet. The Denticon views may not auto-exclude
+# them, so we build our own exclusion set.
+
+def query_recently_seen_patients(conn):
+    """Build exclusion sets of patients/households who have had a dental
+    visit in the last 45 days.  Returns two things:
+      - patient_ids: set of patient IDs seen recently
+      - household_rpids: set of RPIDs where ANY family member was seen
+    """
+    cursor = conn.cursor()
+    patient_ids = set()
+    household_rpids = set()
+
+    # 1) Patients with production in last 45 days (from income_allocation)
+    try:
+        cursor.execute("""
+            SELECT DISTINCT patient_id
+            FROM rpt.vw_income_allocation
+            WHERE service_date >= DATEADD(day, -45, GETDATE())
+              AND patient_id IS NOT NULL
+        """)
+        for row in cursor.fetchall():
+            if row[0]:
+                patient_ids.add(row[0])
+        print(f"  Recently seen (production): {len(patient_ids)} patients in last 45 days")
+    except Exception as e:
+        print(f"  ⚠ Recent production query failed: {e}")
+
+    # 2) Try to map patient_ids → RPIDs via tbl_patient (Denticon RP = Responsible Party)
+    if patient_ids:
+        try:
+            # Denticon stores RPID on the patient record — the responsible party
+            # who links family members into a household
+            pid_list = ",".join(str(int(p)) for p in patient_ids if str(p).isdigit())
+            if pid_list:
+                cursor.execute(f"""
+                    SELECT DISTINCT RPID
+                    FROM dbo.tbl_patient
+                    WHERE PatID IN ({pid_list})
+                      AND RPID IS NOT NULL
+                      AND RPID > 0
+                """)
+                for row in cursor.fetchall():
+                    if row[0]:
+                        household_rpids.add(int(row[0]))
+                print(f"  Mapped to {len(household_rpids)} recently-seen households (RPIDs)")
+        except Exception as e:
+            print(f"  ⚠ RPID mapping failed: {e}")
+            # Fallback: try using patient_id as RPID (sometimes they match)
+            for pid in patient_ids:
+                try:
+                    household_rpids.add(int(pid))
+                except (ValueError, TypeError):
+                    pass
+
+    # 3) Also try direct appointment table for completed hygiene visits
+    try:
+        cursor.execute("""
+            SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_NAME LIKE '%appt%' OR TABLE_NAME LIKE '%appointment%'
+            ORDER BY TABLE_NAME
+        """)
+        appt_tables = [row[0] for row in cursor.fetchall()]
+        if appt_tables:
+            print(f"  Discovered appointment tables: {appt_tables}")
+    except Exception:
+        pass
+
+    return patient_ids, household_rpids
+
+
+def discover_view_columns(conn, view_name):
+    """Discover columns available in a view for debugging."""
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            SELECT COLUMN_NAME, DATA_TYPE
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = ?
+            ORDER BY ORDINAL_POSITION
+        """, (view_name,))
+        cols = [(row[0], row[1]) for row in cursor.fetchall()]
+        if cols:
+            print(f"  Columns in {view_name}:")
+            for name, dtype in cols:
+                print(f"    - {name} ({dtype})")
+        return cols
+    except Exception as e:
+        print(f"  ⚠ Could not discover columns for {view_name}: {e}")
+        return []
+
+
+def filter_recently_seen(rows, household_rpids, id_field="household_id"):
+    """Remove rows whose household RPID is in the recently-seen set.
+    Returns (filtered_rows, removed_count)."""
+    if not household_rpids:
+        return rows, 0
+
+    filtered = []
+    removed = 0
+    for row in rows:
+        rpid_val = row.get(id_field)
+        try:
+            rpid_int = int(rpid_val) if rpid_val else None
+        except (ValueError, TypeError):
+            rpid_int = None
+
+        if rpid_int and rpid_int in household_rpids:
+            removed += 1
+        else:
+            filtered.append(row)
+
+    return filtered, removed
+
+
 # ── Data Processing ─────────────────────────────────────────────────────────
 
 def normalize_office(name):
@@ -742,6 +946,15 @@ def main():
     print("\nData freshness...")
     freshness = query_data_freshness(conn)
 
+    # Discover view columns (helps debug filtering issues)
+    print("\nDiscovering view schemas...")
+    discover_view_columns(conn, "vw_RecallHouseholdDueNext30Days_PBI")
+    discover_view_columns(conn, "vw_RecallHouseholdDue")
+
+    # Build recently-seen patient exclusion set BEFORE querying call sheets
+    print("\nBuilding recently-seen patient exclusion list...")
+    recent_patient_ids, recent_household_rpids = query_recently_seen_patients(conn)
+
     # Pull all three datasets from the SAME views Power BI uses
     print("\nQuerying call sheet data...")
     recall_rows = query_recall(conn)
@@ -762,6 +975,10 @@ def main():
     print("\nQuerying daily production by location...")
     daily_production = query_daily_production(conn)
 
+    # Pull production by patient zip code for geographic heatmap
+    print("\nQuerying production by zip code...")
+    production_by_zip = query_production_by_zip(conn)
+
     conn.close()
     print("\n✓ Connection closed")
 
@@ -773,6 +990,44 @@ def main():
     overdue = [clean_row(r) for r in overdue_rows]
     treatment = [clean_row(r) for r in treatment_rows]
     contact_log_clean = [clean_row(r) for r in contact_log]
+
+    # ── Post-process: remove recently-seen households ─────────────────────
+    # Even if the SQL-level filtering caught most, this catches stragglers
+    # (e.g., if the NOT EXISTS subquery failed and we fell back to unfiltered)
+    recall_before = len(recall)
+    recall, recall_removed = filter_recently_seen(recall, recent_household_rpids, "household_id")
+    if recall_removed:
+        print(f"  ✓ Recall: removed {recall_removed} recently-seen households "
+              f"({recall_before} → {len(recall)})")
+
+    overdue_before = len(overdue)
+    overdue, overdue_removed = filter_recently_seen(overdue, recent_household_rpids, "household_id")
+    if overdue_removed:
+        print(f"  ✓ Overdue: removed {overdue_removed} recently-seen households "
+              f"({overdue_before} → {len(overdue)})")
+
+    # Also filter treatment: if a patient has been seen recently AND has
+    # a next appointment, they likely don't need to be called
+    treatment_before = len(treatment)
+    treatment_filtered = []
+    tx_removed = 0
+    for row in treatment:
+        pid = row.get("patient_id")
+        next_appt = row.get("next_appt_date")
+        try:
+            pid_int = int(pid) if pid else None
+        except (ValueError, TypeError):
+            pid_int = None
+        # Only remove from treatment if they were seen recently AND have a
+        # next appointment scheduled (they're actively being treated)
+        if pid_int and pid_int in recent_patient_ids and next_appt:
+            tx_removed += 1
+        else:
+            treatment_filtered.append(row)
+    treatment = treatment_filtered
+    if tx_removed:
+        print(f"  ✓ Treatment: removed {tx_removed} recently-seen+scheduled patients "
+              f"({treatment_before} → {len(treatment)})")
 
     # Count high-risk treatment patients
     high_risk = sum(
@@ -804,6 +1059,14 @@ def main():
             "contact_log_entries": len(contact_log_clean),
             "leaderboard_providers": len(leaderboard.get('providers', [])),
         },
+        "filtering": {
+            "recently_seen_patients": len(recent_patient_ids),
+            "recently_seen_households": len(recent_household_rpids),
+            "recall_removed": recall_removed,
+            "overdue_removed": overdue_removed,
+            "treatment_removed": tx_removed,
+            "note": "Patients/households seen in last 45 days are excluded from call sheets",
+        },
     }
 
     # Write call sheet output
@@ -818,6 +1081,7 @@ def main():
         "by_office_daily": daily_production.get('by_office_daily', []),
         "by_provider_mtd": daily_production.get('by_provider_mtd', []),
         "monthly_summary": daily_production.get('monthly_summary', []),
+        "by_zip": production_by_zip,
         "stats": {
             "daily_records": len(daily_production.get('by_date', [])),
             "office_daily_records": len(daily_production.get('by_office_daily', [])),
