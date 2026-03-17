@@ -109,14 +109,19 @@ def query_recall(conn):
     cursor = conn.cursor()
 
     # First try: query with NOT EXISTS against vw_RecallAnchor_LastRecallAppt
-    # (excludes households where any family member had a recall appt in last 30 days)
+    # RecallAnchor has PATID (patient-level), not RPID (household-level).
+    # We need to find patient tables to bridge PATID→RPID for the join.
+    # If that's too complex, we rely on post-processing filter instead.
     try:
-        # Discover columns in RecallAnchor view
         cursor.execute("SELECT TOP 0 * FROM vw_RecallAnchor_LastRecallAppt")
         anchor_cols = [col[0] for col in cursor.description]
         rpid_col = next((c for c in anchor_cols if 'RPID' in c.upper()), None)
-        date_col = next((c for c in anchor_cols if 'DATE' in c.upper() or 'APPT' in c.upper()), None)
+        pid_col = next((c for c in anchor_cols if 'PATID' in c.upper() or
+                        (c.upper().startswith('PAT') and 'ID' in c.upper())), None)
+        date_col = next((c for c in anchor_cols if 'DATE' in c.upper() or 'RECALL' in c.upper()), None)
+
         if rpid_col and date_col:
+            # Best case: RecallAnchor has RPID directly
             cursor.execute(f"""
                 SELECT
                     r.RPID                        AS household_id,
@@ -139,8 +144,60 @@ def query_recall(conn):
             """)
             rows = rows_to_dicts(cursor)
             print(f"  Recall (next 30 days): {len(rows)} households "
-                  f"(filtered via RecallAnchor — excludes recently seen)")
+                  f"(filtered via RecallAnchor.RPID — excludes recently seen)")
             return rows
+        elif pid_col and date_col:
+            # RecallAnchor has PATID, not RPID. Use a patient table to bridge.
+            # Try to find a table with both PATID and RPID for the subquery join.
+            bridge_tbl = None
+            bridge_pid = None
+            bridge_rpid = None
+            for tbl in ['PATHDR', 'PATD', 'Patient', 'PAT']:
+                try:
+                    cursor.execute(f"SELECT TOP 0 * FROM {tbl}")
+                    tcols = [c[0] for c in cursor.description]
+                    t_rpid = next((c for c in tcols if 'RPID' in c.upper()), None)
+                    t_pid = next((c for c in tcols if c.upper() == 'PATID'), None)
+                    if not t_pid:
+                        t_pid = next((c for c in tcols if 'PAT' in c.upper() and 'ID' in c.upper()), None)
+                    if t_rpid and t_pid:
+                        bridge_tbl = tbl
+                        bridge_pid = t_pid
+                        bridge_rpid = t_rpid
+                        print(f"  Found PATID→RPID bridge: {tbl}.{t_pid} → {tbl}.{t_rpid}")
+                        break
+                except Exception:
+                    continue
+
+            if bridge_tbl:
+                cursor.execute(f"""
+                    SELECT
+                        r.RPID                        AS household_id,
+                        r.RPID                        AS household,
+                        r.PrimaryPhone                AS phone,
+                        r.Email                       AS email,
+                        r.KidsDueCount                AS kids_due_count,
+                        r.KidsDueList                 AS kids_due_names,
+                        r.SuggestedFamilyDate         AS suggest_date,
+                        r.LastHygieneOfficeName       AS last_office,
+                        r.MostFrequentOfficeName      AS most_frequent_office,
+                        r.LastProviderName            AS last_provider
+                    FROM vw_RecallHouseholdDueNext30Days_PBI r
+                    WHERE NOT EXISTS (
+                        SELECT 1
+                        FROM vw_RecallAnchor_LastRecallAppt a
+                        JOIN {bridge_tbl} p ON p.[{bridge_pid}] = a.[{pid_col}]
+                        WHERE p.[{bridge_rpid}] = r.RPID
+                          AND a.[{date_col}] >= DATEADD(day, -30, GETDATE())
+                    )
+                    ORDER BY r.KidsDueCount DESC, r.SuggestedFamilyDate ASC
+                """)
+                rows = rows_to_dicts(cursor)
+                print(f"  Recall (next 30 days): {len(rows)} households "
+                      f"(filtered via RecallAnchor.PATID→{bridge_tbl}.RPID)")
+                return rows
+            else:
+                print(f"  ⚠ RecallAnchor has PATID but no bridge table found — falling back")
         else:
             print(f"  ⚠ RecallAnchor columns not suitable: {anchor_cols}")
     except Exception as e:
@@ -411,8 +468,9 @@ def query_zcode_status(conn):
 # Aggregates production and treatment metrics per doctor for the
 # leaderboard dashboard. Does NOT disclose pay/compensation.
 
-def query_doctor_leaderboard(conn):
-    """Build doctor-level KPIs from treatment and production views."""
+def query_doctor_leaderboard(conn, col_map=None):
+    """Build doctor-level KPIs from treatment and production views.
+    col_map: optional dict mapping logical names → actual column names."""
     cursor = conn.cursor()
     leaderboard = {}
 
@@ -462,32 +520,44 @@ def query_doctor_leaderboard(conn):
         print(f"  ⚠ View discovery failed: {e}")
 
     # KPI 3: Try vw_income_allocation (same view used by payroll)
-    try:
-        cursor.execute("""
-            SELECT
-                provider_name               AS provider,
-                SUM(net_production)          AS mtd_production,
-                SUM(net_collections)         AS mtd_collections,
-                COUNT(DISTINCT patient_id)   AS patients_seen
-            FROM rpt.vw_income_allocation
-            WHERE service_date >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
-              AND provider_name IS NOT NULL
-              AND provider_name <> ''
-            GROUP BY provider_name
-            ORDER BY SUM(net_production) DESC
-        """)
-        for row in rows_to_dicts(cursor):
-            prov = str(row.get('provider', '')).strip()
-            if not prov:
-                continue
-            if prov not in leaderboard:
-                leaderboard[prov] = {'provider': prov}
-            leaderboard[prov]['mtd_production'] = round(float(row.get('mtd_production', 0) or 0), 2)
-            leaderboard[prov]['mtd_collections'] = round(float(row.get('mtd_collections', 0) or 0), 2)
-            leaderboard[prov]['patients_seen_mtd'] = int(row.get('patients_seen', 0))
-        print(f"  MTD production data loaded for {len(leaderboard)} providers")
-    except Exception as e:
-        print(f"  ⚠ MTD production query failed: {e}")
+    # Use col_map if available, otherwise try hardcoded names as fallback
+    if col_map and col_map.get('service_date') and col_map.get('provider_name'):
+        svc = col_map['service_date']
+        prov_col = col_map['provider_name']
+        net_col = col_map.get('net_production')
+        coll_col = col_map.get('net_collections')
+        pid_col = col_map.get('patient_id')
+
+        try:
+            select_parts = [f"[{prov_col}] AS provider"]
+            if net_col: select_parts.append(f"SUM([{net_col}]) AS mtd_production")
+            if coll_col: select_parts.append(f"SUM([{coll_col}]) AS mtd_collections")
+            if pid_col: select_parts.append(f"COUNT(DISTINCT [{pid_col}]) AS patients_seen")
+
+            sort = f"SUM([{net_col}])" if net_col else f"[{prov_col}]"
+
+            cursor.execute(f"""
+                SELECT {', '.join(select_parts)}
+                FROM rpt.vw_income_allocation
+                WHERE [{svc}] >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
+                  AND [{prov_col}] IS NOT NULL AND [{prov_col}] <> ''
+                GROUP BY [{prov_col}]
+                ORDER BY {sort} DESC
+            """)
+            for row in rows_to_dicts(cursor):
+                prov = str(row.get('provider', '')).strip()
+                if not prov:
+                    continue
+                if prov not in leaderboard:
+                    leaderboard[prov] = {'provider': prov}
+                leaderboard[prov]['mtd_production'] = round(float(row.get('mtd_production', 0) or 0), 2)
+                leaderboard[prov]['mtd_collections'] = round(float(row.get('mtd_collections', 0) or 0), 2)
+                leaderboard[prov]['patients_seen_mtd'] = int(row.get('patients_seen', 0))
+            print(f"  MTD production data loaded for {len(leaderboard)} providers")
+        except Exception as e:
+            print(f"  ⚠ MTD production query failed: {e}")
+    else:
+        print(f"  ⚠ No column mapping for income allocation — skipping MTD production KPIs")
 
     # KPI 4: Try to get treatment plan conversion (tx planned vs completed)
     try:
@@ -520,12 +590,77 @@ def query_doctor_leaderboard(conn):
     }
 
 
+# ── Income Allocation Column Discovery ──────────────────────────────────────
+# rpt.vw_income_allocation uses different column names than expected.
+# This discovers actual column names and builds a mapping.
+
+def discover_income_allocation_columns(conn):
+    """Discover actual column names in rpt.vw_income_allocation.
+    Returns a dict mapping logical names to actual column names, or None if view unavailable."""
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT TOP 0 * FROM rpt.vw_income_allocation")
+        cols = [col[0] for col in cursor.description]
+        print(f"  Income allocation columns: {cols}")
+
+        # Build mapping from expected names to actual discovered columns
+        # Use fuzzy matching with multiple patterns per logical name
+        col_map = {}
+        upper_cols = {c.upper(): c for c in cols}
+
+        def find_col(*patterns):
+            """Find first column matching any pattern (case-insensitive substring)."""
+            for pat in patterns:
+                pat_upper = pat.upper()
+                # Exact match first
+                if pat_upper in upper_cols:
+                    return upper_cols[pat_upper]
+                # Substring match
+                for uc, orig in upper_cols.items():
+                    if pat_upper in uc:
+                        return orig
+            return None
+
+        col_map['service_date'] = find_col('service_date', 'ServiceDate', 'TransDate',
+                                            'trans_date', 'ProcDate', 'proc_date',
+                                            'EntryDate', 'entry_date', 'DOS', 'DateOfService')
+        col_map['office_name'] = find_col('office_name', 'OfficeName', 'Office',
+                                          'LocationName', 'location_name', 'FacilityName')
+        col_map['gross_production'] = find_col('gross_production', 'GrossProduction', 'GrossProd',
+                                                'gross_prod', 'TotalFee', 'total_fee', 'Fee',
+                                                'GrossCharges', 'Production')
+        col_map['net_production'] = find_col('net_production', 'NetProduction', 'NetProd',
+                                              'net_prod', 'NetFee', 'AdjustedProduction')
+        col_map['net_collections'] = find_col('net_collections', 'NetCollections', 'Collections',
+                                               'net_collect', 'Payments', 'NetPayments')
+        col_map['adjustments'] = find_col('adjustments', 'Adjustments', 'Adjustment',
+                                           'TotalAdj', 'adj', 'WriteOff')
+        col_map['patient_id'] = find_col('patient_id', 'PatientID', 'PATID', 'PatID',
+                                          'pat_id', 'PatientId')
+        col_map['provider_name'] = find_col('provider_name', 'ProviderName', 'Provider',
+                                             'DoctorName', 'doctor_name', 'RenderingProvider')
+
+        # Log what we found
+        found = {k: v for k, v in col_map.items() if v}
+        missing = [k for k, v in col_map.items() if not v]
+        print(f"  Column mapping: {found}")
+        if missing:
+            print(f"  ⚠ Missing mappings: {missing}")
+
+        return col_map if col_map.get('service_date') else None
+
+    except Exception as e:
+        print(f"  ⚠ Cannot access rpt.vw_income_allocation: {e}")
+        return None
+
+
 # ── Daily Production by Location ────────────────────────────────────────────
 # Provides daily Gross/Net production by office for the production dashboard.
-# Uses rpt.vw_income_allocation which is the same view PowerBI used.
+# Uses rpt.vw_income_allocation with auto-discovered column names.
 
-def query_daily_production(conn):
-    """Pull daily production by office for current month + prior month."""
+def query_daily_production(conn, col_map=None):
+    """Pull daily production by office for current month + prior month.
+    col_map: dict mapping logical names → actual column names in rpt.vw_income_allocation."""
     cursor = conn.cursor()
     result = {
         'by_date': [],
@@ -534,55 +669,73 @@ def query_daily_production(conn):
         'monthly_summary': [],
     }
 
+    if not col_map or not col_map.get('service_date'):
+        print(f"  ⚠ No column mapping for rpt.vw_income_allocation — skipping production queries")
+        return result
+
+    # Shorthand
+    svc = col_map['service_date']
+    ofc = col_map.get('office_name')
+    gross = col_map.get('gross_production')
+    net = col_map.get('net_production')
+    coll = col_map.get('net_collections')
+    adj = col_map.get('adjustments')
+    pid = col_map.get('patient_id')
+    prov = col_map.get('provider_name')
+
     # Daily production by office — current month
-    try:
-        cursor.execute("""
-            SELECT
-                CAST(service_date AS DATE)   AS prod_date,
-                office_name                  AS office,
-                SUM(gross_production)        AS gross_production,
-                SUM(net_production)          AS net_production,
-                SUM(net_collections)         AS net_collections,
-                SUM(adjustments)             AS adjustments,
-                COUNT(DISTINCT patient_id)   AS patients_seen
-            FROM rpt.vw_income_allocation
-            WHERE service_date >= DATEADD(month, -1, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
-              AND office_name IS NOT NULL
-              AND office_name <> ''
-            GROUP BY CAST(service_date AS DATE), office_name
-            ORDER BY CAST(service_date AS DATE), office_name
-        """)
-        for row in rows_to_dicts(cursor):
-            result['by_office_daily'].append({
-                'date': str(row.get('prod_date', '')),
-                'office': normalize_office(str(row.get('office', ''))),
-                'gross': round(float(row.get('gross_production', 0) or 0), 2),
-                'net': round(float(row.get('net_production', 0) or 0), 2),
-                'collections': round(float(row.get('net_collections', 0) or 0), 2),
-                'adjustments': round(float(row.get('adjustments', 0) or 0), 2),
-                'patients': int(row.get('patients_seen', 0)),
-            })
-        print(f"  Daily production: {len(result['by_office_daily'])} office-day records")
-    except Exception as e:
-        print(f"  ⚠ Daily production by office failed: {e}")
+    if ofc:
+        try:
+            select_parts = [f"CAST([{svc}] AS DATE) AS prod_date", f"[{ofc}] AS office"]
+            if gross: select_parts.append(f"SUM([{gross}]) AS gross_production")
+            if net: select_parts.append(f"SUM([{net}]) AS net_production")
+            if coll: select_parts.append(f"SUM([{coll}]) AS net_collections")
+            if adj: select_parts.append(f"SUM([{adj}]) AS adjustments")
+            if pid: select_parts.append(f"COUNT(DISTINCT [{pid}]) AS patients_seen")
+
+            cursor.execute(f"""
+                SELECT {', '.join(select_parts)}
+                FROM rpt.vw_income_allocation
+                WHERE [{svc}] >= DATEADD(month, -1, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
+                  AND [{ofc}] IS NOT NULL AND [{ofc}] <> ''
+                GROUP BY CAST([{svc}] AS DATE), [{ofc}]
+                ORDER BY CAST([{svc}] AS DATE), [{ofc}]
+            """)
+            for row in rows_to_dicts(cursor):
+                result['by_office_daily'].append({
+                    'date': str(row.get('prod_date', '')),
+                    'office': normalize_office(str(row.get('office', ''))),
+                    'gross': round(float(row.get('gross_production', 0) or 0), 2),
+                    'net': round(float(row.get('net_production', 0) or 0), 2),
+                    'collections': round(float(row.get('net_collections', 0) or 0), 2),
+                    'adjustments': round(float(row.get('adjustments', 0) or 0), 2),
+                    'patients': int(row.get('patients_seen', 0)),
+                })
+            print(f"  Daily production: {len(result['by_office_daily'])} office-day records")
+        except Exception as e:
+            print(f"  ⚠ Daily production by office failed: {e}")
 
     # Daily production totals (all offices combined)
     try:
-        cursor.execute("""
-            SELECT
-                CAST(service_date AS DATE)   AS prod_date,
-                SUM(gross_production)        AS gross_production,
-                SUM(net_production)          AS net_production,
-                SUM(net_collections)         AS net_collections,
-                SUM(adjustments)             AS adjustments,
-                COUNT(DISTINCT patient_id)   AS patients_seen,
-                COUNT(DISTINCT provider_name) AS providers_active
+        select_parts = [f"CAST([{svc}] AS DATE) AS prod_date"]
+        if gross: select_parts.append(f"SUM([{gross}]) AS gross_production")
+        if net: select_parts.append(f"SUM([{net}]) AS net_production")
+        if coll: select_parts.append(f"SUM([{coll}]) AS net_collections")
+        if adj: select_parts.append(f"SUM([{adj}]) AS adjustments")
+        if pid: select_parts.append(f"COUNT(DISTINCT [{pid}]) AS patients_seen")
+        if prov: select_parts.append(f"COUNT(DISTINCT [{prov}]) AS providers_active")
+
+        where_extra = ""
+        if prov:
+            where_extra = f" AND [{prov}] IS NOT NULL AND [{prov}] <> ''"
+
+        cursor.execute(f"""
+            SELECT {', '.join(select_parts)}
             FROM rpt.vw_income_allocation
-            WHERE service_date >= DATEADD(month, -1, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
-              AND provider_name IS NOT NULL
-              AND provider_name <> ''
-            GROUP BY CAST(service_date AS DATE)
-            ORDER BY CAST(service_date AS DATE)
+            WHERE [{svc}] >= DATEADD(month, -1, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
+              {where_extra}
+            GROUP BY CAST([{svc}] AS DATE)
+            ORDER BY CAST([{svc}] AS DATE)
         """)
         for row in rows_to_dicts(cursor):
             result['by_date'].append({
@@ -599,55 +752,65 @@ def query_daily_production(conn):
         print(f"  ⚠ Daily production totals failed: {e}")
 
     # MTD by provider (for provider ranking)
-    try:
-        cursor.execute("""
-            SELECT
-                provider_name                AS provider,
-                office_name                  AS office,
-                SUM(gross_production)        AS gross_production,
-                SUM(net_production)          AS net_production,
-                SUM(net_collections)         AS net_collections,
-                SUM(adjustments)             AS adjustments,
-                COUNT(DISTINCT patient_id)   AS patients_seen,
-                COUNT(DISTINCT CAST(service_date AS DATE)) AS days_worked
-            FROM rpt.vw_income_allocation
-            WHERE service_date >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
-              AND provider_name IS NOT NULL
-              AND provider_name <> ''
-            GROUP BY provider_name, office_name
-            ORDER BY SUM(net_production) DESC
-        """)
-        for row in rows_to_dicts(cursor):
-            result['by_provider_mtd'].append({
-                'provider': str(row.get('provider', '')).strip(),
-                'office': normalize_office(str(row.get('office', ''))),
-                'gross': round(float(row.get('gross_production', 0) or 0), 2),
-                'net': round(float(row.get('net_production', 0) or 0), 2),
-                'collections': round(float(row.get('net_collections', 0) or 0), 2),
-                'adjustments': round(float(row.get('adjustments', 0) or 0), 2),
-                'patients': int(row.get('patients_seen', 0)),
-                'days_worked': int(row.get('days_worked', 0)),
-            })
-        print(f"  MTD by provider: {len(result['by_provider_mtd'])} provider-office combos")
-    except Exception as e:
-        print(f"  ⚠ MTD by provider failed: {e}")
+    if prov:
+        try:
+            select_parts = [f"[{prov}] AS provider"]
+            if ofc: select_parts.append(f"[{ofc}] AS office")
+            if gross: select_parts.append(f"SUM([{gross}]) AS gross_production")
+            if net: select_parts.append(f"SUM([{net}]) AS net_production")
+            if coll: select_parts.append(f"SUM([{coll}]) AS net_collections")
+            if adj: select_parts.append(f"SUM([{adj}]) AS adjustments")
+            if pid: select_parts.append(f"COUNT(DISTINCT [{pid}]) AS patients_seen")
+            select_parts.append(f"COUNT(DISTINCT CAST([{svc}] AS DATE)) AS days_worked")
+
+            group_parts = [f"[{prov}]"]
+            if ofc: group_parts.append(f"[{ofc}]")
+
+            sort_col = f"SUM([{net}])" if net else f"SUM([{gross}])" if gross else f"[{prov}]"
+
+            cursor.execute(f"""
+                SELECT {', '.join(select_parts)}
+                FROM rpt.vw_income_allocation
+                WHERE [{svc}] >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
+                  AND [{prov}] IS NOT NULL AND [{prov}] <> ''
+                GROUP BY {', '.join(group_parts)}
+                ORDER BY {sort_col} DESC
+            """)
+            for row in rows_to_dicts(cursor):
+                result['by_provider_mtd'].append({
+                    'provider': str(row.get('provider', '')).strip(),
+                    'office': normalize_office(str(row.get('office', ''))),
+                    'gross': round(float(row.get('gross_production', 0) or 0), 2),
+                    'net': round(float(row.get('net_production', 0) or 0), 2),
+                    'collections': round(float(row.get('net_collections', 0) or 0), 2),
+                    'adjustments': round(float(row.get('adjustments', 0) or 0), 2),
+                    'patients': int(row.get('patients_seen', 0)),
+                    'days_worked': int(row.get('days_worked', 0)),
+                })
+            print(f"  MTD by provider: {len(result['by_provider_mtd'])} provider-office combos")
+        except Exception as e:
+            print(f"  ⚠ MTD by provider failed: {e}")
 
     # Monthly summary (last 12 months)
     try:
-        cursor.execute("""
-            SELECT
-                YEAR(service_date)           AS yr,
-                MONTH(service_date)          AS mo,
-                SUM(gross_production)        AS gross_production,
-                SUM(net_production)          AS net_production,
-                SUM(net_collections)         AS net_collections,
-                SUM(adjustments)             AS adjustments,
-                COUNT(DISTINCT patient_id)   AS patients_seen
+        select_parts = [f"YEAR([{svc}]) AS yr", f"MONTH([{svc}]) AS mo"]
+        if gross: select_parts.append(f"SUM([{gross}]) AS gross_production")
+        if net: select_parts.append(f"SUM([{net}]) AS net_production")
+        if coll: select_parts.append(f"SUM([{coll}]) AS net_collections")
+        if adj: select_parts.append(f"SUM([{adj}]) AS adjustments")
+        if pid: select_parts.append(f"COUNT(DISTINCT [{pid}]) AS patients_seen")
+
+        where_extra = ""
+        if prov:
+            where_extra = f" AND [{prov}] IS NOT NULL"
+
+        cursor.execute(f"""
+            SELECT {', '.join(select_parts)}
             FROM rpt.vw_income_allocation
-            WHERE service_date >= DATEADD(month, -12, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
-              AND provider_name IS NOT NULL
-            GROUP BY YEAR(service_date), MONTH(service_date)
-            ORDER BY YEAR(service_date), MONTH(service_date)
+            WHERE [{svc}] >= DATEADD(month, -12, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
+              {where_extra}
+            GROUP BY YEAR([{svc}]), MONTH([{svc}])
+            ORDER BY YEAR([{svc}]), MONTH([{svc}])
         """)
         month_names = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -674,30 +837,82 @@ def query_daily_production(conn):
 # ── Production by Patient Zip Code ──────────────────────────────────────────
 # Aggregates production by patient zip code for geographic heatmap visualization.
 
-def query_production_by_zip(conn):
-    """Pull production aggregated by patient zip code for current month."""
+def query_production_by_zip(conn, col_map=None):
+    """Pull production aggregated by patient zip code for current month.
+    col_map: dict mapping logical names → actual column names."""
     cursor = conn.cursor()
     result = []
 
+    if not col_map or not col_map.get('service_date') or not col_map.get('patient_id'):
+        print(f"  ⚠ No column mapping — skipping production by zip")
+        return result
+
+    svc = col_map['service_date']
+    pid = col_map['patient_id']
+    net = col_map.get('net_production')
+    gross = col_map.get('gross_production')
+    ofc = col_map.get('office_name')
+    prov = col_map.get('provider_name')
+
+    # Try to find a patient table with Zip data
+    patient_tables = ['PATHDR', 'PATD', 'Patient', 'PAT']
+    pat_tbl = None
+    pat_pid_col = None
+    for tbl in patient_tables:
+        try:
+            cursor.execute(f"SELECT TOP 0 * FROM {tbl}")
+            tcols = [c[0] for c in cursor.description]
+            zip_col = next((c for c in tcols if 'ZIP' in c.upper()), None)
+            t_pid = next((c for c in tcols if c.upper() == 'PATID'), None)
+            if not t_pid:
+                t_pid = next((c for c in tcols if 'PAT' in c.upper() and 'ID' in c.upper()), None)
+            if zip_col and t_pid:
+                pat_tbl = tbl
+                pat_pid_col = t_pid
+                print(f"  Found patient zip table: {tbl} (ZIP={zip_col}, PATID={t_pid})")
+                break
+        except Exception:
+            continue
+
+    if not pat_tbl:
+        print(f"  ⚠ No patient table with Zip data found — skipping production by zip")
+        return result
+
     try:
-        cursor.execute("""
-            SELECT
-                LEFT(LTRIM(RTRIM(p.Zip)), 5)   AS zip_code,
-                p.City                           AS city,
-                p.State                          AS state,
-                ia.office_name                   AS office,
-                SUM(ia.net_production)           AS net_production,
-                SUM(ia.gross_production)         AS gross_production,
-                COUNT(DISTINCT ia.patient_id)    AS patient_count
+        select_parts = [
+            f"LEFT(LTRIM(RTRIM(p.[{zip_col}])), 5) AS zip_code",
+        ]
+        # Try City/State columns
+        city_col = next((c for c in tcols if 'CITY' in c.upper()), None)
+        state_col = next((c for c in tcols if 'STATE' in c.upper()), None)
+        if city_col: select_parts.append(f"p.[{city_col}] AS city")
+        if state_col: select_parts.append(f"p.[{state_col}] AS state")
+        if ofc: select_parts.append(f"ia.[{ofc}] AS office")
+        if net: select_parts.append(f"SUM(ia.[{net}]) AS net_production")
+        if gross: select_parts.append(f"SUM(ia.[{gross}]) AS gross_production")
+        select_parts.append(f"COUNT(DISTINCT ia.[{pid}]) AS patient_count")
+
+        group_parts = [f"LEFT(LTRIM(RTRIM(p.[{zip_col}])), 5)"]
+        if city_col: group_parts.append(f"p.[{city_col}]")
+        if state_col: group_parts.append(f"p.[{state_col}]")
+        if ofc: group_parts.append(f"ia.[{ofc}]")
+
+        having = f"HAVING SUM(ia.[{net}]) > 0" if net else ""
+        sort = f"ORDER BY SUM(ia.[{net}]) DESC" if net else f"ORDER BY COUNT(DISTINCT ia.[{pid}]) DESC"
+
+        prov_filter = f"AND ia.[{prov}] IS NOT NULL" if prov else ""
+
+        cursor.execute(f"""
+            SELECT {', '.join(select_parts)}
             FROM rpt.vw_income_allocation ia
-            JOIN dbo.tbl_patient p ON ia.patient_id = p.PatID
-            WHERE ia.service_date >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
-              AND p.Zip IS NOT NULL
-              AND LEN(LTRIM(RTRIM(p.Zip))) >= 5
-              AND ia.provider_name IS NOT NULL
-            GROUP BY LEFT(LTRIM(RTRIM(p.Zip)), 5), p.City, p.State, ia.office_name
-            HAVING SUM(ia.net_production) > 0
-            ORDER BY SUM(ia.net_production) DESC
+            JOIN {pat_tbl} p ON ia.[{pid}] = p.[{pat_pid_col}]
+            WHERE ia.[{svc}] >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
+              AND p.[{zip_col}] IS NOT NULL
+              AND LEN(LTRIM(RTRIM(p.[{zip_col}]))) >= 5
+              {prov_filter}
+            GROUP BY {', '.join(group_parts)}
+            {having}
+            {sort}
         """)
         for row in rows_to_dicts(cursor):
             result.append({
@@ -711,7 +926,7 @@ def query_production_by_zip(conn):
             })
         print(f"  Production by zip: {len(result)} zip codes")
     except Exception as e:
-        print(f"  ⚠ Production by zip failed (table join may not exist): {e}")
+        print(f"  ⚠ Production by zip failed: {e}")
 
     return result
 
@@ -721,6 +936,57 @@ def query_production_by_zip(conn):
 # NOT appear on the call sheet. The Denticon views may not auto-exclude
 # them, so we build our own exclusion set.
 
+def _map_patient_ids_to_rpids(cursor, patient_ids):
+    """Map a set of patient IDs to household RPIDs via patient tables.
+    Returns a set of household RPIDs."""
+    household_rpids = set()
+    if not patient_ids:
+        return household_rpids
+
+    patient_tables = ['PATHDR', 'PATD', 'tbl_patient', 'Patient', 'PAT']
+    for tbl in patient_tables:
+        try:
+            cursor.execute(f"SELECT TOP 0 * FROM {tbl}")
+            cols = [col[0] for col in cursor.description]
+            rpid_col = next((c for c in cols if 'RPID' in c.upper() or 'RP' == c.upper()), None)
+            pid_col = next((c for c in cols if c.upper() == 'PATID'), None)
+            if not pid_col:
+                pid_col = next((c for c in cols if 'PAT' in c.upper() and 'ID' in c.upper()), None)
+            if rpid_col and pid_col:
+                # Process in batches to avoid SQL length limits
+                pid_list_all = [str(int(p)) for p in patient_ids
+                                if str(p).replace('.', '').replace('-', '').isdigit()]
+                for i in range(0, len(pid_list_all), 500):
+                    batch = ",".join(pid_list_all[i:i+500])
+                    if batch:
+                        cursor.execute(f"""
+                            SELECT DISTINCT [{rpid_col}]
+                            FROM {tbl}
+                            WHERE [{pid_col}] IN ({batch})
+                              AND [{rpid_col}] IS NOT NULL
+                        """)
+                        for row in cursor.fetchall():
+                            if row[0]:
+                                try:
+                                    household_rpids.add(int(row[0]))
+                                except (ValueError, TypeError):
+                                    pass
+                print(f"  Mapped {len(patient_ids)} patients → "
+                      f"{len(household_rpids)} households via {tbl}.{rpid_col}")
+                return household_rpids
+        except Exception:
+            continue
+
+    # Fallback: use patient IDs as RPIDs (some systems use same IDs)
+    print(f"  ⚠ Could not map patient_ids to RPIDs — using patient_ids as RPIDs")
+    for pid in patient_ids:
+        try:
+            household_rpids.add(int(pid))
+        except (ValueError, TypeError):
+            pass
+    return household_rpids
+
+
 def query_recently_seen_patients(conn):
     """Build exclusion sets of patients/households who have had a dental
     visit in the last 45 days.  Returns two things:
@@ -728,38 +994,42 @@ def query_recently_seen_patients(conn):
       - household_rpids: set of RPIDs where ANY family member was seen
 
     Tries multiple Denticon tables/views to find recent visits:
-      1. vw_RecallAnchor_LastRecallAppt (recall-specific)
-      2. BI_Appointments (broad appointment data)
-      3. APPTD (Denticon core appointment table)
-      4. vw_income_allocation (auto-discover column names)
-      5. vw_LastCompletedVisitNotes
+      1. vw_RecallAnchor_LastRecallAppt — has PATID + LastRecallDate
+      2. BI_Appointments — has PATID + APPTDATE + APPTSTATUS (tinyint)
+      3. APPTH (appointment header) — may have PATID + date
+      4. rpt.vw_income_allocation — production data with patient + date
     """
     cursor = conn.cursor()
     patient_ids = set()
     household_rpids = set()
 
     # First, discover actual column names in key views for debugging
-    for view in ['vw_income_allocation', 'vw_RecallAnchor_LastRecallAppt',
-                 'BI_Appointments', 'APPTD']:
+    for view in ['rpt.vw_income_allocation', 'vw_RecallAnchor_LastRecallAppt',
+                 'BI_Appointments', 'APPTH']:
         try:
-            cursor.execute("""
-                SELECT TOP 0 * FROM """ + view)
+            cursor.execute("SELECT TOP 0 * FROM " + view)
             cols = [col[0] for col in cursor.description]
             print(f"  Columns in {view}: {cols}")
         except Exception:
             print(f"  ⚠ Cannot access {view}")
 
     # ── Strategy 1: vw_RecallAnchor_LastRecallAppt ─────────────────────
-    # This view likely has RPID + last recall appointment date
+    # This view has: PATID, OID, LastRecallDate
+    # PATID is patient-level (not household RPID), so we collect patient IDs
+    # and map to household RPIDs afterward.
     try:
-        cursor.execute("""
-            SELECT TOP 0 * FROM vw_RecallAnchor_LastRecallAppt
-        """)
+        cursor.execute("SELECT TOP 0 * FROM vw_RecallAnchor_LastRecallAppt")
         cols = [col[0] for col in cursor.description]
-        # Look for RPID and date columns
+        # Look for patient ID column (PATID, PatientID, etc.)
+        pid_col = next((c for c in cols if 'PATID' in c.upper() or
+                        (c.upper().startswith('PAT') and 'ID' in c.upper())), None)
+        # Look for RPID (household) — might be present in some configurations
         rpid_col = next((c for c in cols if 'RPID' in c.upper()), None)
-        date_col = next((c for c in cols if 'DATE' in c.upper() or 'APPT' in c.upper()), None)
+        # Look for date column
+        date_col = next((c for c in cols if 'DATE' in c.upper() or 'RECALL' in c.upper()), None)
+
         if rpid_col and date_col:
+            # Best case: direct RPID available
             cursor.execute(f"""
                 SELECT DISTINCT [{rpid_col}]
                 FROM vw_RecallAnchor_LastRecallAppt
@@ -772,67 +1042,87 @@ def query_recently_seen_patients(conn):
                         household_rpids.add(int(row[0]))
                     except (ValueError, TypeError):
                         pass
-            print(f"  RecallAnchor: {len(household_rpids)} households seen in last 45 days")
+            print(f"  RecallAnchor (RPID): {len(household_rpids)} households seen in last 45 days")
+        elif pid_col and date_col:
+            # Has PATID + date — collect patient IDs, map to RPIDs later
+            cursor.execute(f"""
+                SELECT DISTINCT [{pid_col}]
+                FROM vw_RecallAnchor_LastRecallAppt
+                WHERE [{date_col}] >= DATEADD(day, -45, GETDATE())
+                  AND [{pid_col}] IS NOT NULL
+            """)
+            for row in cursor.fetchall():
+                if row[0]:
+                    patient_ids.add(row[0])
+            print(f"  RecallAnchor (PATID): {len(patient_ids)} patients seen in last 45 days")
+        else:
+            print(f"  ⚠ RecallAnchor columns not suitable: {cols}")
     except Exception as e:
         print(f"  ⚠ RecallAnchor query failed: {e}")
 
     # ── Strategy 2: BI_Appointments ────────────────────────────────────
-    if not household_rpids:
+    # Columns: APPTID, PATID, PROVIDERID, APPTDATE, APPTSTATUS (tinyint!),
+    #          APPTLENGTH, OPERATORYID, PRODTYPE
+    # APPTSTATUS is tinyint — do NOT compare with varchar strings.
+    # Just filter by APPTDATE (recent appointments = recently seen).
+    if not patient_ids and not household_rpids:
         try:
             cursor.execute("SELECT TOP 0 * FROM BI_Appointments")
             cols = [col[0] for col in cursor.description]
             pid_col = next((c for c in cols if 'PAT' in c.upper() and 'ID' in c.upper()), None)
             date_col = next((c for c in cols if 'DATE' in c.upper()), None)
-            status_col = next((c for c in cols if 'STATUS' in c.upper() or 'COMPLETE' in c.upper()), None)
             if pid_col and date_col:
-                sql = f"""
+                # Date-only filter — APPTSTATUS is tinyint, safe to skip
+                # (we just want to know IF they had an appointment recently)
+                cursor.execute(f"""
                     SELECT DISTINCT [{pid_col}]
                     FROM BI_Appointments
                     WHERE [{date_col}] >= DATEADD(day, -45, GETDATE())
-                      AND [{pid_col}] IS NOT NULL
-                """
-                if status_col:
-                    sql += f" AND [{status_col}] IN ('Complete', 'Completed', 'C', '1', 'Arrived')"
-                cursor.execute(sql)
-                for row in cursor.fetchall():
-                    if row[0]:
-                        patient_ids.add(row[0])
-                print(f"  BI_Appointments: {len(patient_ids)} patients seen in last 45 days")
-        except Exception as e:
-            print(f"  ⚠ BI_Appointments query failed: {e}")
-
-    # ── Strategy 3: APPTD (Denticon core) ─────────────────────────────
-    if not patient_ids and not household_rpids:
-        try:
-            cursor.execute("SELECT TOP 0 * FROM APPTD")
-            cols = [col[0] for col in cursor.description]
-            pid_col = next((c for c in cols if 'PAT' in c.upper()), None)
-            date_col = next((c for c in cols if 'DATE' in c.upper()), None)
-            if pid_col and date_col:
-                cursor.execute(f"""
-                    SELECT DISTINCT [{pid_col}]
-                    FROM APPTD
-                    WHERE [{date_col}] >= DATEADD(day, -45, GETDATE())
+                      AND [{date_col}] <= GETDATE()
                       AND [{pid_col}] IS NOT NULL
                 """)
                 for row in cursor.fetchall():
                     if row[0]:
                         patient_ids.add(row[0])
-                print(f"  APPTD: {len(patient_ids)} patients seen in last 45 days")
+                print(f"  BI_Appointments: {len(patient_ids)} patients with appts in last 45 days")
         except Exception as e:
-            print(f"  ⚠ APPTD query failed: {e}")
+            print(f"  ⚠ BI_Appointments query failed: {e}")
 
-    # ── Strategy 4: vw_income_allocation with auto-discovered columns ─
+    # ── Strategy 3: APPTH (appointment header — may have PATID + date) ─
     if not patient_ids and not household_rpids:
         try:
-            cursor.execute("SELECT TOP 0 * FROM vw_income_allocation")
+            cursor.execute("SELECT TOP 0 * FROM APPTH")
+            cols = [col[0] for col in cursor.description]
+            pid_col = next((c for c in cols if 'PAT' in c.upper() and 'ID' in c.upper()), None)
+            if not pid_col:
+                pid_col = next((c for c in cols if 'PAT' in c.upper()), None)
+            date_col = next((c for c in cols if 'DATE' in c.upper()), None)
+            if pid_col and date_col:
+                cursor.execute(f"""
+                    SELECT DISTINCT [{pid_col}]
+                    FROM APPTH
+                    WHERE [{date_col}] >= DATEADD(day, -45, GETDATE())
+                      AND [{date_col}] <= GETDATE()
+                      AND [{pid_col}] IS NOT NULL
+                """)
+                for row in cursor.fetchall():
+                    if row[0]:
+                        patient_ids.add(row[0])
+                print(f"  APPTH: {len(patient_ids)} patients with appts in last 45 days")
+        except Exception as e:
+            print(f"  ⚠ APPTH query failed: {e}")
+
+    # ── Strategy 4: rpt.vw_income_allocation (with schema prefix!) ────
+    if not patient_ids and not household_rpids:
+        try:
+            cursor.execute("SELECT TOP 0 * FROM rpt.vw_income_allocation")
             cols = [col[0] for col in cursor.description]
             pid_col = next((c for c in cols if 'PAT' in c.upper() and 'ID' in c.upper()), None)
             date_col = next((c for c in cols if 'DATE' in c.upper() or 'SERVICE' in c.upper()), None)
             if pid_col and date_col:
                 cursor.execute(f"""
                     SELECT DISTINCT [{pid_col}]
-                    FROM vw_income_allocation
+                    FROM rpt.vw_income_allocation
                     WHERE [{date_col}] >= DATEADD(day, -45, GETDATE())
                       AND [{pid_col}] IS NOT NULL
                 """)
@@ -844,45 +1134,8 @@ def query_recently_seen_patients(conn):
             print(f"  ⚠ income_allocation auto-discover failed: {e}")
 
     # ── Map patient_ids → household RPIDs ──────────────────────────────
-    # Try multiple patient table names
     if patient_ids and not household_rpids:
-        patient_tables = ['PATHDR', 'PATD', 'tbl_patient', 'Patient', 'PAT']
-        for tbl in patient_tables:
-            try:
-                cursor.execute(f"SELECT TOP 0 * FROM {tbl}")
-                cols = [col[0] for col in cursor.description]
-                rpid_col = next((c for c in cols if 'RPID' in c.upper() or 'RP' == c.upper()), None)
-                pid_col = next((c for c in cols if 'PATID' in c.upper() or c.upper() == 'PATID'), None)
-                if not pid_col:
-                    pid_col = next((c for c in cols if 'PAT' in c.upper() and 'ID' in c.upper()), None)
-                if rpid_col and pid_col:
-                    pid_list = ",".join(str(int(p)) for p in patient_ids
-                                        if str(p).replace('.', '').replace('-', '').isdigit())
-                    if pid_list:
-                        cursor.execute(f"""
-                            SELECT DISTINCT [{rpid_col}]
-                            FROM {tbl}
-                            WHERE [{pid_col}] IN ({pid_list})
-                              AND [{rpid_col}] IS NOT NULL
-                        """)
-                        for row in cursor.fetchall():
-                            if row[0]:
-                                try:
-                                    household_rpids.add(int(row[0]))
-                                except (ValueError, TypeError):
-                                    pass
-                        print(f"  Mapped {len(patient_ids)} patients → "
-                              f"{len(household_rpids)} households via {tbl}.{rpid_col}")
-                        break
-            except Exception as e:
-                continue
-        if not household_rpids:
-            print(f"  ⚠ Could not map patient_ids to RPIDs — using patient_ids as RPIDs")
-            for pid in patient_ids:
-                try:
-                    household_rpids.add(int(pid))
-                except (ValueError, TypeError):
-                    pass
+        household_rpids = _map_patient_ids_to_rpids(cursor, patient_ids)
 
     print(f"  Summary: {len(patient_ids)} patient IDs, {len(household_rpids)} household RPIDs")
     return patient_ids, household_rpids
@@ -1072,17 +1325,21 @@ def main():
     bad_phones = query_bad_phones(conn)
     zcode_map = query_zcode_status(conn)
 
+    # Discover income allocation column names for production queries
+    print("\nDiscovering income allocation columns...")
+    ia_col_map = discover_income_allocation_columns(conn)
+
     # Pull doctor leaderboard KPIs
     print("\nQuerying doctor leaderboard...")
-    leaderboard = query_doctor_leaderboard(conn)
+    leaderboard = query_doctor_leaderboard(conn, col_map=ia_col_map)
 
     # Pull daily production by location for production dashboard
     print("\nQuerying daily production by location...")
-    daily_production = query_daily_production(conn)
+    daily_production = query_daily_production(conn, col_map=ia_col_map)
 
     # Pull production by patient zip code for geographic heatmap
     print("\nQuerying production by zip code...")
-    production_by_zip = query_production_by_zip(conn)
+    production_by_zip = query_production_by_zip(conn, col_map=ia_col_map)
 
     conn.close()
     print("\n✓ Connection closed")
