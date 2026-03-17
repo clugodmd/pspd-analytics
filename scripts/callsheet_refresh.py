@@ -108,35 +108,41 @@ def query_recall(conn):
     """
     cursor = conn.cursor()
 
-    # First try: query with NOT EXISTS against recent production (excludes
-    # households where any family member was seen in the last 30 days)
+    # First try: query with NOT EXISTS against vw_RecallAnchor_LastRecallAppt
+    # (excludes households where any family member had a recall appt in last 30 days)
     try:
-        cursor.execute("""
-            SELECT
-                r.RPID                        AS household_id,
-                r.RPID                        AS household,
-                r.PrimaryPhone                AS phone,
-                r.Email                       AS email,
-                r.KidsDueCount                AS kids_due_count,
-                r.KidsDueList                 AS kids_due_names,
-                r.SuggestedFamilyDate         AS suggest_date,
-                r.LastHygieneOfficeName       AS last_office,
-                r.MostFrequentOfficeName      AS most_frequent_office,
-                r.LastProviderName            AS last_provider
-            FROM vw_RecallHouseholdDueNext30Days_PBI r
-            WHERE NOT EXISTS (
-                -- Exclude if ANY patient in this household had a visit
-                -- in the last 30 days (they've already been seen)
-                SELECT 1 FROM rpt.vw_income_allocation ia
-                JOIN dbo.tbl_patient p ON ia.patient_id = p.PatID
-                WHERE p.RPID = r.RPID
-                  AND ia.service_date >= DATEADD(day, -30, GETDATE())
-            )
-            ORDER BY r.KidsDueCount DESC, r.SuggestedFamilyDate ASC
-        """)
-        rows = rows_to_dicts(cursor)
-        print(f"  Recall (next 30 days): {len(rows)} households (filtered — excludes recently seen)")
-        return rows
+        # Discover columns in RecallAnchor view
+        cursor.execute("SELECT TOP 0 * FROM vw_RecallAnchor_LastRecallAppt")
+        anchor_cols = [col[0] for col in cursor.description]
+        rpid_col = next((c for c in anchor_cols if 'RPID' in c.upper()), None)
+        date_col = next((c for c in anchor_cols if 'DATE' in c.upper() or 'APPT' in c.upper()), None)
+        if rpid_col and date_col:
+            cursor.execute(f"""
+                SELECT
+                    r.RPID                        AS household_id,
+                    r.RPID                        AS household,
+                    r.PrimaryPhone                AS phone,
+                    r.Email                       AS email,
+                    r.KidsDueCount                AS kids_due_count,
+                    r.KidsDueList                 AS kids_due_names,
+                    r.SuggestedFamilyDate         AS suggest_date,
+                    r.LastHygieneOfficeName       AS last_office,
+                    r.MostFrequentOfficeName      AS most_frequent_office,
+                    r.LastProviderName            AS last_provider
+                FROM vw_RecallHouseholdDueNext30Days_PBI r
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM vw_RecallAnchor_LastRecallAppt a
+                    WHERE a.[{rpid_col}] = r.RPID
+                      AND a.[{date_col}] >= DATEADD(day, -30, GETDATE())
+                )
+                ORDER BY r.KidsDueCount DESC, r.SuggestedFamilyDate ASC
+            """)
+            rows = rows_to_dicts(cursor)
+            print(f"  Recall (next 30 days): {len(rows)} households "
+                  f"(filtered via RecallAnchor — excludes recently seen)")
+            return rows
+        else:
+            print(f"  ⚠ RecallAnchor columns not suitable: {anchor_cols}")
     except Exception as e:
         print(f"  ⚠ Recall filtered query failed ({e}), falling back to unfiltered...")
 
@@ -720,66 +726,165 @@ def query_recently_seen_patients(conn):
     visit in the last 45 days.  Returns two things:
       - patient_ids: set of patient IDs seen recently
       - household_rpids: set of RPIDs where ANY family member was seen
+
+    Tries multiple Denticon tables/views to find recent visits:
+      1. vw_RecallAnchor_LastRecallAppt (recall-specific)
+      2. BI_Appointments (broad appointment data)
+      3. APPTD (Denticon core appointment table)
+      4. vw_income_allocation (auto-discover column names)
+      5. vw_LastCompletedVisitNotes
     """
     cursor = conn.cursor()
     patient_ids = set()
     household_rpids = set()
 
-    # 1) Patients with production in last 45 days (from income_allocation)
+    # First, discover actual column names in key views for debugging
+    for view in ['vw_income_allocation', 'vw_RecallAnchor_LastRecallAppt',
+                 'BI_Appointments', 'APPTD']:
+        try:
+            cursor.execute("""
+                SELECT TOP 0 * FROM """ + view)
+            cols = [col[0] for col in cursor.description]
+            print(f"  Columns in {view}: {cols}")
+        except Exception:
+            print(f"  ⚠ Cannot access {view}")
+
+    # ── Strategy 1: vw_RecallAnchor_LastRecallAppt ─────────────────────
+    # This view likely has RPID + last recall appointment date
     try:
         cursor.execute("""
-            SELECT DISTINCT patient_id
-            FROM rpt.vw_income_allocation
-            WHERE service_date >= DATEADD(day, -45, GETDATE())
-              AND patient_id IS NOT NULL
+            SELECT TOP 0 * FROM vw_RecallAnchor_LastRecallAppt
         """)
-        for row in cursor.fetchall():
-            if row[0]:
-                patient_ids.add(row[0])
-        print(f"  Recently seen (production): {len(patient_ids)} patients in last 45 days")
+        cols = [col[0] for col in cursor.description]
+        # Look for RPID and date columns
+        rpid_col = next((c for c in cols if 'RPID' in c.upper()), None)
+        date_col = next((c for c in cols if 'DATE' in c.upper() or 'APPT' in c.upper()), None)
+        if rpid_col and date_col:
+            cursor.execute(f"""
+                SELECT DISTINCT [{rpid_col}]
+                FROM vw_RecallAnchor_LastRecallAppt
+                WHERE [{date_col}] >= DATEADD(day, -45, GETDATE())
+                  AND [{rpid_col}] IS NOT NULL
+            """)
+            for row in cursor.fetchall():
+                if row[0]:
+                    try:
+                        household_rpids.add(int(row[0]))
+                    except (ValueError, TypeError):
+                        pass
+            print(f"  RecallAnchor: {len(household_rpids)} households seen in last 45 days")
     except Exception as e:
-        print(f"  ⚠ Recent production query failed: {e}")
+        print(f"  ⚠ RecallAnchor query failed: {e}")
 
-    # 2) Try to map patient_ids → RPIDs via tbl_patient (Denticon RP = Responsible Party)
-    if patient_ids:
+    # ── Strategy 2: BI_Appointments ────────────────────────────────────
+    if not household_rpids:
         try:
-            # Denticon stores RPID on the patient record — the responsible party
-            # who links family members into a household
-            pid_list = ",".join(str(int(p)) for p in patient_ids if str(p).isdigit())
-            if pid_list:
+            cursor.execute("SELECT TOP 0 * FROM BI_Appointments")
+            cols = [col[0] for col in cursor.description]
+            pid_col = next((c for c in cols if 'PAT' in c.upper() and 'ID' in c.upper()), None)
+            date_col = next((c for c in cols if 'DATE' in c.upper()), None)
+            status_col = next((c for c in cols if 'STATUS' in c.upper() or 'COMPLETE' in c.upper()), None)
+            if pid_col and date_col:
+                sql = f"""
+                    SELECT DISTINCT [{pid_col}]
+                    FROM BI_Appointments
+                    WHERE [{date_col}] >= DATEADD(day, -45, GETDATE())
+                      AND [{pid_col}] IS NOT NULL
+                """
+                if status_col:
+                    sql += f" AND [{status_col}] IN ('Complete', 'Completed', 'C', '1', 'Arrived')"
+                cursor.execute(sql)
+                for row in cursor.fetchall():
+                    if row[0]:
+                        patient_ids.add(row[0])
+                print(f"  BI_Appointments: {len(patient_ids)} patients seen in last 45 days")
+        except Exception as e:
+            print(f"  ⚠ BI_Appointments query failed: {e}")
+
+    # ── Strategy 3: APPTD (Denticon core) ─────────────────────────────
+    if not patient_ids and not household_rpids:
+        try:
+            cursor.execute("SELECT TOP 0 * FROM APPTD")
+            cols = [col[0] for col in cursor.description]
+            pid_col = next((c for c in cols if 'PAT' in c.upper()), None)
+            date_col = next((c for c in cols if 'DATE' in c.upper()), None)
+            if pid_col and date_col:
                 cursor.execute(f"""
-                    SELECT DISTINCT RPID
-                    FROM dbo.tbl_patient
-                    WHERE PatID IN ({pid_list})
-                      AND RPID IS NOT NULL
-                      AND RPID > 0
+                    SELECT DISTINCT [{pid_col}]
+                    FROM APPTD
+                    WHERE [{date_col}] >= DATEADD(day, -45, GETDATE())
+                      AND [{pid_col}] IS NOT NULL
                 """)
                 for row in cursor.fetchall():
                     if row[0]:
-                        household_rpids.add(int(row[0]))
-                print(f"  Mapped to {len(household_rpids)} recently-seen households (RPIDs)")
+                        patient_ids.add(row[0])
+                print(f"  APPTD: {len(patient_ids)} patients seen in last 45 days")
         except Exception as e:
-            print(f"  ⚠ RPID mapping failed: {e}")
-            # Fallback: try using patient_id as RPID (sometimes they match)
+            print(f"  ⚠ APPTD query failed: {e}")
+
+    # ── Strategy 4: vw_income_allocation with auto-discovered columns ─
+    if not patient_ids and not household_rpids:
+        try:
+            cursor.execute("SELECT TOP 0 * FROM vw_income_allocation")
+            cols = [col[0] for col in cursor.description]
+            pid_col = next((c for c in cols if 'PAT' in c.upper() and 'ID' in c.upper()), None)
+            date_col = next((c for c in cols if 'DATE' in c.upper() or 'SERVICE' in c.upper()), None)
+            if pid_col and date_col:
+                cursor.execute(f"""
+                    SELECT DISTINCT [{pid_col}]
+                    FROM vw_income_allocation
+                    WHERE [{date_col}] >= DATEADD(day, -45, GETDATE())
+                      AND [{pid_col}] IS NOT NULL
+                """)
+                for row in cursor.fetchall():
+                    if row[0]:
+                        patient_ids.add(row[0])
+                print(f"  income_allocation: {len(patient_ids)} patients (via {pid_col}/{date_col})")
+        except Exception as e:
+            print(f"  ⚠ income_allocation auto-discover failed: {e}")
+
+    # ── Map patient_ids → household RPIDs ──────────────────────────────
+    # Try multiple patient table names
+    if patient_ids and not household_rpids:
+        patient_tables = ['PATHDR', 'PATD', 'tbl_patient', 'Patient', 'PAT']
+        for tbl in patient_tables:
+            try:
+                cursor.execute(f"SELECT TOP 0 * FROM {tbl}")
+                cols = [col[0] for col in cursor.description]
+                rpid_col = next((c for c in cols if 'RPID' in c.upper() or 'RP' == c.upper()), None)
+                pid_col = next((c for c in cols if 'PATID' in c.upper() or c.upper() == 'PATID'), None)
+                if not pid_col:
+                    pid_col = next((c for c in cols if 'PAT' in c.upper() and 'ID' in c.upper()), None)
+                if rpid_col and pid_col:
+                    pid_list = ",".join(str(int(p)) for p in patient_ids
+                                        if str(p).replace('.', '').replace('-', '').isdigit())
+                    if pid_list:
+                        cursor.execute(f"""
+                            SELECT DISTINCT [{rpid_col}]
+                            FROM {tbl}
+                            WHERE [{pid_col}] IN ({pid_list})
+                              AND [{rpid_col}] IS NOT NULL
+                        """)
+                        for row in cursor.fetchall():
+                            if row[0]:
+                                try:
+                                    household_rpids.add(int(row[0]))
+                                except (ValueError, TypeError):
+                                    pass
+                        print(f"  Mapped {len(patient_ids)} patients → "
+                              f"{len(household_rpids)} households via {tbl}.{rpid_col}")
+                        break
+            except Exception as e:
+                continue
+        if not household_rpids:
+            print(f"  ⚠ Could not map patient_ids to RPIDs — using patient_ids as RPIDs")
             for pid in patient_ids:
                 try:
                     household_rpids.add(int(pid))
                 except (ValueError, TypeError):
                     pass
 
-    # 3) Also try direct appointment table for completed hygiene visits
-    try:
-        cursor.execute("""
-            SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
-            WHERE TABLE_NAME LIKE '%appt%' OR TABLE_NAME LIKE '%appointment%'
-            ORDER BY TABLE_NAME
-        """)
-        appt_tables = [row[0] for row in cursor.fetchall()]
-        if appt_tables:
-            print(f"  Discovered appointment tables: {appt_tables}")
-    except Exception:
-        pass
-
+    print(f"  Summary: {len(patient_ids)} patient IDs, {len(household_rpids)} household RPIDs")
     return patient_ids, household_rpids
 
 
