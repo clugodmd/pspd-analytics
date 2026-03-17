@@ -520,39 +520,51 @@ def query_doctor_leaderboard(conn, col_map=None):
         print(f"  ⚠ View discovery failed: {e}")
 
     # KPI 3: Try vw_income_allocation (same view used by payroll)
-    # Use col_map if available, otherwise try hardcoded names as fallback
-    if col_map and col_map.get('service_date') and col_map.get('provider_name'):
+    # Use col_map if available — provider may be numeric ID, not a string name
+    prov_col = col_map.get('provider_name') or col_map.get('provider_id') if col_map else None
+    if col_map and col_map.get('service_date') and prov_col:
         svc = col_map['service_date']
-        prov_col = col_map['provider_name']
+        prov_is_id = col_map.get('_provider_is_id', False)
+        provider_names = col_map.get('_provider_names', {})
+        gross_col = col_map.get('gross_production')
         net_col = col_map.get('net_production')
         coll_col = col_map.get('net_collections')
         pid_col = col_map.get('patient_id')
 
         try:
             select_parts = [f"[{prov_col}] AS provider"]
-            if net_col: select_parts.append(f"SUM([{net_col}]) AS mtd_production")
-            if coll_col: select_parts.append(f"SUM([{coll_col}]) AS mtd_collections")
+            if gross_col: select_parts.append(f"SUM(CAST([{gross_col}] AS DECIMAL(18,2))) AS mtd_production")
+            if coll_col: select_parts.append(f"SUM(CAST([{coll_col}] AS DECIMAL(18,2))) AS mtd_collections")
             if pid_col: select_parts.append(f"COUNT(DISTINCT [{pid_col}]) AS patients_seen")
 
-            sort = f"SUM([{net_col}])" if net_col else f"[{prov_col}]"
+            sort = f"SUM(CAST([{gross_col}] AS DECIMAL(18,2)))" if gross_col else f"[{prov_col}]"
 
+            # No string comparison (<> '') on numeric provider IDs
             cursor.execute(f"""
                 SELECT {', '.join(select_parts)}
                 FROM rpt.vw_income_allocation
                 WHERE [{svc}] >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
-                  AND [{prov_col}] IS NOT NULL AND [{prov_col}] <> ''
+                  AND [{prov_col}] IS NOT NULL
                 GROUP BY [{prov_col}]
                 ORDER BY {sort} DESC
             """)
             for row in rows_to_dicts(cursor):
-                prov = str(row.get('provider', '')).strip()
-                if not prov:
+                raw_prov = row.get('provider')
+                if raw_prov is None:
                     continue
-                if prov not in leaderboard:
-                    leaderboard[prov] = {'provider': prov}
-                leaderboard[prov]['mtd_production'] = round(float(row.get('mtd_production', 0) or 0), 2)
-                leaderboard[prov]['mtd_collections'] = round(float(row.get('mtd_collections', 0) or 0), 2)
-                leaderboard[prov]['patients_seen_mtd'] = int(row.get('patients_seen', 0))
+                # Resolve provider ID to name if needed
+                prov_key = str(int(raw_prov)) if isinstance(raw_prov, (int, float)) else str(raw_prov).strip()
+                if prov_is_id and prov_key in provider_names:
+                    prov_display = provider_names[prov_key]
+                else:
+                    prov_display = prov_key
+                if not prov_display:
+                    continue
+                if prov_display not in leaderboard:
+                    leaderboard[prov_display] = {'provider': prov_display}
+                leaderboard[prov_display]['mtd_production'] = round(float(row.get('mtd_production', 0) or 0), 2)
+                leaderboard[prov_display]['mtd_collections'] = round(float(row.get('mtd_collections', 0) or 0), 2)
+                leaderboard[prov_display]['patients_seen_mtd'] = int(row.get('patients_seen', 0))
             print(f"  MTD production data loaded for {len(leaderboard)} providers")
         except Exception as e:
             print(f"  ⚠ MTD production query failed: {e}")
@@ -594,56 +606,177 @@ def query_doctor_leaderboard(conn, col_map=None):
 # rpt.vw_income_allocation uses different column names than expected.
 # This discovers actual column names and builds a mapping.
 
+def _discover_office_names(conn):
+    """Build a lookup dict mapping OID → office name."""
+    cursor = conn.cursor()
+    office_map = {}
+    # Try common Denticon office/practice tables
+    for tbl in ['OFFICEH', 'OFFICE', 'PRACTICEH', 'PRACTICE', 'BI_Office']:
+        try:
+            cursor.execute(f"SELECT TOP 0 * FROM {tbl}")
+            tcols = [c[0] for c in cursor.description]
+            oid_col = next((c for c in tcols if c.upper() == 'OID'), None)
+            if not oid_col:
+                oid_col = next((c for c in tcols if c.upper() in ('OFFICEID', 'ID', 'PGID')), None)
+            name_col = next((c for c in tcols if 'NAME' in c.upper() and 'NICK' not in c.upper()), None)
+            if not name_col:
+                name_col = next((c for c in tcols if 'NAME' in c.upper()), None)
+            if oid_col and name_col:
+                cursor.execute(f"SELECT [{oid_col}], [{name_col}] FROM {tbl}")
+                for row in cursor.fetchall():
+                    if row[0] is not None and row[1]:
+                        office_map[str(int(row[0])) if isinstance(row[0], (int, float)) else str(row[0])] = str(row[1]).strip()
+                if office_map:
+                    print(f"  Office name lookup: {len(office_map)} offices from {tbl} ({office_map})")
+                    return office_map
+        except Exception:
+            continue
+    print(f"  ⚠ No office name lookup table found")
+    return office_map
+
+
+def _discover_provider_names(conn):
+    """Build a lookup dict mapping provider_id → provider name."""
+    cursor = conn.cursor()
+    prov_map = {}
+    for tbl in ['PROVIDERH', 'PROVIDER', 'BI_Provider']:
+        try:
+            cursor.execute(f"SELECT TOP 0 * FROM {tbl}")
+            tcols = [c[0] for c in cursor.description]
+            pid_col = next((c for c in tcols if c.upper() in ('PROVIDERID', 'PGID', 'ID')), None)
+            # Try to find name columns
+            fname_col = next((c for c in tcols if c.upper() in ('FNAME', 'FIRSTNAME')), None)
+            lname_col = next((c for c in tcols if c.upper() in ('LNAME', 'LASTNAME')), None)
+            name_col = next((c for c in tcols if c.upper() in ('PROVIDERNAME', 'NAME', 'DISPLAYNAME')), None)
+            if pid_col and (name_col or (fname_col and lname_col)):
+                if name_col:
+                    cursor.execute(f"SELECT [{pid_col}], [{name_col}] FROM {tbl}")
+                    for row in cursor.fetchall():
+                        if row[0] is not None and row[1]:
+                            prov_map[str(int(row[0])) if isinstance(row[0], (int, float)) else str(row[0])] = str(row[1]).strip()
+                else:
+                    cursor.execute(f"SELECT [{pid_col}], [{lname_col}], [{fname_col}] FROM {tbl}")
+                    for row in cursor.fetchall():
+                        if row[0] is not None and (row[1] or row[2]):
+                            lname = str(row[1] or '').strip()
+                            fname = str(row[2] or '').strip()
+                            prov_map[str(int(row[0])) if isinstance(row[0], (int, float)) else str(row[0])] = f"{lname}, {fname}" if lname else fname
+                if prov_map:
+                    print(f"  Provider name lookup: {len(prov_map)} providers from {tbl}")
+                    return prov_map
+        except Exception:
+            continue
+    print(f"  ⚠ No provider name lookup table found")
+    return prov_map
+
+
 def discover_income_allocation_columns(conn):
     """Discover actual column names in rpt.vw_income_allocation.
-    Returns a dict mapping logical names to actual column names, or None if view unavailable."""
+    Returns a dict mapping logical names to actual column names, or None if view unavailable.
+    Also discovers office and provider name lookup tables."""
     cursor = conn.cursor()
+
+    # First try views that might have human-readable provider/office names
+    preferred_views = [
+        'rpt.vw_doctor_production_with_provider_office',
+        'rpt.vw_income_allocation_by_office',
+    ]
+    preferred_view = None
+    preferred_cols = None
+    for pv in preferred_views:
+        try:
+            cursor.execute(f"SELECT TOP 0 * FROM {pv}")
+            preferred_cols = [col[0] for col in cursor.description]
+            preferred_view = pv
+            print(f"  Found preferred view: {pv} with columns: {preferred_cols}")
+            break
+        except Exception:
+            continue
+
     try:
         cursor.execute("SELECT TOP 0 * FROM rpt.vw_income_allocation")
         cols = [col[0] for col in cursor.description]
         print(f"  Income allocation columns: {cols}")
 
         # Build mapping from expected names to actual discovered columns
-        # Use fuzzy matching with multiple patterns per logical name
         col_map = {}
         upper_cols = {c.upper(): c for c in cols}
 
         def find_col(*patterns):
-            """Find first column matching any pattern (case-insensitive substring)."""
+            """Find first column matching any pattern (case-insensitive exact or substring)."""
             for pat in patterns:
                 pat_upper = pat.upper()
-                # Exact match first
                 if pat_upper in upper_cols:
                     return upper_cols[pat_upper]
-                # Substring match
                 for uc, orig in upper_cols.items():
                     if pat_upper in uc:
                         return orig
             return None
 
-        col_map['service_date'] = find_col('service_date', 'ServiceDate', 'TransDate',
-                                            'trans_date', 'ProcDate', 'proc_date',
+        # Date column — proc_dos_date is the procedure date of service
+        col_map['service_date'] = find_col('proc_dos_date', 'service_date', 'ServiceDate',
+                                            'TransDate', 'trans_date', 'ProcDate', 'proc_date',
                                             'EntryDate', 'entry_date', 'DOS', 'DateOfService')
-        col_map['office_name'] = find_col('office_name', 'OfficeName', 'Office',
-                                          'LocationName', 'location_name', 'FacilityName')
-        col_map['gross_production'] = find_col('gross_production', 'GrossProduction', 'GrossProd',
-                                                'gross_prod', 'TotalFee', 'total_fee', 'Fee',
-                                                'GrossCharges', 'Production')
+
+        # Office — OID is the numeric office ID in this view
+        col_map['office_id'] = find_col('OID')
+        col_map['office_name'] = find_col('office_name', 'OfficeName', 'LocationName', 'FacilityName')
+
+        # Production amounts — proc_amount is the procedure charge amount
+        col_map['gross_production'] = find_col('proc_amount', 'gross_production', 'GrossProduction',
+                                                'GrossProd', 'gross_prod', 'TotalFee', 'total_fee',
+                                                'Fee', 'GrossCharges', 'Production')
+
+        # Net production — may not exist; can derive from gross - adjustments
         col_map['net_production'] = find_col('net_production', 'NetProduction', 'NetProd',
                                               'net_prod', 'NetFee', 'AdjustedProduction')
-        col_map['net_collections'] = find_col('net_collections', 'NetCollections', 'Collections',
-                                               'net_collect', 'Payments', 'NetPayments')
+
+        # Collections — alloc_amount is the payment allocation amount
+        col_map['net_collections'] = find_col('alloc_amount', 'net_collections', 'NetCollections',
+                                               'Collections', 'net_collect', 'Payments', 'NetPayments')
+
+        # Adjustments
         col_map['adjustments'] = find_col('adjustments', 'Adjustments', 'Adjustment',
                                            'TotalAdj', 'adj', 'WriteOff')
-        col_map['patient_id'] = find_col('patient_id', 'PatientID', 'PATID', 'PatID',
-                                          'pat_id', 'PatientId')
-        col_map['provider_name'] = find_col('provider_name', 'ProviderName', 'Provider',
-                                             'DoctorName', 'doctor_name', 'RenderingProvider')
+
+        # Patient ID
+        col_map['patient_id'] = find_col('PATID', 'patient_id', 'PatientID', 'PatID', 'pat_id')
+
+        # Provider — alloc_provider_id and proc_provider_id are numeric IDs
+        col_map['provider_id'] = find_col('proc_provider_id', 'alloc_provider_id',
+                                           'PROVIDERID', 'provider_id')
+        col_map['provider_name'] = find_col('provider_name', 'ProviderName', 'DoctorName')
+        # Flag: is provider a numeric ID (not a name string)?
+        col_map['_provider_is_id'] = col_map.get('provider_id') is not None and col_map.get('provider_name') is None
+
+        # If preferred view has better columns, check for office/provider names there
+        if preferred_view and preferred_cols:
+            pref_upper = {c.upper(): c for c in preferred_cols}
+            # Check for office name
+            for pat in ['OFFICENAME', 'OFFICE_NAME', 'OFFICE']:
+                if pat in pref_upper and not col_map.get('office_name'):
+                    col_map['_preferred_view'] = preferred_view
+                    col_map['_preferred_office_col'] = pref_upper[pat]
+                    break
+            # Check for provider name
+            for pat in ['PROVIDERNAME', 'PROVIDER_NAME', 'PROVIDER', 'DOCTORNAME']:
+                if pat in pref_upper and not col_map.get('provider_name'):
+                    col_map['_preferred_provider_col'] = pref_upper.get(pat)
+                    break
+
+        # Discover office and provider name lookup tables
+        col_map['_office_names'] = _discover_office_names(conn)
+        col_map['_provider_names'] = _discover_provider_names(conn)
 
         # Log what we found
-        found = {k: v for k, v in col_map.items() if v}
-        missing = [k for k, v in col_map.items() if not v]
-        print(f"  Column mapping: {found}")
+        public_map = {k: v for k, v in col_map.items() if v and not k.startswith('_')}
+        missing = [k for k in ['service_date', 'office_id', 'gross_production', 'net_collections',
+                                'patient_id', 'provider_id'] if not col_map.get(k)]
+        print(f"  Column mapping: {public_map}")
+        if col_map.get('_provider_is_id'):
+            print(f"  Provider column is numeric ID (will use lookup table)")
+        if col_map.get('office_id') and not col_map.get('office_name'):
+            print(f"  Office column is numeric ID (OID, will use lookup table)")
         if missing:
             print(f"  ⚠ Missing mappings: {missing}")
 
@@ -673,38 +806,62 @@ def query_daily_production(conn, col_map=None):
         print(f"  ⚠ No column mapping for rpt.vw_income_allocation — skipping production queries")
         return result
 
-    # Shorthand
+    # Shorthand — use provider_id (numeric) if provider_name (string) unavailable
     svc = col_map['service_date']
-    ofc = col_map.get('office_name')
+    ofc_name = col_map.get('office_name')     # String office name (may be None)
+    ofc_id = col_map.get('office_id')          # Numeric OID (fallback)
+    ofc = ofc_name or ofc_id                   # Best available office column
+    ofc_is_id = ofc == ofc_id and not ofc_name  # True if office column is numeric ID
     gross = col_map.get('gross_production')
     net = col_map.get('net_production')
     coll = col_map.get('net_collections')
     adj = col_map.get('adjustments')
     pid = col_map.get('patient_id')
-    prov = col_map.get('provider_name')
+    prov = col_map.get('provider_name') or col_map.get('provider_id')
+    prov_is_id = col_map.get('_provider_is_id', False)
+    office_names = col_map.get('_office_names', {})
+    provider_names = col_map.get('_provider_names', {})
+
+    def resolve_office(val):
+        """Convert office ID or name to normalized office name."""
+        if val is None:
+            return ''
+        s = str(int(val)) if isinstance(val, (int, float)) else str(val).strip()
+        if ofc_is_id and s in office_names:
+            return normalize_office(office_names[s])
+        return normalize_office(s)
+
+    def resolve_provider(val):
+        """Convert provider ID to name if needed."""
+        if val is None:
+            return ''
+        s = str(int(val)) if isinstance(val, (int, float)) else str(val).strip()
+        if prov_is_id and s in provider_names:
+            return provider_names[s]
+        return s
 
     # Daily production by office — current month
     if ofc:
         try:
             select_parts = [f"CAST([{svc}] AS DATE) AS prod_date", f"[{ofc}] AS office"]
-            if gross: select_parts.append(f"SUM([{gross}]) AS gross_production")
-            if net: select_parts.append(f"SUM([{net}]) AS net_production")
-            if coll: select_parts.append(f"SUM([{coll}]) AS net_collections")
-            if adj: select_parts.append(f"SUM([{adj}]) AS adjustments")
+            if gross: select_parts.append(f"SUM(CAST([{gross}] AS DECIMAL(18,2))) AS gross_production")
+            if net: select_parts.append(f"SUM(CAST([{net}] AS DECIMAL(18,2))) AS net_production")
+            if coll: select_parts.append(f"SUM(CAST([{coll}] AS DECIMAL(18,2))) AS net_collections")
+            if adj: select_parts.append(f"SUM(CAST([{adj}] AS DECIMAL(18,2))) AS adjustments")
             if pid: select_parts.append(f"COUNT(DISTINCT [{pid}]) AS patients_seen")
 
             cursor.execute(f"""
                 SELECT {', '.join(select_parts)}
                 FROM rpt.vw_income_allocation
                 WHERE [{svc}] >= DATEADD(month, -1, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
-                  AND [{ofc}] IS NOT NULL AND [{ofc}] <> ''
+                  AND [{ofc}] IS NOT NULL
                 GROUP BY CAST([{svc}] AS DATE), [{ofc}]
                 ORDER BY CAST([{svc}] AS DATE), [{ofc}]
             """)
             for row in rows_to_dicts(cursor):
                 result['by_office_daily'].append({
                     'date': str(row.get('prod_date', '')),
-                    'office': normalize_office(str(row.get('office', ''))),
+                    'office': resolve_office(row.get('office')),
                     'gross': round(float(row.get('gross_production', 0) or 0), 2),
                     'net': round(float(row.get('net_production', 0) or 0), 2),
                     'collections': round(float(row.get('net_collections', 0) or 0), 2),
@@ -718,16 +875,17 @@ def query_daily_production(conn, col_map=None):
     # Daily production totals (all offices combined)
     try:
         select_parts = [f"CAST([{svc}] AS DATE) AS prod_date"]
-        if gross: select_parts.append(f"SUM([{gross}]) AS gross_production")
-        if net: select_parts.append(f"SUM([{net}]) AS net_production")
-        if coll: select_parts.append(f"SUM([{coll}]) AS net_collections")
-        if adj: select_parts.append(f"SUM([{adj}]) AS adjustments")
+        if gross: select_parts.append(f"SUM(CAST([{gross}] AS DECIMAL(18,2))) AS gross_production")
+        if net: select_parts.append(f"SUM(CAST([{net}] AS DECIMAL(18,2))) AS net_production")
+        if coll: select_parts.append(f"SUM(CAST([{coll}] AS DECIMAL(18,2))) AS net_collections")
+        if adj: select_parts.append(f"SUM(CAST([{adj}] AS DECIMAL(18,2))) AS adjustments")
         if pid: select_parts.append(f"COUNT(DISTINCT [{pid}]) AS patients_seen")
         if prov: select_parts.append(f"COUNT(DISTINCT [{prov}]) AS providers_active")
 
+        # For numeric provider IDs, don't compare with empty string
         where_extra = ""
         if prov:
-            where_extra = f" AND [{prov}] IS NOT NULL AND [{prov}] <> ''"
+            where_extra = f" AND [{prov}] IS NOT NULL"
 
         cursor.execute(f"""
             SELECT {', '.join(select_parts)}
@@ -756,30 +914,31 @@ def query_daily_production(conn, col_map=None):
         try:
             select_parts = [f"[{prov}] AS provider"]
             if ofc: select_parts.append(f"[{ofc}] AS office")
-            if gross: select_parts.append(f"SUM([{gross}]) AS gross_production")
-            if net: select_parts.append(f"SUM([{net}]) AS net_production")
-            if coll: select_parts.append(f"SUM([{coll}]) AS net_collections")
-            if adj: select_parts.append(f"SUM([{adj}]) AS adjustments")
+            if gross: select_parts.append(f"SUM(CAST([{gross}] AS DECIMAL(18,2))) AS gross_production")
+            if net: select_parts.append(f"SUM(CAST([{net}] AS DECIMAL(18,2))) AS net_production")
+            if coll: select_parts.append(f"SUM(CAST([{coll}] AS DECIMAL(18,2))) AS net_collections")
+            if adj: select_parts.append(f"SUM(CAST([{adj}] AS DECIMAL(18,2))) AS adjustments")
             if pid: select_parts.append(f"COUNT(DISTINCT [{pid}]) AS patients_seen")
             select_parts.append(f"COUNT(DISTINCT CAST([{svc}] AS DATE)) AS days_worked")
 
             group_parts = [f"[{prov}]"]
             if ofc: group_parts.append(f"[{ofc}]")
 
-            sort_col = f"SUM([{net}])" if net else f"SUM([{gross}])" if gross else f"[{prov}]"
+            sort_col = f"SUM(CAST([{gross}] AS DECIMAL(18,2)))" if gross else f"[{prov}]"
 
+            # No string comparison on numeric columns
             cursor.execute(f"""
                 SELECT {', '.join(select_parts)}
                 FROM rpt.vw_income_allocation
                 WHERE [{svc}] >= DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0)
-                  AND [{prov}] IS NOT NULL AND [{prov}] <> ''
+                  AND [{prov}] IS NOT NULL
                 GROUP BY {', '.join(group_parts)}
                 ORDER BY {sort_col} DESC
             """)
             for row in rows_to_dicts(cursor):
                 result['by_provider_mtd'].append({
-                    'provider': str(row.get('provider', '')).strip(),
-                    'office': normalize_office(str(row.get('office', ''))),
+                    'provider': resolve_provider(row.get('provider')),
+                    'office': resolve_office(row.get('office')),
                     'gross': round(float(row.get('gross_production', 0) or 0), 2),
                     'net': round(float(row.get('net_production', 0) or 0), 2),
                     'collections': round(float(row.get('net_collections', 0) or 0), 2),
@@ -794,21 +953,16 @@ def query_daily_production(conn, col_map=None):
     # Monthly summary (last 12 months)
     try:
         select_parts = [f"YEAR([{svc}]) AS yr", f"MONTH([{svc}]) AS mo"]
-        if gross: select_parts.append(f"SUM([{gross}]) AS gross_production")
-        if net: select_parts.append(f"SUM([{net}]) AS net_production")
-        if coll: select_parts.append(f"SUM([{coll}]) AS net_collections")
-        if adj: select_parts.append(f"SUM([{adj}]) AS adjustments")
+        if gross: select_parts.append(f"SUM(CAST([{gross}] AS DECIMAL(18,2))) AS gross_production")
+        if net: select_parts.append(f"SUM(CAST([{net}] AS DECIMAL(18,2))) AS net_production")
+        if coll: select_parts.append(f"SUM(CAST([{coll}] AS DECIMAL(18,2))) AS net_collections")
+        if adj: select_parts.append(f"SUM(CAST([{adj}] AS DECIMAL(18,2))) AS adjustments")
         if pid: select_parts.append(f"COUNT(DISTINCT [{pid}]) AS patients_seen")
-
-        where_extra = ""
-        if prov:
-            where_extra = f" AND [{prov}] IS NOT NULL"
 
         cursor.execute(f"""
             SELECT {', '.join(select_parts)}
             FROM rpt.vw_income_allocation
             WHERE [{svc}] >= DATEADD(month, -12, DATEADD(month, DATEDIFF(month, 0, GETDATE()), 0))
-              {where_extra}
             GROUP BY YEAR([{svc}]), MONTH([{svc}])
             ORDER BY YEAR([{svc}]), MONTH([{svc}])
         """)
@@ -851,8 +1005,8 @@ def query_production_by_zip(conn, col_map=None):
     pid = col_map['patient_id']
     net = col_map.get('net_production')
     gross = col_map.get('gross_production')
-    ofc = col_map.get('office_name')
-    prov = col_map.get('provider_name')
+    ofc = col_map.get('office_name') or col_map.get('office_id')
+    prov = col_map.get('provider_name') or col_map.get('provider_id')
 
     # Try to find a patient table with Zip data
     patient_tables = ['PATHDR', 'PATD', 'Patient', 'PAT']
@@ -888,8 +1042,8 @@ def query_production_by_zip(conn, col_map=None):
         if city_col: select_parts.append(f"p.[{city_col}] AS city")
         if state_col: select_parts.append(f"p.[{state_col}] AS state")
         if ofc: select_parts.append(f"ia.[{ofc}] AS office")
-        if net: select_parts.append(f"SUM(ia.[{net}]) AS net_production")
-        if gross: select_parts.append(f"SUM(ia.[{gross}]) AS gross_production")
+        if net: select_parts.append(f"SUM(CAST(ia.[{net}] AS DECIMAL(18,2))) AS net_production")
+        if gross: select_parts.append(f"SUM(CAST(ia.[{gross}] AS DECIMAL(18,2))) AS gross_production")
         select_parts.append(f"COUNT(DISTINCT ia.[{pid}]) AS patient_count")
 
         group_parts = [f"LEFT(LTRIM(RTRIM(p.[{zip_col}])), 5)"]
@@ -897,8 +1051,8 @@ def query_production_by_zip(conn, col_map=None):
         if state_col: group_parts.append(f"p.[{state_col}]")
         if ofc: group_parts.append(f"ia.[{ofc}]")
 
-        having = f"HAVING SUM(ia.[{net}]) > 0" if net else ""
-        sort = f"ORDER BY SUM(ia.[{net}]) DESC" if net else f"ORDER BY COUNT(DISTINCT ia.[{pid}]) DESC"
+        having = f"HAVING SUM(CAST(ia.[{gross}] AS DECIMAL(18,2))) > 0" if gross else ""
+        sort = f"ORDER BY SUM(CAST(ia.[{gross}] AS DECIMAL(18,2))) DESC" if gross else f"ORDER BY COUNT(DISTINCT ia.[{pid}]) DESC"
 
         prov_filter = f"AND ia.[{prov}] IS NOT NULL" if prov else ""
 
