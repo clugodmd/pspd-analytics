@@ -604,6 +604,166 @@ def query_income_allocation(conn, period_start, period_end):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# X-RAY CODE AUDIT
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Background: Non-exempt doctors are paid on (collections - xray_collections).
+# We currently exclude codes starting with D02* and D03* as x-ray procedures.
+# If that prefix list is wrong, some codes may be wrongly excluded (inflating
+# payNo reduction) or wrongly included (missing x-ray codes, inflating payNo).
+#
+# Observed discrepancies vs Tanya's manual Denticon report (Mar 2026):
+#   Slaven:  dashboard ~$88  LESS  → x-ray over-excluded (extra D02/D03 non-xray?)
+#   Choong:  dashboard ~$111 MORE  → x-ray under-excluded (missing xray code?)
+#             OR a D02/D03 code that is NOT xray is being wrongly excluded for her
+#   Welter:  dashboard ~$30  LESS  → x-ray over-excluded
+#   Menon:   dashboard ~$52  LESS  → x-ray over-excluded
+#   Patel:   dashboard ~$48  LESS  → x-ray over-excluded
+#   Bell:    PERFECT match
+#   Schrack: PERFECT match (xray_exempt=True, exclusion doesn't apply)
+
+# Known x-ray ADA codes (for audit cross-reference):
+# D0210 - Full mouth series (FMX)
+# D0220 - Periapical x-ray, first image
+# D0230 - Periapical x-ray, each additional
+# D0240 - Occlusal radiographic image
+# D0270 - Bitewing, single image
+# D0272 - Bitewings, two images
+# D0273 - Bitewings, three images
+# D0274 - Bitewings, four images
+# D0277 - Vertical bitewings, 7-8 images
+# D0290 - Posterior-anterior or lateral skull
+# D0310 - Sialography
+# D0320 - Temporomandibular joint arthrogram
+# D0322 - Tomographic survey
+# D0330 - Panoramic radiographic image
+# D0340 - 2-D cephalometric radiographic image
+# D0350 - 2-D oral/facial photographic image (NOT an x-ray!)
+# D0360 - Cone beam CT (CBCT), single arch
+# D0363 - Cone beam CT, both arches
+# D0364-D0368 - CBCT variations
+# D0380-D0386 - CBCT additional views
+# D0391 - Interpretation of x-rays (NOT an x-ray image itself)
+# D0394 - Digital subtraction
+# D0395 - Facial photo (NOT an x-ray!)
+
+# Codes that start with D02/D03 but are NOT x-ray imaging:
+NON_XRAY_D02_D03_CODES = {
+    'D0350',  # 2-D oral/facial photographic image (photo, not radiation)
+    'D0391',  # Interpretation of radiographs (interpretive service, not imaging)
+    'D0393',  # Treatment simulation using 3D image volume
+    'D0394',  # Digital subtraction of two or more images
+    'D0395',  # Facial photo image obtained to interpret or compare
+}
+
+# X-ray codes that do NOT start with D02 or D03 (would be missed by prefix filter):
+XRAY_CODES_OUTSIDE_PREFIX = {
+    # Currently none identified in ADA CDT — D02/D03 covers all standard
+    # diagnostic radiology. If Denticon uses custom/local codes (e.g. D9999
+    # or non-standard), they would appear here in the audit output.
+}
+
+
+def audit_xray_codes(transactions):
+    """
+    Audit procedure codes in the transaction set to identify:
+    1. All distinct D0* codes present in the data
+    2. Any x-ray codes outside D02*/D03* prefixes (missed by current filter)
+    3. Any D02*/D03* codes that are NOT diagnostic x-ray images (wrongly excluded)
+    4. Per-doctor breakdown of what's being excluded (to debug directional gaps)
+
+    This function DOES NOT change any pay calculations — audit only.
+    Call with the raw transaction list from query_income_allocation().
+    """
+    print("\n─── X-Ray Code Audit ────────────────────────────────────────")
+
+    # 1. Collect all distinct D0* codes
+    d0_codes = {}   # code → {doctors: set, count: int, total_income: float}
+    for t in transactions:
+        code = t.get('proc_code', '').strip()
+        if code.upper().startswith('D0'):
+            key = code.upper()
+            if key not in d0_codes:
+                d0_codes[key] = {'doctors': set(), 'count': 0, 'total_income': 0.0}
+            d0_codes[key]['doctors'].add(t.get('provider', '?'))
+            d0_codes[key]['count'] += 1
+            d0_codes[key]['total_income'] += t.get('income', 0.0)
+
+    print(f"\n  1. Distinct D0* codes in dataset ({len(d0_codes)} total):")
+    for code in sorted(d0_codes.keys()):
+        info = d0_codes[code]
+        is_excluded = code.startswith(XRAY_PREFIXES)
+        is_known_non_xray = code in NON_XRAY_D02_D03_CODES
+        flag = ''
+        if is_excluded and is_known_non_xray:
+            flag = '  ⚠️  WRONGLY EXCLUDED (D02/D03 but NOT an x-ray)'
+        elif is_excluded:
+            flag = '  ✓ excluded as x-ray'
+        else:
+            flag = '  — not excluded'
+        print(f"    {code:8s}  count={info['count']:4d}  net=${abs(info['total_income']):>10,.2f}  "
+              f"doctors={len(info['doctors'])}{flag}")
+
+    # 2. Check for x-ray codes outside D02*/D03* (missed by prefix filter)
+    print(f"\n  2. X-ray codes outside D02*/D03* prefix (would be MISSED):")
+    missed = {c: d0_codes[c] for c in d0_codes if c in XRAY_CODES_OUTSIDE_PREFIX}
+    if missed:
+        for code, info in missed.items():
+            print(f"    ⚠️  {code}  count={info['count']}  net=${abs(info['total_income']):,.2f}")
+    else:
+        print("    None found — all known x-ray codes are within D02*/D03*")
+    # Also flag any non-D02/D03 codes that look x-ray-ish (heuristic)
+    suspicious_non_prefix = []
+    for code, info in d0_codes.items():
+        if not code.startswith(XRAY_PREFIXES) and code not in XRAY_CODES_OUTSIDE_PREFIX:
+            # These would be missed by current filter — flag for human review
+            suspicious_non_prefix.append((code, info))
+    if suspicious_non_prefix:
+        print(f"    D0* codes NOT in D02/D03 (verify these aren't x-rays):")
+        for code, info in sorted(suspicious_non_prefix):
+            print(f"      {code:8s}  count={info['count']:4d}  net=${abs(info['total_income']):>10,.2f}")
+
+    # 3. Check for D02*/D03* codes that are NOT x-ray procedures
+    print(f"\n  3. D02*/D03* codes that are NOT diagnostic x-ray imaging (wrongly excluded):")
+    wrongly_excluded = {c: d0_codes[c] for c in d0_codes
+                        if c.startswith(XRAY_PREFIXES) and c in NON_XRAY_D02_D03_CODES}
+    if wrongly_excluded:
+        for code, info in wrongly_excluded.items():
+            print(f"    ⚠️  {code}  count={info['count']}  net=${abs(info['total_income']):,.2f}"
+                  f"  doctors={info['doctors']}")
+            print(f"       → Should NOT be excluded from payroll base")
+    else:
+        print("    None found — all D02/D03 codes in dataset appear to be genuine x-rays")
+
+    # 4. Per-doctor x-ray exclusion breakdown (to debug directional gaps)
+    print(f"\n  4. Per-doctor x-ray exclusion breakdown:")
+    doc_xray = {}  # provider → {xray_total, non_xray_d0_total, all_total}
+    for t in transactions:
+        prov = t.get('provider', '?')
+        code = t.get('proc_code', '').strip().upper()
+        income = t.get('income', 0.0)
+        if prov not in doc_xray:
+            doc_xray[prov] = {'xray': 0.0, 'wrongly_excluded': 0.0, 'total': 0.0}
+        doc_xray[prov]['total'] += income
+        if code.startswith(XRAY_PREFIXES):
+            doc_xray[prov]['xray'] += income
+            if code in NON_XRAY_D02_D03_CODES:
+                doc_xray[prov]['wrongly_excluded'] += income
+
+    for prov in sorted(doc_xray.keys()):
+        info = doc_xray[prov]
+        xray_abs = abs(info['xray'])
+        wrong_abs = abs(info['wrongly_excluded'])
+        if xray_abs > 0.01:
+            note = f'  ⚠️  incl. ${wrong_abs:,.2f} wrongly excluded' if wrong_abs > 0.01 else ''
+            print(f"    {prov:30s}  x-ray excluded=${xray_abs:>8,.2f}{note}")
+        elif abs(info['total']) > 0.01:
+            print(f"    {prov:30s}  x-ray excluded=       $0.00  (no x-ray codes)")
+
+    print("─── End X-Ray Audit ─────────────────────────────────────────\n")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # PAY CALCULATION
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -847,7 +1007,7 @@ def load_existing_json(output_path):
         return {}
 
 
-def run_azure_pipeline(conn_str, target, output_path):
+def run_azure_pipeline(conn_str, target, output_path, audit_xray=False):
     """
     Full pipeline with three-state period management:
 
@@ -994,6 +1154,9 @@ def run_azure_pipeline(conn_str, target, output_path):
             print(f"    No data yet for {label} — skipping")
             continue
 
+        if audit_xray:
+            audit_xray_codes(transactions)
+
         period = process_transactions(transactions, start, end, label, pay_date)
         period['state']  = 'live'
         period['locked'] = False
@@ -1080,6 +1243,8 @@ def main():
         help='Process last 5 periods (default for Azure task)')
     parser.add_argument('--list-periods', action='store_true',
         help='List available pay periods from database and exit')
+    parser.add_argument('--audit-xray', action='store_true',
+        help='Run x-ray code audit on a period (use with --period or --from-excel)')
 
     args = parser.parse_args()
 
@@ -1141,6 +1306,9 @@ def main():
             print("  If you need to correct locked data, unlock it first (Admin panel).")
             sys.exit(1)
 
+        if args.audit_xray:
+            audit_xray_codes(transactions)
+
         period = process_transactions(transactions, start, end, label, pay_date)
         period['state']  = get_period_state(end, pay_date)
         period['locked'] = False
@@ -1174,7 +1342,7 @@ def main():
     else:
         target = 'recent'   # Default: last 5 periods (Azure task default)
 
-    run_azure_pipeline(conn_str, target, output_path)
+    run_azure_pipeline(conn_str, target, output_path, audit_xray=args.audit_xray)
 
 
 if __name__ == '__main__':
