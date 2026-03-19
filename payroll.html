@@ -289,6 +289,30 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
 .pat-config .pat-status { font-size:12px; margin-top:6px; }
 .days-since { font-size:11px; color:var(--text3); }
 
+/* ─── PAYCHEX / SUBMIT WORKFLOW ──────────────────────────────────────────── */
+.submit-btn { display:inline-flex; align-items:center; gap:8px; padding:12px 24px;
+  border-radius:8px; font-size:15px; font-weight:600; cursor:pointer;
+  border:1px solid rgba(230,160,50,0.5); background:rgba(230,160,50,0.15);
+  color:var(--amber); font-family:'DM Sans',sans-serif; transition:all 0.2s; margin-top:12px; }
+.submit-btn:hover { background:rgba(230,160,50,0.28); border-color:rgba(230,160,50,0.75); }
+.submitted-indicator { display:inline-flex; align-items:center; gap:8px; padding:12px 24px;
+  border-radius:8px; font-size:15px; font-weight:600;
+  border:1px solid rgba(93,190,138,0.4); background:rgba(93,190,138,0.12);
+  color:var(--green); font-family:'DM Sans',sans-serif; margin-top:12px; }
+.submit-ts { font-size:12px; color:var(--text3); margin-top:6px; font-style:italic; }
+.paychex-link { font-size:12px; color:var(--text3); cursor:pointer; margin-top:10px;
+  display:inline-block; background:none; border:none; font-family:'DM Sans',sans-serif;
+  text-decoration:underline; text-decoration-style:dotted; transition:color 0.2s; padding:0; }
+.paychex-link:hover { color:var(--accent); }
+.pending-actions { display:flex; flex-direction:column; align-items:flex-start; gap:4px; margin-top:4px; }
+
+/* ─── EMPLOYER COST COLUMN ───────────────────────────────────────────────── */
+.cost-col { color:var(--text3); }
+th.cost-col { color:var(--text3) !important; }
+.table-footnote { font-size:11px; color:var(--text3); margin-top:12px; font-style:italic; line-height:1.5; }
+tr.summary-row td { border-bottom:none; padding-top:6px; padding-bottom:2px; }
+tr.summary-row-last td { padding-bottom:12px; }
+
 /* ─── MISC ───────────────────────────────────────────────────────────────── */
 .note { font-size:12px; color:var(--text3); line-height:1.5; margin-top:16px; }
 .note .hl { color:var(--accent); font-weight:600; }
@@ -352,6 +376,7 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
               <thead><tr>
                 <th>Doctor</th><th class="r">Rate</th>
                 <th class="r">Collections</th><th class="r">Pay (No X-Rays)</th>
+                <th class="r cost-col">Est. Total Cost*</th>
               </tr></thead>
               <tbody id="doc-table"></tbody>
             </table>
@@ -451,6 +476,36 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
     <div class="pin-error" id="pin-error"></div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal('modal-lock')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Submit to Paychex PIN Modal -->
+<div class="modal-overlay" id="modal-submit">
+  <div class="modal">
+    <h3>📤 Submit to Paychex</h3>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:20px" id="submit-modal-desc">
+      Enter your PIN to confirm payroll submission.
+    </p>
+    <div class="pin-display" id="submit-pin-display">&#9675;&#9675;&#9675;&#9675;</div>
+    <div class="pin-pad" id="submit-pin-pad"></div>
+    <div class="pin-error" id="submit-pin-error"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('modal-submit')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Paychex Coming Soon Modal -->
+<div class="modal-overlay" id="modal-paychex">
+  <div class="modal" style="max-width:380px;text-align:center">
+    <div style="font-size:36px;margin-bottom:12px">⚙️</div>
+    <h3 style="margin-bottom:12px">Paychex Integration</h3>
+    <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:24px">
+      Paychex API integration coming soon.<br>Contact Tommy to set up.
+    </p>
+    <div class="modal-actions" style="justify-content:center">
+      <button class="btn-primary" onclick="closeModal('modal-paychex')">Got it</button>
     </div>
   </div>
 </div>
@@ -849,20 +904,57 @@ function buildBanner() {
       weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit', timeZoneName:'short'
     }) : 'Sun Mar 16 at 5am CST';
 
+    // Compute estimated total pay for the Submit button
+    const { doctors: pendingDocs } = getDisplayData(p);
+    const estTotal = pendingDocs.reduce((s,d) => s + (d.payNo||0), 0);
+    const estTotalFmt = '$' + Math.round(estTotal).toLocaleString('en-US');
+
+    // Determine current submission state from localStorage
+    const lsKey = 'pspd_submit_' + currentPeriod;
+    let submitData = null;
+    try { submitData = JSON.parse(localStorage.getItem(lsKey)||'null'); } catch(e){}
+    const isSubmitted = submitData && submitData.state === 'submitted';
+    const submittedTs = isSubmitted ? submitData.ts : '';
+
+    // Build status badge
+    const statusBadge = isSubmitted
+      ? `<span class="state-badge" style="background:rgba(93,190,138,0.15);color:var(--green);font-size:11px;padding:3px 9px">📤 Submitted</span>`
+      : `<span class="state-badge pending">🟡 PENDING</span>`;
+
+    // Build action area
+    let actionArea = '';
+    if (isSubmitted) {
+      actionArea = `
+        <div class="pending-actions">
+          <div class="submitted-indicator">✅ Submitted — Lock When Paid</div>
+          <div class="submit-ts">Submitted ${submittedTs}</div>
+          <button class="lock-btn" style="margin-top:10px" onclick="openLockModal('${currentPeriod}')">
+            🔒 Lock Period &mdash; Confirm &amp; Paid
+          </button>
+          <button class="paychex-link" onclick="showPaychexModal()">⚙️ Configure Paychex integration</button>
+        </div>`;
+    } else {
+      actionArea = `
+        <div class="pending-actions">
+          <button class="submit-btn" onclick="openSubmitModal('${currentPeriod}', '${estTotalFmt}')">
+            📤 Submit to Paychex &mdash; Est. ${estTotalFmt}
+          </button>
+          <button class="paychex-link" onclick="showPaychexModal()">⚙️ Configure Paychex integration</button>
+        </div>`;
+    }
+
     banner.innerHTML = `
       <div class="processing-header">
         <div class="ph-title">
           <span style="font-size:22px">🟡</span>
-          <h2>Pending Payroll &mdash; ${p.label || p.dates || ''}</h2>
+          <h2>Pending Payroll &mdash; ${p.label || p.dates || ''} &nbsp;${statusBadge}</h2>
         </div>
         <div class="ph-meta">
           Snapshot taken <strong>${snapAt}</strong> — awaiting payroll payment to lock.<br>
           The numbers below are <strong>completely frozen</strong> — no further updates after Sunday 5am CST snapshot.<br>
-          This is what gets paid. Review and click Lock when payroll is submitted.
+          This is what gets paid. Review, submit to Paychex, then lock when paid.
         </div>
-        <button class="lock-btn" onclick="openLockModal('${currentPeriod}')">
-          🔒 Lock Period &mdash; Confirm &amp; Paid
-        </button>
+        ${actionArea}
       </div>`;
     return;
   }
@@ -971,6 +1063,11 @@ function buildDriftTable(snapDocs, liveDocs) {
 
 // ─── DOCTOR TABLE ─────────────────────────────────────────────────────────
 
+// Employer cost formula: base_pay * 1.0765 * 1.015
+function calcEmployerCost(pay) {
+  return Math.round(pay * 1.0765 * 1.015 * 100) / 100;
+}
+
 function buildDocTable() {
   const p = PERIODS[currentPeriod];
   const { doctors } = getDisplayData(p);
@@ -980,11 +1077,12 @@ function buildDocTable() {
   tb.innerHTML = '';
 
   if (!doctors || doctors.length === 0) {
-    tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:40px 0;font-style:italic">No payment data yet — awaiting first posts</td></tr>';
+    tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:40px 0;font-style:italic">No payment data yet — awaiting first posts</td></tr>';
     return;
   }
 
   doctors.forEach((d, i) => {
+    const empCost = calcEmployerCost(d.payNo||0);
     const tr = document.createElement('tr');
     tr.className = 'clickable';
     tr.onclick = () => toggleDoc(i);
@@ -994,14 +1092,15 @@ function buildDocTable() {
       </td>
       <td class="r dim">${((d.pct||0)*100).toFixed(0)}%</td>
       <td class="r mono">$${fmt(d.coll)}</td>
-      <td class="r mono bold">$${fmt(d.payNo)}</td>`;
+      <td class="r mono bold">$${fmt(d.payNo)}</td>
+      <td class="r mono cost-col" style="font-size:12px">$${fmt(empCost)}</td>`;
     tb.appendChild(tr);
 
     const xr = document.createElement('tr');
     xr.className = 'expand-row' + (expandedIdx===i?' open':'');
     const saved = (d.payWith||0) - (d.payNo||0);
     const offEntries = d.off ? Object.entries(d.off).filter(([,v])=>v>0) : [];
-    xr.innerHTML = `<td colspan="4" class="expand-inner"><div class="expand-grid">
+    xr.innerHTML = `<td colspan="5" class="expand-inner"><div class="expand-grid">
       <div>
         <div class="expand-label">Office Breakdown</div>
         ${offEntries.length>0
@@ -1024,8 +1123,41 @@ function buildDocTable() {
   if (state==='live')       badge = '<span class="badge badge-blue">LIVE</span>';
   else if (state==='pending') badge = '<span class="badge badge-amber">PENDING</span>';
   else                      badge = '<span class="badge badge-green">LOCKED</span>';
-  tot.innerHTML = `<td>Total ${badge}</td><td></td><td class="r mono">$${fmt(t.activeColl)}</td><td class="r mono">$${fmt(t.totalPayNo)}</td>`;
+
+  // Summary totals
+  const totalDocPay = t.totalPayNo;
+  const totalEmpCost = calcEmployerCost(totalDocPay);
+  const totalBurden = totalEmpCost - totalDocPay;
+
+  tot.innerHTML = `<td>Total ${badge}</td><td></td><td class="r mono">$${fmt(t.activeColl)}</td><td class="r mono">$${fmt(totalDocPay)}</td><td class="r mono cost-col" style="font-size:12px">$${fmt(totalEmpCost)}</td>`;
   tb.appendChild(tot);
+
+  // Summary rows
+  const summaryRows = [
+    { label: 'Total Doctor Pay', val: '$' + fmt(totalDocPay), cls: '' },
+    { label: 'Est. Total Employer Cost', val: '$' + fmt(totalEmpCost), cls: 'cost-col' },
+    { label: 'Est. Additional Burden', val: '+$' + fmt(totalBurden), cls: 'cost-col' },
+  ];
+  summaryRows.forEach((row, si) => {
+    const sr = document.createElement('tr');
+    sr.className = 'summary-row' + (si === summaryRows.length - 1 ? ' summary-row-last' : '');
+    sr.innerHTML = `
+      <td colspan="3" style="text-align:right;font-size:12px;color:var(--text2);padding-right:8px">${row.label}</td>
+      <td colspan="2" class="r mono ${row.cls}" style="font-size:12px">${row.val}</td>`;
+    tb.appendChild(sr);
+  });
+
+  // Footnote — appended after the table via a div below the card
+  const card = tb.closest('.card');
+  if (card) {
+    let fn = card.querySelector('.table-footnote');
+    if (!fn) {
+      fn = document.createElement('div');
+      fn.className = 'table-footnote';
+      card.appendChild(fn);
+    }
+    fn.textContent = '* Estimated employer cost includes 7.65% FICA + 1.5% workers comp/misc. Actual amounts vary.';
+  }
 }
 
 function toggleDoc(i) { expandedIdx = expandedIdx===i ? -1 : i; buildDocTable(); }
@@ -1577,6 +1709,121 @@ async function submitReactivate() {
   closeModal('modal-react');
   showAdminAlert('info','Submitting reactivation for '+doctor+'...');
   await triggerWorkflow('doctor-admin.yml',{action:'reactivate',doctor_name:doctor,new_rate:String(rate),effective_date:'',last_day:'',note:''});
+}
+
+// ─── SUBMIT TO PAYCHEX WORKFLOW ───────────────────────────────────────────
+
+let submitPinTarget = null;
+let submitPinBuffer = '';
+let submitEstTotal  = '';
+
+function openSubmitModal(periodKey, estTotal) {
+  submitPinTarget = periodKey;
+  submitPinBuffer = '';
+  submitEstTotal  = estTotal;
+  buildSubmitPinPad();
+  const p = PERIODS[periodKey];
+  $('submit-pin-display').innerHTML = '&#9675;&#9675;&#9675;&#9675;';
+  $('submit-pin-error').textContent = '';
+  $('submit-modal-desc').innerHTML =
+    `Confirm submission of <strong>${p.label||p.dates||periodKey}</strong> to Paychex.<br>
+     Estimated total: <strong style="color:var(--amber)">${estTotal}</strong><br><br>
+     Enter your payroll PIN to submit.`;
+  $('modal-submit').classList.add('show');
+}
+
+function buildSubmitPinPad() {
+  const pad = $('submit-pin-pad');
+  pad.innerHTML = '';
+  [1,2,3,4,5,6,7,8,9,'⌫',0,'C'].forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'pin-key' + (k==='⌫'?' del':(k==='C'?' clear':''));
+    btn.textContent = k;
+    btn.onclick = () => handleSubmitPinKey(k);
+    pad.appendChild(btn);
+  });
+}
+
+function handleSubmitPinKey(k) {
+  const disp = $('submit-pin-display');
+  const err  = $('submit-pin-error');
+  err.textContent = '';
+  if (k === '⌫') {
+    submitPinBuffer = submitPinBuffer.slice(0,-1);
+  } else if (k === 'C') {
+    submitPinBuffer = '';
+  } else {
+    if (submitPinBuffer.length >= PIN_LENGTH) return;
+    submitPinBuffer += String(k);
+  }
+  disp.textContent = '●'.repeat(submitPinBuffer.length) + '○'.repeat(Math.max(0, PIN_LENGTH - submitPinBuffer.length));
+  if (submitPinBuffer.length === PIN_LENGTH) {
+    validateSubmitPin();
+  }
+}
+
+function validateSubmitPin() {
+  const err = $('submit-pin-error');
+  fetch('data/users.json?t=' + Date.now())
+    .then(r => r.json())
+    .then(data => {
+      let matchedUser = null;
+      for (const [userId, u] of Object.entries(data.users || {})) {
+        if (String(u.pin) === submitPinBuffer && u.status === 'active') {
+          if (u.permissions && (u.permissions.includes('payroll') || u.permissions.includes('admin'))) {
+            matchedUser = {id: userId, name: u.name, role: u.role};
+            break;
+          }
+        }
+      }
+      if (matchedUser) {
+        closeModal('modal-submit');
+        markPeriodSubmitted(submitPinTarget, matchedUser);
+        submitPinTarget = null;
+        submitPinBuffer = '';
+      } else {
+        err.textContent = 'Incorrect PIN. Try again.';
+        submitPinBuffer = '';
+        $('submit-pin-display').textContent = '○○○○';
+      }
+    })
+    .catch(() => {
+      err.textContent = 'Could not verify PIN. Check connection.';
+      submitPinBuffer = '';
+      $('submit-pin-display').textContent = '○○○○';
+    });
+}
+
+function markPeriodSubmitted(periodKey, user) {
+  // Format timestamp: "Thu Mar 19 at 9:15am"
+  const now = new Date();
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const h = now.getHours(), m = now.getMinutes();
+  const ampm = h >= 12 ? 'pm' : 'am';
+  const h12 = h % 12 || 12;
+  const mStr = String(m).padStart(2,'0');
+  const ts = `${days[now.getDay()]} ${months[now.getMonth()]} ${now.getDate()} at ${h12}:${mStr}${ampm}`;
+
+  try {
+    const lsKey = 'pspd_submit_' + periodKey;
+    localStorage.setItem(lsKey, JSON.stringify({
+      state: 'submitted',
+      ts,
+      submittedBy: user.name + ' (' + user.id + ')',
+      submittedAt: now.toISOString(),
+      estTotal: submitEstTotal
+    }));
+  } catch(e) {}
+
+  buildBanner();
+  buildAll();
+}
+
+// ─── PAYCHEX MODAL ────────────────────────────────────────────────────────
+
+function showPaychexModal() {
+  $('modal-paychex').classList.add('show');
 }
 </script>
 </body>
