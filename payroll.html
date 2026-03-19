@@ -40,6 +40,8 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text)
 .period-btn.active { background:var(--accent-glow); border-color:var(--accent-border); color:var(--accent); }
 .period-btn.state-live   { border-color:rgba(98,146,160,0.4); }
 .period-btn.state-live.active   { background:rgba(98,146,160,0.15); color:var(--blue); }
+.period-btn.state-pending { border-color:var(--amber-border); }
+.period-btn.state-pending.active { background:var(--amber-bg); color:var(--amber); }
 .period-btn.state-processing { border-color:var(--amber-border); }
 .period-btn.state-processing.active { background:var(--amber-bg); color:var(--amber); }
 .period-btn.state-locked { border-color:rgba(93,190,138,0.25); }
@@ -49,6 +51,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text)
 .state-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 7px; border-radius:10px;
   font-size:10px; font-weight:700; letter-spacing:0.4px; vertical-align:middle; margin-left:5px; }
 .state-badge.live       { background:rgba(98,146,160,0.2); color:var(--blue); }
+.state-badge.pending    { background:var(--amber-bg); color:var(--amber); }
 .state-badge.processing { background:var(--amber-bg); color:var(--amber); }
 .state-badge.locked     { background:rgba(93,190,138,0.15); color:var(--green); }
 .live-dot { width:6px; height:6px; border-radius:50%; background:var(--blue); animation:pulse 2s infinite; }
@@ -308,7 +311,9 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
 
 <!-- ─── NAV ───────────────────────────────────────────────────────────── -->
 <div class="nav-tabs">
-  <button class="tab-btn active" onclick="showView('overview',this)">Overview</button>
+  <button class="tab-btn active" id="tab-live-btn" onclick="switchToState('live',this)">🟢 Live</button>
+  <button class="tab-btn" id="tab-pending-btn" onclick="switchToState('pending',this)">🟡 Pending</button>
+  <button class="tab-btn" id="tab-locked-btn" onclick="switchToState('locked',this)">🔒 Locked</button>
   <button class="tab-btn" onclick="showView('xray',this)">X-Ray Savings</button>
   <button class="tab-btn" onclick="showView('termed',this)">Terminated</button>
   <button class="tab-btn" onclick="showView('admin',this)">Admin</button>
@@ -330,6 +335,15 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
     <!-- OVERVIEW TAB -->
     <div class="view active" id="view-overview">
       <div id="period-banner"></div>
+      <!-- Locked period dropdown (shown only when in locked tab) -->
+      <div id="locked-period-selector" style="display:none;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="font-size:13px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Period:</span>
+          <select id="locked-period-select" onchange="switchLockedPeriod(this.value)"
+            style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer">
+          </select>
+        </div>
+      </div>
       <div class="two-col">
         <div>
           <div class="sec-title" id="doc-title">Doctor Collections &amp; Pay</div>
@@ -522,22 +536,37 @@ const fmtK = n => '$'+((n||0)/1000).toFixed(1)+'K';
 
 function getPeriodState(p) {
   // 'state' is canonical; fall back to legacy 'status' field
-  return p.state || p.status || 'locked';
+  // 'processing' is the old name for 'pending' — treat them identically
+  const s = p.state || p.status || 'locked';
+  return s === 'processing' ? 'pending' : s;
 }
 
 /**
  * Get the authoritative doctor/office data for display.
- * - locked / processing → use snapshot (frozen at period end)
- * - live → use doctors directly
+ * - locked / pending → use snapshot (frozen)
+ * - live → use live.providers or doctors directly
  */
 function getDisplayData(p) {
   const state = getPeriodState(p);
-  if ((state === 'locked' || state === 'processing') && p.snapshot) {
+  // Pending/locked: use snapshot
+  if ((state === 'locked' || state === 'pending') && p.snapshot) {
+    // New schema uses snapshot.providers; old schema uses snapshot.doctors
+    const docs = p.snapshot.providers || p.snapshot.doctors || [];
     return {
-      doctors: p.snapshot.doctors || [],
+      doctors: docs,
       offices: p.snapshot.offices || [],
       termed:  p.snapshot.termed  || [],
     };
+  }
+  // Live: use live.providers or top-level doctors
+  if (state === 'live') {
+    if (p.live && p.live.providers) {
+      return {
+        doctors: p.live.providers,
+        offices: p.live.offices || [],
+        termed:  p.live.termed  || [],
+      };
+    }
   }
   return {
     doctors: p.doctors || [],
@@ -552,7 +581,12 @@ function getTotals(p) {
   const tpn = d.doctors.reduce((s, x) => s + (x.payNo  || 0), 0);
   const tpw = d.doctors.reduce((s, x) => s + (x.payWith|| 0), 0);
   const termedColl = d.termed.reduce((s, x) => s + (x.coll || 0), 0);
-  return { totalColl: tc + termedColl, activeColl: tc, totalPayNo: tpn, totalPayWith: tpw, totalSaved: tpw - tpn, termedColl };
+  // Support explicit xraySavings from new schema, or compute from payWith-payNo
+  const state = getPeriodState(p);
+  let xraySavings = tpw - tpn;
+  if (state === 'pending' && p.snapshot && p.snapshot.xraySavings != null) xraySavings = p.snapshot.xraySavings;
+  if (state === 'live' && p.live && p.live.xraySavings != null) xraySavings = p.live.xraySavings;
+  return { totalColl: tc + termedColl, activeColl: tc, totalPayNo: tpn, totalPayWith: tpw, totalSaved: xraySavings, termedColl };
 }
 
 // ─── LOAD DATA ────────────────────────────────────────────────────────────
@@ -578,24 +612,23 @@ function getTotals(p) {
       });
     }
 
-    // Pick default period: prefer live > most recent processing > most recent locked
+    // Pick default period: prefer live > most recent pending > most recent locked
     const sorted = Object.entries(PERIODS).sort((a,b) => {
       const as = a[1].period_start || '', bs = b[1].period_start || '';
       return as < bs ? -1 : as > bs ? 1 : 0;
     });
 
-    const liveKey = sorted.slice().reverse().find(([,p]) =>
-      getPeriodState(p) === 'live' && (p.doctors||[]).length > 0
-    );
-    const procKey = sorted.slice().reverse().find(([,p]) => getPeriodState(p) === 'processing');
+    const liveKey    = sorted.slice().reverse().find(([,p]) => getPeriodState(p) === 'live');
+    const pendingKey = sorted.slice().reverse().find(([,p]) => getPeriodState(p) === 'pending');
 
     if (liveKey) currentPeriod = liveKey[0];
-    else if (procKey) currentPeriod = procKey[0];
+    else if (pendingKey) currentPeriod = pendingKey[0];
     else currentPeriod = sorted[sorted.length - 1][0];
 
     $('loading-state').style.display = 'none';
     $('dashboard-content').style.display = 'block';
     buildPeriodSelector();
+    buildStateTabLabels();
     buildAll();
     loadAdminDoctors();
     updatePatStatus();
@@ -637,8 +670,8 @@ function buildPeriodSelector() {
     let badge = '';
     if (state === 'live') {
       badge = `<span class="state-badge live"><span class="live-dot"></span>LIVE</span>`;
-    } else if (state === 'processing') {
-      badge = `<span class="state-badge processing">🟡 REVIEW</span>`;
+    } else if (state === 'pending') {
+      badge = `<span class="state-badge pending">🟡 PENDING</span>`;
     } else if (state === 'locked') {
       badge = `<span class="state-badge locked">🔒</span>`;
     }
@@ -654,6 +687,87 @@ function switchPeriod(key) {
   expandedIdx = -1;
   buildPeriodSelector();
   buildAll();
+}
+
+function switchToState(targetState, btn) {
+  const sorted = Object.entries(PERIODS).sort((a,b) => {
+    const as = a[1].period_start || '', bs = b[1].period_start || '';
+    return as < bs ? -1 : as > bs ? 1 : 0;
+  });
+  // Find the most recent period of the requested state
+  const match = sorted.slice().reverse().find(([,p]) => getPeriodState(p) === targetState);
+  if (match) {
+    currentPeriod = match[0];
+  } else {
+    // No period of that state — stay on current
+  }
+  expandedIdx = -1;
+
+  // Activate this button in the state-tab row
+  ['tab-live-btn','tab-pending-btn','tab-locked-btn'].forEach(id => {
+    const el = $(id);
+    if (el) el.classList.remove('active');
+  });
+  if (btn) btn.classList.add('active');
+
+  // Also activate overview view
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  $('view-overview').classList.add('active');
+
+  buildPeriodSelector();
+  buildAll();
+  updateLockedPeriodDropdown();
+}
+
+function switchLockedPeriod(key) {
+  if (key && PERIODS[key]) {
+    currentPeriod = key;
+    expandedIdx = -1;
+    buildPeriodSelector();
+    buildAll();
+  }
+}
+
+function updateLockedPeriodDropdown() {
+  const state = getPeriodState(PERIODS[currentPeriod] || {});
+  const wrap = $('locked-period-selector');
+  const sel  = $('locked-period-select');
+  if (!wrap || !sel) return;
+
+  if (state === 'locked') {
+    wrap.style.display = 'block';
+    const sorted = Object.entries(PERIODS)
+      .filter(([,p]) => getPeriodState(p) === 'locked')
+      .sort((a,b) => {
+        const as = a[1].period_start || '', bs = b[1].period_start || '';
+        return bs < as ? -1 : bs > as ? 1 : 0; // newest first
+      });
+    sel.innerHTML = sorted.map(([key, p]) =>
+      `<option value="${key}" ${key===currentPeriod?'selected':''}>${p.label || key} — Paid ${p.payDate||''}</option>`
+    ).join('');
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+function buildStateTabLabels() {
+  const sorted = Object.values(PERIODS);
+  const hasLive    = sorted.some(p => getPeriodState(p) === 'live');
+  const hasPending = sorted.some(p => getPeriodState(p) === 'pending');
+  const liveBtn    = $('tab-live-btn');
+  const pendingBtn = $('tab-pending-btn');
+  if (liveBtn)    liveBtn.style.opacity    = hasLive    ? '1' : '0.4';
+  if (pendingBtn) pendingBtn.style.opacity = hasPending ? '1' : '0.4';
+
+  // Set initial active tab to match currentPeriod state
+  const curState = getPeriodState(PERIODS[currentPeriod] || {});
+  ['tab-live-btn','tab-pending-btn','tab-locked-btn'].forEach(id => {
+    const el = $(id);
+    if (el) el.classList.remove('active');
+  });
+  if      (curState === 'live')    { const el = $('tab-live-btn');    if (el) el.classList.add('active'); }
+  else if (curState === 'pending') { const el = $('tab-pending-btn'); if (el) el.classList.add('active'); }
+  else                             { const el = $('tab-locked-btn');  if (el) el.classList.add('active'); }
 }
 
 function showView(id, btn) {
@@ -712,31 +826,30 @@ function buildBanner() {
     return;
   }
 
-  // ── PROCESSING ────────────────────────────────────────────────────────
-  if (state === 'processing') {
+  // ── PENDING ───────────────────────────────────────────────────────────
+  if (state === 'pending') {
     const snap = p.snapshot || {};
-    const snapAt = snap.snapshotAt ? new Date(snap.snapshotAt).toLocaleString('en-US',{
-      month:'short', day:'numeric', hour:'numeric', minute:'2-digit', timeZoneName:'short'
-    }) : 'unknown';
-    const liveDocs = (p.live && p.live.doctors) ? p.live.doctors : null;
-    const t = getTotals(p);
+    // Support both new schema (snapshotDate) and old (snapshotAt)
+    const rawSnapDate = p.snapshotDate || snap.snapshotAt;
+    const snapAt = rawSnapDate ? new Date(rawSnapDate).toLocaleString('en-US',{
+      weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit', timeZoneName:'short'
+    }) : 'Sun Mar 16 at 5am CST';
 
     banner.innerHTML = `
       <div class="processing-header">
         <div class="ph-title">
           <span style="font-size:22px">🟡</span>
-          <h2>Processing — ${p.dates}</h2>
+          <h2>Pending Payroll &mdash; ${p.label || p.dates || ''}</h2>
         </div>
         <div class="ph-meta">
-          Snapshot taken <strong>${snapAt}</strong> &bull; Tanya reviewing for payroll on <strong>${p.payDate}</strong><br>
-          The numbers below are the <strong>frozen snapshot</strong> — this is what gets paid unless you find an error.<br>
-          ${liveDocs ? `Latest SQL pull shown for <strong>drift comparison</strong> below.` : ''}
+          Snapshot taken <strong>${snapAt}</strong> — awaiting payroll payment to lock.<br>
+          The numbers below are <strong>completely frozen</strong> — no further updates after Sunday 5am CST snapshot.<br>
+          This is what gets paid. Review and click Lock when payroll is submitted.
         </div>
         <button class="lock-btn" onclick="openLockModal('${currentPeriod}')">
-          🔒 Lock Period &mdash; Confirm &amp; Send to Payroll
+          🔒 Lock Period &mdash; Confirm &amp; Paid
         </button>
-      </div>
-      ${liveDocs ? buildDriftTable(snap.doctors||[], liveDocs) : ''}`;
+      </div>`;
     return;
   }
 
@@ -895,7 +1008,7 @@ function buildDocTable() {
   tot.className = 'total-row';
   let badge = '';
   if (state==='live')       badge = '<span class="badge badge-blue">LIVE</span>';
-  else if (state==='processing') badge = '<span class="badge badge-amber">REVIEW</span>';
+  else if (state==='pending') badge = '<span class="badge badge-amber">PENDING</span>';
   else                      badge = '<span class="badge badge-green">LOCKED</span>';
   tot.innerHTML = `<td>Total ${badge}</td><td></td><td class="r mono">$${fmt(t.activeColl)}</td><td class="r mono">$${fmt(t.totalPayNo)}</td>`;
   tb.appendChild(tot);
@@ -1038,8 +1151,8 @@ function buildKPIs() {
   if (isLive) {
     const pct = p.daysTotal>0 ? Math.round(p.daysElapsed/p.daysTotal*100) : 0;
     kpis += `<div class="kpi"><div class="kpi-label">Progress</div><div class="kpi-value blue-val">${pct}%</div><div class="kpi-detail">Day ${p.daysElapsed} of ${p.daysTotal}</div></div>`;
-  } else if (state === 'processing') {
-    kpis += `<div class="kpi"><div class="kpi-label">Status</div><div class="kpi-value amber-val" style="font-size:20px">🟡 Review</div><div class="kpi-detail">Payroll ${p.payDate}</div></div>`;
+  } else if (state === 'pending') {
+    kpis += `<div class="kpi"><div class="kpi-label">Status</div><div class="kpi-value amber-val" style="font-size:20px">🟡 Pending</div><div class="kpi-detail">Awaiting lock</div></div>`;
   } else {
     kpis += `<div class="kpi"><div class="kpi-label">Status</div><div class="kpi-value green-val" style="font-size:20px">🔒 Locked</div><div class="kpi-detail">${p.hardcoded?'Verified historical':'Paid '+p.payDate}</div></div>`;
   }
@@ -1058,6 +1171,7 @@ function buildAll() {
   buildTermed();
   buildKPIs();
   buildAdminTables();
+  updateLockedPeriodDropdown();
 }
 
 // ─── PIN / LOCK PERIOD ────────────────────────────────────────────────────
@@ -1206,7 +1320,7 @@ async function commitLockedPeriod(periodKey, user) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        ref: 'main',
+        ref: 'payroll-3state',
         inputs: {
           period_label: periodKey,
           locked_by: user.name + ' (' + user.id + ')',

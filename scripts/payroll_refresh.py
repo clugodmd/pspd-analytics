@@ -7,29 +7,29 @@ Generates data/payroll.json consumed by payroll.html.
 THREE-STATE PERIOD LIFECYCLE
 ─────────────────────────────
   live        Pay period is active (today ≤ period_end). Data recalculates
-              on every run. Doctors actively seeing patients.
+              on every Azure run (twice daily). Doctors actively seeing patients.
 
-  processing  Period ended; Tanya is reviewing for payroll submission.
-              Script ran Saturday 1am (Azure task), auto-snapshotted live
-              data → snapshot field, flipped state to processing.
+  pending     Period ended; snapshot was taken Sunday at 5am CST (after the
+              Saturday morning Denticon dump has settled). State is COMPLETELY
+              FROZEN — zero further updates. Tanya reviews before paying.
               payroll.json "snapshot" is the authoritative frozen copy.
-              "live" field is kept for drift-comparison side-by-side view.
+              NO "live" drift comparison — pending is immutable.
 
-  locked      Tanya reviewed and clicked "Lock Period" in the dashboard
-              (PIN-confirmed). Data is permanently frozen. Script will
-              NEVER overwrite a locked period.
+  locked      Tanya/Dr. Lugo reviewed and clicked "Lock Period" in the dashboard
+              (PIN-confirmed). Means payroll was actually PAID. Data is
+              permanently frozen. Script will NEVER overwrite a locked period.
 
 TRANSITION TRIGGERS
 ────────────────────
-  live → processing   : Script detects period_end < today (Saturday run).
-                        Auto-snapshots current doctor/office data into
-                        period.snapshot, moves to period.live for reference,
-                        sets state = "processing".
-                        NOTE: this only happens if not already processing/locked.
+  live → pending    : Script runs Sunday at 5am CST. Detects period_end < today.
+                      Auto-snapshots current doctor/office data into
+                      period.snapshot, sets state = "pending".
+                      NEVER updates a pending period again after this snapshot.
 
-  processing → locked : Front-end "Lock Period" button (PIN required).
-                        Sets state = "locked", lockedAt, lockedBy in JSON.
-                        Script respects this — locked periods are read-only.
+  pending → locked  : Front-end "Lock Period" button (PIN required).
+                      Means payroll was actually PAID.
+                      Sets state = "locked", lockedAt, lockedBy in JSON.
+                      Script respects this — locked periods are read-only.
 
 PAY CALCULATION RULES
 ──────────────────────
@@ -421,12 +421,14 @@ def get_period_state(period_end_obj, pay_date_obj):
     """
     Compute the three-phase state from dates alone.
     Callers should check for 'locked' state in the JSON before using this.
+    NOTE: live → pending transition is triggered by Sunday 5am CST run,
+    not just by date. This function provides a date-based fallback only.
     """
     today = date.today()
     if today <= period_end_obj:
         return 'live'
     elif today < pay_date_obj:
-        return 'processing'
+        return 'pending'
     else:
         return 'locked'
 
@@ -436,12 +438,18 @@ def is_period_locked(period_data):
     return period_data.get('state') == 'locked' or period_data.get('locked', False)
 
 
-def should_transition_to_processing(period_data):
+def should_transition_to_pending(period_data):
     """
-    Returns True if we should flip this period from live → processing.
-    Condition: period has ended AND it's currently marked 'live' in the JSON.
-    The Azure task runs 1am Saturday — after Friday period end.
-    We transition if today > period_end.
+    Returns True if we should flip this period from live → pending.
+
+    Rules:
+    - Period must currently be 'live' in JSON
+    - Period end date must be in the past (today > period_end)
+    - Script must be running on a Sunday at 5am CST (Azure task schedule)
+      OR we are past the Sunday-after-period-end (safety catch for missed runs)
+
+    Sunday at 5am CST = the Denticon Saturday morning dump has settled.
+    A pending period is COMPLETELY FROZEN after this snapshot — zero updates.
     """
     state = period_data.get('state', period_data.get('status', 'live'))
     if state != 'live':
@@ -451,7 +459,16 @@ def should_transition_to_processing(period_data):
         return False
     try:
         period_end = date.fromisoformat(period_end_str)
-        return date.today() > period_end
+        today = date.today()
+        if today <= period_end:
+            return False  # Period still active
+        # Find the Sunday after period_end
+        days_until_sunday = (6 - period_end.weekday()) % 7  # 6 = Sunday
+        if days_until_sunday == 0:
+            days_until_sunday = 7  # If period ended on Sunday, use next Sunday
+        snapshot_sunday = period_end + timedelta(days=days_until_sunday)
+        # Transition if today is on or after the snapshot Sunday
+        return today >= snapshot_sunday
     except ValueError:
         return False
 
@@ -1028,9 +1045,9 @@ def run_azure_pipeline(conn_str, target, output_path, audit_xray=False):
 
     # Step 2: Load existing JSON to preserve locked and processing state
     existing = load_existing_json(output_path)
-    n_locked = sum(1 for p in existing.values() if is_period_locked(p))
-    n_proc   = sum(1 for p in existing.values() if p.get('state') == 'processing')
-    print(f"  Existing JSON: {len(existing)} periods ({n_locked} locked, {n_proc} processing)")
+    n_locked  = sum(1 for p in existing.values() if is_period_locked(p))
+    n_pending = sum(1 for p in existing.values() if p.get('state') in ('pending', 'processing'))
+    print(f"  Existing JSON: {len(existing)} periods ({n_locked} locked, {n_pending} pending)")
 
     # Step 3: Connect to SQL
     conn = get_connection(conn_str)
@@ -1095,30 +1112,19 @@ def run_azure_pipeline(conn_str, target, output_path, audit_xray=False):
         existing_period = existing.get(label, {})
         existing_state  = existing_period.get('state', existing_period.get('status', 'live'))
 
-        # ── PROCESSING: period ended but not yet locked ────────────────────
-        if existing_state == 'processing':
-            print(f"    State: PROCESSING (snapshot locked {existing_period.get('snapshot', {}).get('snapshotAt', '?')})")
-            print(f"    Querying fresh data for drift comparison...")
-            transactions = query_income_allocation(conn, start, end)
-
-            if transactions:
-                fresh = process_transactions(transactions, start, end, label, pay_date)
-                # Update 'live' field for side-by-side drift view
-                # Do NOT touch 'snapshot' — that's frozen
-                existing_period['live'] = {
-                    'doctors': fresh['doctors'],
-                    'offices': fresh['offices'],
-                    'termed':  fresh['termed'],
-                    'updatedAt': datetime.utcnow().isoformat() + 'Z',
-                }
-                existing_period['daysElapsed'] = fresh['daysElapsed']
+        # ── PENDING: period ended + snapshot taken — completely frozen ───────
+        # NEVER update a pending period. It is immutable until locked.
+        if existing_state in ('pending', 'processing'):
+            snap_date = existing_period.get('snapshotDate') or \
+                        (existing_period.get('snapshot') or {}).get('snapshotAt', '?')
+            print(f"    State: PENDING (snapshot frozen at {snap_date}) — SKIPPING (no updates)")
             periods_out[label] = existing_period
-            print(f"    Preserved snapshot, updated live field for drift view")
             continue
 
-        # ── LIVE but period has ended → transition to PROCESSING ──────────
-        if natural_state in ('processing', 'locked') and existing_state == 'live':
-            print(f"    Period ended {end} → transitioning live → PROCESSING")
+        # ── LIVE but period has ended + Sunday has passed → transition to PENDING ──
+        if should_transition_to_pending(existing_period) or \
+           (natural_state in ('pending', 'locked') and existing_state == 'live'):
+            print(f"    Period ended {end} → transitioning live → PENDING (Sunday 5am CST snapshot)")
             print(f"    Querying final data for snapshot...")
             transactions = query_income_allocation(conn, start, end)
 
@@ -1130,20 +1136,22 @@ def run_azure_pipeline(conn_str, target, output_path, audit_xray=False):
             snap  = make_snapshot(fresh)
 
             period = fresh.copy()
-            period['state']    = 'processing'
-            period['locked']   = False
-            period['snapshot'] = snap
-            period['live']     = {
-                'doctors': fresh['doctors'],
-                'offices': fresh['offices'],
-                'termed':  fresh['termed'],
-                'updatedAt': snap['snapshotAt'],
+            period['state']       = 'pending'
+            period['locked']      = False
+            period['snapshotDate'] = snap['snapshotAt']
+            period['snapshot']    = {
+                'doctors':    fresh['doctors'],
+                'offices':    fresh['offices'],
+                'termed':     fresh['termed'],
+                'snapshotAt': snap['snapshotAt'],
             }
             # Remove top-level doctors/offices/termed — they now live in snapshot
-            # The HTML reads from snapshot when state = processing
+            # The HTML reads from snapshot when state = pending
+            for key_rm in ('doctors', 'offices', 'termed', 'live'):
+                period.pop(key_rm, None)
             periods_out[label] = period
-            print(f"    → Processing. Snapshot taken at {snap['snapshotAt']}")
-            print(f"    Tanya will review before locking for {period['payDate']}")
+            print(f"    → Pending. Snapshot frozen at {snap['snapshotAt']} — NO further updates.")
+            print(f"    Tanya/Dr. Lugo will Lock when payroll is actually paid.")
             continue
 
         # ── LIVE: query and refresh ────────────────────────────────────────
@@ -1202,13 +1210,13 @@ def write_payroll_json(periods_dict, output_path):
         state     = period.get('state', period.get('status', '?'))
         hc        = ' *' if period.get('hardcoded') else ''
         snap_info = ''
-        if state == 'processing' and 'snapshot' in period:
-            snap_at = period['snapshot'].get('snapshotAt', '')[:10]
+        if state in ('pending', 'processing') and 'snapshot' in period:
+            snap_at = period.get('snapshotDate', period['snapshot'].get('snapshotAt', ''))[:10]
             snap_info = f" (snapped {snap_at})"
 
-        # Use snapshot data for processing/locked periods
-        if state in ('processing', 'locked') and 'snapshot' in period:
-            doctors = period['snapshot'].get('doctors', [])
+        # Use snapshot data for pending/locked periods
+        if state in ('pending', 'processing', 'locked') and 'snapshot' in period:
+            doctors = period['snapshot'].get('providers') or period['snapshot'].get('doctors', [])
         else:
             doctors = period.get('doctors', [])
 
@@ -1310,7 +1318,9 @@ def main():
             audit_xray_codes(transactions)
 
         period = process_transactions(transactions, start, end, label, pay_date)
-        period['state']  = get_period_state(end, pay_date)
+        raw_state = get_period_state(end, pay_date)
+        # Normalize: use 'pending' (not legacy 'processing')
+        period['state']  = 'pending' if raw_state == 'processing' else raw_state
         period['locked'] = False
 
         # Preserve all existing locked periods, then add/update this one
