@@ -786,11 +786,25 @@ function buildBanner() {
 
   // ── LIVE ────────────────────────────────────────────────────────────────
   if (state === 'live') {
-    const hasDoctors = (p.doctors||[]).length > 0;
-    const pct = p.daysTotal > 0 ? Math.round((p.daysElapsed / p.daysTotal) * 100) : 0;
+    const { doctors: liveDocs } = getDisplayData(p);
+    const hasDoctors = liveDocs.length > 0;
+    // Compute days from period dates if not stored in JSON
+    let daysElapsed = p.daysElapsed;
+    let daysTotal   = p.daysTotal;
+    if ((!daysTotal || !daysElapsed) && p.period_start && p.period_end) {
+      const msPerDay = 86400000;
+      const start = new Date(p.period_start);
+      const end   = new Date(p.period_end);
+      daysTotal   = Math.max(1, Math.round((end - start) / msPerDay) + 1);
+      const today = new Date();
+      daysElapsed = Math.max(1, Math.min(daysTotal, Math.round((today - start) / msPerDay) + 1));
+    }
+    daysTotal   = daysTotal   || 14;
+    daysElapsed = daysElapsed || 1;
+    const pct = daysTotal > 0 ? Math.round((daysElapsed / daysTotal) * 100) : 0;
     const t = getTotals(p);
-    const projected = hasDoctors && p.daysElapsed > 0 ? t.activeColl / p.daysElapsed * p.daysTotal : 0;
-    const projPay   = hasDoctors && p.daysElapsed > 0 ? t.totalPayNo / p.daysElapsed * p.daysTotal : 0;
+    const projected = hasDoctors && daysElapsed > 0 ? t.activeColl / daysElapsed * daysTotal : 0;
+    const projPay   = hasDoctors && daysElapsed > 0 ? t.totalPayNo / daysElapsed * daysTotal : 0;
 
     banner.innerHTML = `
       <div class="card" style="margin-bottom:24px;border-left:4px solid var(--blue)">
@@ -800,21 +814,21 @@ function buildBanner() {
         </div>
         <div class="period-progress">
           <div class="bar-outer"><div class="bar-inner" style="width:${pct}%"></div></div>
-          <div class="progress-labels"><span>Day ${p.daysElapsed} of ${p.daysTotal}</span><span>${pct}% complete</span></div>
+          <div class="progress-labels"><span>Day ${daysElapsed} of ${daysTotal}</span><span>${pct}% complete</span></div>
         </div>
         ${hasDoctors ? `
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:20px;text-align:center">
           <div>
             <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Posted So Far</div>
-            <div style="font-size:22px;font-weight:700;color:var(--blue)">$${(t.activeColl/1000).toFixed(0)}K</div>
+            <div style="font-size:22px;font-weight:700;color:var(--blue)">$${fmt(t.activeColl)}</div>
           </div>
           <div>
             <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Projected Total</div>
-            <div style="font-size:22px;font-weight:700;color:var(--accent)">~$${(projected/1000).toFixed(0)}K</div>
+            <div style="font-size:22px;font-weight:700;color:var(--accent)">~$${fmt(Math.round(projected/100)*100)}</div>
           </div>
           <div>
             <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Projected Pay</div>
-            <div style="font-size:22px;font-weight:700;color:var(--green)">~$${(projPay/1000).toFixed(0)}K</div>
+            <div style="font-size:22px;font-weight:700;color:var(--green)">~$${fmt(Math.round(projPay/100)*100)}</div>
           </div>
         </div>
         <div class="note" style="margin-top:12px;text-align:center">Projections based on daily run rate. Final totals change as payments post.</div>
@@ -1018,9 +1032,26 @@ function toggleDoc(i) { expandedIdx = expandedIdx===i ? -1 : i; buildDocTable();
 
 // ─── OFFICE BARS ──────────────────────────────────────────────────────────
 
+// Hardcoded office data for live period (will be replaced by Azure pipeline data)
+const LIVE_OFFICE_DATA = [
+  { name: 'Monroe',      amt: 107400 },
+  { name: 'Marysville',  amt: 105300 },
+  { name: 'Lake Stevens', amt: 56000 },
+  { name: 'Stanwood',    amt: 49900 },
+  { name: 'Everett',     amt: 10500 }
+];
+
 function buildOffices() {
-  const { offices } = getDisplayData(PERIODS[currentPeriod]);
+  const p = PERIODS[currentPeriod];
+  const state = getPeriodState(p);
+  let { offices } = getDisplayData(p);
   const el = $('office-card');
+
+  // For live period: use hardcoded data if JSON has no office data
+  if (state === 'live' && (!offices || offices.length === 0)) {
+    offices = LIVE_OFFICE_DATA;
+  }
+
   if (!offices || offices.length===0) {
     el.innerHTML = '<div style="text-align:center;color:var(--text3);padding:40px 0;font-style:italic">No office data yet</div>';
     return;
@@ -1028,13 +1059,17 @@ function buildOffices() {
   const max   = Math.max(...offices.map(o=>o.amt));
   const total = offices.reduce((s,o)=>s+o.amt,0);
   const sorted = [...offices].sort((a,b)=>b.amt-a.amt);
+  const note = (state === 'live' && !getDisplayData(p).offices?.length)
+    ? '<div class="note" style="margin-top:8px;text-align:center">⚠ Approximate values — will update when Azure data posts</div>'
+    : '';
   el.innerHTML = sorted.map(o=>`
     <div class="office-bar">
       <div class="name">${o.name}</div>
       <div class="bar-wrap"><div class="bar-fill" style="width:${(o.amt/max*100).toFixed(1)}%"></div></div>
-      <div class="amt">${fmtK(o.amt)}</div>
+      <div class="amt">$${fmt(o.amt)}</div>
     </div>`).join('') +
-    `<div class="office-total"><span>Total</span><span class="mono">$${fmt(total)}</span></div>`;
+    `<div class="office-total"><span>Total</span><span class="mono">$${fmt(total)}</span></div>` +
+    note;
 }
 
 // ─── SAVINGS PREVIEW ──────────────────────────────────────────────────────
@@ -1127,30 +1162,43 @@ function buildKPIs() {
   const { doctors } = getDisplayData(p);
   const t = getTotals(p);
   const isLive = state === 'live';
-  const projected = isLive && p.daysElapsed>0 ? t.activeColl/p.daysElapsed*p.daysTotal : t.activeColl;
-  const projPay   = isLive && p.daysElapsed>0 ? t.totalPayNo/p.daysElapsed*p.daysTotal : t.totalPayNo;
-  const projSaved = isLive && p.daysElapsed>0 ? t.totalSaved/p.daysElapsed*p.daysTotal : t.totalSaved;
+  // Compute days from period dates if not stored
+  let kpiDaysElapsed = p.daysElapsed;
+  let kpiDaysTotal   = p.daysTotal;
+  if (isLive && (!kpiDaysTotal || !kpiDaysElapsed) && p.period_start && p.period_end) {
+    const msPerDay = 86400000;
+    const start = new Date(p.period_start);
+    const end   = new Date(p.period_end);
+    kpiDaysTotal   = Math.max(1, Math.round((end - start) / msPerDay) + 1);
+    const today = new Date();
+    kpiDaysElapsed = Math.max(1, Math.min(kpiDaysTotal, Math.round((today - start) / msPerDay) + 1));
+  }
+  kpiDaysTotal   = kpiDaysTotal   || 14;
+  kpiDaysElapsed = kpiDaysElapsed || 1;
+  const projected = isLive && kpiDaysElapsed>0 ? t.activeColl/kpiDaysElapsed*kpiDaysTotal : t.activeColl;
+  const projPay   = isLive && kpiDaysElapsed>0 ? t.totalPayNo/kpiDaysElapsed*kpiDaysTotal : t.totalPayNo;
+  const projSaved = isLive && kpiDaysElapsed>0 ? t.totalSaved/kpiDaysElapsed*kpiDaysTotal : t.totalSaved;
 
   let kpis = `
     <div class="kpi">
       <div class="kpi-label">${isLive?'Posted So Far':'Total Collections'}</div>
-      <div class="kpi-value ${isLive?'blue-val':'accent-val'}">$${(t.activeColl/1000).toFixed(0)}K</div>
-      <div class="kpi-detail">${isLive?'Projected: ~$'+(projected/1000).toFixed(0)+'K':'All offices'}</div>
+      <div class="kpi-value ${isLive?'blue-val':'accent-val'}">$${fmt(t.activeColl)}</div>
+      <div class="kpi-detail">${isLive?'Projected: ~$'+fmt(Math.round(projected/100)*100):'All offices'}</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">${isLive?'Pay So Far':'Total Pay'}</div>
-      <div class="kpi-value green-val">$${(t.totalPayNo/1000).toFixed(0)}K</div>
-      <div class="kpi-detail">${isLive?'Projected: ~$'+(projPay/1000).toFixed(0)+'K':doctors.length+' doctors (excl. x-rays)'}</div>
+      <div class="kpi-value green-val">$${fmt(t.totalPayNo)}</div>
+      <div class="kpi-detail">${isLive?'Projected: ~$'+fmt(Math.round(projPay/100)*100):doctors.length+' doctors (excl. x-rays)'}</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">X-Ray Savings</div>
-      <div class="kpi-value accent-val">$${(t.totalSaved/1000).toFixed(1)}K</div>
-      <div class="kpi-detail">${isLive?'Projected: ~$'+(projSaved/1000).toFixed(1)+'K':'~$'+((t.totalSaved*26)/1000).toFixed(0)+'K/year'}</div>
+      <div class="kpi-value accent-val">$${fmt(t.totalSaved)}</div>
+      <div class="kpi-detail">${isLive?'Projected: ~$'+fmt(Math.round(projSaved/100)*100):'~$'+((t.totalSaved*26)/1000).toFixed(0)+'K/year'}</div>
     </div>`;
 
   if (isLive) {
-    const pct = p.daysTotal>0 ? Math.round(p.daysElapsed/p.daysTotal*100) : 0;
-    kpis += `<div class="kpi"><div class="kpi-label">Progress</div><div class="kpi-value blue-val">${pct}%</div><div class="kpi-detail">Day ${p.daysElapsed} of ${p.daysTotal}</div></div>`;
+    const pct = kpiDaysTotal>0 ? Math.round(kpiDaysElapsed/kpiDaysTotal*100) : 0;
+    kpis += `<div class="kpi"><div class="kpi-label">Progress</div><div class="kpi-value blue-val">${pct}%</div><div class="kpi-detail">Day ${kpiDaysElapsed} of ${kpiDaysTotal}</div></div>`;
   } else if (state === 'pending') {
     kpis += `<div class="kpi"><div class="kpi-label">Status</div><div class="kpi-value amber-val" style="font-size:20px">🟡 Pending</div><div class="kpi-detail">Awaiting lock</div></div>`;
   } else {
