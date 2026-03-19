@@ -1,7 +1,7 @@
 {
   "periods": {
     "1.16.26": {
-      "dates": "Dec 27 – Jan 9, 2026",
+      "dates": "Dec 27 \u2013 Jan 9, 2026",
       "payDate": "Jan 16, 2026",
       "period_start": "2025-12-27",
       "period_end": "2026-01-09",
@@ -262,7 +262,7 @@
       ]
     },
     "1.30.26": {
-      "dates": "Jan 10 – Jan 23, 2026",
+      "dates": "Jan 10 \u2013 Jan 23, 2026",
       "payDate": "Jan 30, 2026",
       "period_start": "2026-01-10",
       "period_end": "2026-01-23",
@@ -537,7 +537,7 @@
       ]
     },
     "2.13.26": {
-      "dates": "Jan 24 – Feb 6, 2026",
+      "dates": "Jan 24 \u2013 Feb 6, 2026",
       "payDate": "Feb 13, 2026",
       "period_start": "2026-01-24",
       "period_end": "2026-02-06",
@@ -814,7 +814,7 @@
       ]
     },
     "2.27.26": {
-      "dates": "Feb 7 – Feb 20, 2026",
+      "dates": "Feb 7 \u2013 Feb 20, 2026",
       "payDate": "Feb 27, 2026",
       "period_start": "2026-02-07",
       "period_end": "2026-02-20",
@@ -1087,7 +1087,7 @@
       ]
     },
     "3.13.26": {
-      "dates": "Feb 21 – Mar 6, 2026",
+      "dates": "Feb 21 \u2013 Mar 6, 2026",
       "payDate": "Mar 13, 2026",
       "period_start": "2026-02-21",
       "period_end": "2026-03-06",
@@ -1415,8 +1415,8 @@
     },
     "3.27.26": {
       "id": "3.27.26",
-      "label": "Mar 7–20, 2026",
-      "state": "pending",
+      "label": "Mar 7\u201320, 2026",
+      "state": "live",
       "period_start": "2026-03-07",
       "period_end": "2026-03-20",
       "snapshotDate": "2026-03-16T11:00:00Z",
@@ -1498,97 +1498,111 @@
         "totalColl": 270005,
         "totalPay": 90796,
         "xraySavings": 18942
-      }
-    },
-    "4.03.26": {
-      "id": "4.03.26",
-      "label": "Mar 21 – Apr 3, 2026",
-      "state": "live",
-      "period_start": "2026-03-21",
-      "period_end": "2026-04-03",
-      "snapshot": null,
+      },
       "live": {
         "providers": [
           {
+            "name": "Dr. Patel",
+            "pct": 0.32,
+            "coll": 70595.48,
+            "xray": 2777,
+            "payNo": 19619.59,
+            "payWith": 21654.0
+          },
+          {
             "name": "Dr. Slaven",
             "pct": 0.36,
-            "coll": 28450,
-            "xray": 520,
-            "payNo": 10048,
-            "payWith": 10242
+            "coll": 62795.09,
+            "xray": 900,
+            "payNo": 19522.83,
+            "payWith": 22606.23
           },
           {
             "name": "Dr. Choong",
             "pct": 0.35,
-            "coll": 24100,
-            "xray": 98,
-            "payNo": 8400,
-            "payWith": 8435
+            "coll": 52120.29,
+            "xray": 186,
+            "payNo": 16013.85,
+            "payWith": 16242.1
           },
           {
             "name": "Dr. Menon",
             "pct": 0.35,
-            "coll": 19800,
+            "coll": 41009.26,
             "xray": 0,
-            "payNo": 6930,
-            "payWith": 6930
+            "payNo": 12472.71,
+            "payWith": 12472.71
           },
           {
             "name": "Dr. Benton",
             "pct": 0.33,
-            "coll": 16500,
+            "coll": 38547.56,
             "xray": 0,
-            "payNo": 5445,
-            "payWith": 5445
+            "payNo": 10942.98,
+            "payWith": 10942.98
           },
           {
             "name": "Dr. Welter",
             "pct": 0.31,
-            "coll": 13200,
-            "xray": 380,
-            "payNo": 3968,
-            "payWith": 4092
-          },
-          {
-            "name": "Dr. Patel",
-            "pct": 0.32,
-            "coll": 31000,
-            "xray": 1200,
-            "payNo": 9536,
-            "payWith": 9920
+            "coll": 24699.16,
+            "xray": 712,
+            "payNo": 6626.27,
+            "payWith": 6847.04
           },
           {
             "name": "Dr. Bell",
             "pct": 0.35,
-            "coll": 10500,
-            "xray": 55,
-            "payNo": 3657,
-            "payWith": 3675
+            "coll": 22060.9,
+            "xray": 107,
+            "payNo": 6839.91,
+            "payWith": 6877.42
           },
           {
             "name": "Dr. Lugo",
             "pct": 0.36,
-            "coll": 3200,
-            "xray": 20,
+            "coll": 16093.36,
+            "xray": 40,
             "payNo": 0,
-            "payWith": 1152
+            "payWith": 5793.61
           },
           {
             "name": "Dr. Schrack",
             "pct": 0.45,
-            "coll": 200,
+            "coll": 422.71,
             "xray": 0,
-            "payNo": 90,
-            "payWith": 90
+            "payNo": 190.22,
+            "payWith": 190.22
           }
         ],
-        "totalColl": 146950,
-        "totalPay": 48074,
-        "xraySavings": 9876
+        "offices": [
+          {
+            "name": "Monroe",
+            "amt": 107400
+          },
+          {
+            "name": "Marysville",
+            "amt": 105300
+          },
+          {
+            "name": "Lake Stevens",
+            "amt": 56000
+          },
+          {
+            "name": "Stanwood",
+            "amt": 49900
+          },
+          {
+            "name": "Everett",
+            "amt": 10500
+          }
+        ],
+        "totalColl": 328343.81,
+        "totalPay": 92228.36,
+        "xraySavings": 19646.33
       }
     }
   },
-  "last_updated": "2026-03-19T13:40:00.000000Z",
+  "last_updated": "2026-03-19T16:00:00.000000Z",
   "generated_by": "payroll_refresh.py",
-  "source": "rpt.vw_income_allocation (Azure SQL) — matches Tanya's Income Allocation Detail report"
+  "source": "rpt.vw_income_allocation (Azure SQL) \u2014 matches Tanya's Income Allocation Detail report"
 }

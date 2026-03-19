@@ -865,7 +865,7 @@ function buildBanner() {
       <div class="card" style="margin-bottom:24px;border-left:4px solid var(--blue)">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
           <span class="live-dot"></span>
-          <span class="sec-title" style="margin-bottom:0;font-size:18px;color:var(--blue)">Live — ${p.dates}</span>
+          <span class="sec-title" style="margin-bottom:0;font-size:18px;color:var(--blue)">Live — ${p.label || p.dates || ''} <span style="font-size:14px">🟢 LIVE</span></span>
         </div>
         <div class="period-progress">
           <div class="bar-outer"><div class="bar-inner" style="width:${pct}%"></div></div>
