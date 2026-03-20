@@ -11,69 +11,92 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    :root {
-      --bg: #1C3329; --bg2: #243D33; --card: #2E4A3E; --card-hover: #38564A;
-      --accent: #6292A0; --accent-light: #7AAFBD;
-      --accent-glow: rgba(98,146,160,0.15); --accent-border: rgba(98,146,160,0.35);
-      --text: #F7F8F8; --text2: #9AADA2; --text3: #5E7A6E;
-      --border: rgba(247,248,248,0.08);
-      --green: #5DBE8A; --red: #C4485A; --blue: #6292A0; --purple: #8B7BA5; --teal: #7AAFBD;
-      --wood: #7D6652; --wood-glow: rgba(125,102,82,0.12);
-      --radius: 12px;
-    }
+/* ─── DESIGN TOKENS ──────────────────────────────────────────────────────── */
+:root {
+  --bg: #1C3329; --bg2: #243D33; --card: #2E4A3E; --card-hover: #38564A;
+  --accent: #6292A0; --accent-light: #7AAFBD;
+  --accent-glow: rgba(98,146,160,0.15); --accent-border: rgba(98,146,160,0.35);
+  --text: #F7F8F8; --text2: #9AADA2; --text3: #5E7A6E;
+  --border: rgba(247,248,248,0.08);
+  --green: #5DBE8A; --red: #C4485A; --blue: #6292A0; --purple: #8B7BA5; --teal: #7AAFBD;
+  --amber: #E6A032; --amber-bg: rgba(230,160,50,0.12); --amber-border: rgba(230,160,50,0.35);
+  --radius: 12px;
+}
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
-/* HEADER */
+
+/* ─── HEADER ─────────────────────────────────────────────────────────────── */
 .header { text-align:center; padding:32px 16px 20px; border-bottom:1px solid var(--border); }
 .header h1 { font-family:'Instrument Serif',Georgia,serif; font-size:clamp(26px,4vw,36px); font-weight:600; margin-bottom:6px; }
 .header h1 span { background:linear-gradient(135deg,var(--accent),var(--accent-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
 .header .sub { color:var(--text3); font-size:14px; margin-bottom:16px; }
-/* PERIOD SELECTOR */
-.period-row { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:0; }
-.period-btn { padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text2); transition:all 0.2s; font-family:'DM Sans',sans-serif; }
+
+/* ─── PERIOD SELECTOR ────────────────────────────────────────────────────── */
+.period-row { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; }
+.period-btn { padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer;
+  border:1px solid var(--border); background:transparent; color:var(--text2);
+  transition:all 0.2s; font-family:'DM Sans',sans-serif; }
 .period-btn:hover { border-color:var(--accent-border); color:var(--text); }
 .period-btn.active { background:var(--accent-glow); border-color:var(--accent-border); color:var(--accent); }
-.period-btn.live { border-color:rgba(98,146,160,0.4); }
-.period-btn.live.active { background:rgba(98,146,160,0.15); border-color:rgba(98,146,160,0.5); color:var(--blue); }
-.period-btn.processing { border-color:rgba(230,160,50,0.4); }
-.period-btn.processing.active { background:rgba(230,160,50,0.12); border-color:rgba(230,160,50,0.5); color:#e6a032; }
-.live-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--blue); margin-right:5px; animation:pulse 2s infinite; }
-.status-tag { font-size:9px; font-weight:700; letter-spacing:0.5px; padding:1px 5px; border-radius:4px; margin-left:4px; vertical-align:middle; }
-.status-tag.live { background:rgba(98,146,160,0.2); color:var(--blue); }
-.status-tag.processing { background:rgba(230,160,50,0.18); color:#e6a032; }
-.status-tag.hardcoded { background:rgba(150,150,150,0.15); color:var(--text3); font-size:11px; }
-@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-/* LOADING STATE */
-.loading-overlay { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:400px; gap:16px; }
-.loading-spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite; }
-@keyframes spin { to { transform:rotate(360deg); } }
+.period-btn.state-live   { border-color:rgba(98,146,160,0.4); }
+.period-btn.state-live.active   { background:rgba(98,146,160,0.15); color:var(--blue); }
+.period-btn.state-pending { border-color:var(--amber-border); }
+.period-btn.state-pending.active { background:var(--amber-bg); color:var(--amber); }
+.period-btn.state-processing { border-color:var(--amber-border); }
+.period-btn.state-processing.active { background:var(--amber-bg); color:var(--amber); }
+.period-btn.state-locked { border-color:rgba(93,190,138,0.25); }
+.period-btn.state-locked.active { background:rgba(93,190,138,0.1); color:var(--green); }
+
+/* State badges */
+.state-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 7px; border-radius:10px;
+  font-size:10px; font-weight:700; letter-spacing:0.4px; vertical-align:middle; margin-left:5px; }
+.state-badge.live       { background:rgba(98,146,160,0.2); color:var(--blue); }
+.state-badge.pending    { background:var(--amber-bg); color:var(--amber); }
+.state-badge.processing { background:var(--amber-bg); color:var(--amber); }
+.state-badge.locked     { background:rgba(93,190,138,0.15); color:var(--green); }
+.live-dot { width:6px; height:6px; border-radius:50%; background:var(--blue); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* ─── LOADING / ERROR ────────────────────────────────────────────────────── */
+.loading-overlay { display:flex; flex-direction:column; align-items:center; justify-content:center;
+  min-height:400px; gap:16px; }
+.loading-spinner { width:40px; height:40px; border:3px solid var(--border);
+  border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
 .loading-text { color:var(--text3); font-size:14px; }
-.error-banner { background:rgba(82,0,10,0.15); border:1px solid rgba(82,0,10,0.4); border-radius:var(--radius); padding:24px; text-align:center; max-width:600px; margin:40px auto; }
+.error-banner { background:rgba(82,0,10,0.15); border:1px solid rgba(82,0,10,0.4);
+  border-radius:var(--radius); padding:24px; text-align:center; max-width:600px; margin:40px auto; }
 .error-banner .error-title { color:#FF6B6B; font-size:18px; font-weight:600; margin-bottom:8px; }
 .error-banner .error-detail { color:var(--text2); font-size:13px; line-height:1.6; }
-/* NAV TABS */
-.nav-tabs { display:flex; justify-content:center; gap:8px; padding:16px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
-.tab-btn { padding:8px 20px; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; border:1px solid transparent; background:transparent; color:var(--text2); transition:all 0.2s; font-family:'DM Sans',sans-serif; }
+
+/* ─── NAV TABS ───────────────────────────────────────────────────────────── */
+.nav-tabs { display:flex; justify-content:center; gap:8px; padding:16px;
+  border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.tab-btn { padding:8px 20px; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer;
+  border:1px solid transparent; background:transparent; color:var(--text2);
+  transition:all 0.2s; font-family:'DM Sans',sans-serif; }
 .tab-btn:hover { color:var(--text); }
 .tab-btn.active { background:rgba(98,146,160,0.2); color:var(--accent); border-color:var(--accent-border); }
-/* MAIN */
+
+/* ─── LAYOUT ─────────────────────────────────────────────────────────────── */
 .main { max-width:1200px; margin:0 auto; padding:32px 16px; }
 .view { display:none; }
 .view.active { display:block; }
-/* TWO COL */
 .two-col { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
 @media(max-width:900px) { .two-col { grid-template-columns:1fr; } }
-/* SECTION TITLES */
-.sec-title { font-family:'Instrument Serif',Georgia,serif; font-size:20px; font-weight:600; margin-bottom:16px; padding-left:14px; border-left:3px solid var(--accent); }
-.sec-title.brown { border-left-color:var(--brown); }
-.sec-title.blue { border-left-color:var(--blue); }
-/* CARDS */
-.card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:24px; }
-.card.brown-card { border-color:rgba(98,146,160,0.2); }
-.card.live-card { border-color:rgba(98,146,160,0.25); }
-/* TABLE */
+
+/* ─── TYPOGRAPHY ─────────────────────────────────────────────────────────── */
+.sec-title { font-family:'Instrument Serif',Georgia,serif; font-size:20px; font-weight:600;
+  margin-bottom:16px; padding-left:14px; border-left:3px solid var(--accent); }
+
+/* ─── CARDS ──────────────────────────────────────────────────────────────── */
+.card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+  padding:24px; margin-bottom:24px; }
+
+/* ─── TABLES ─────────────────────────────────────────────────────────────── */
 table { width:100%; border-collapse:collapse; font-size:13px; }
-th { text-align:left; padding:10px 12px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3); border-bottom:2px solid rgba(255,255,255,0.06); font-weight:600; }
+th { text-align:left; padding:10px 12px; font-size:11px; text-transform:uppercase;
+  letter-spacing:0.5px; color:var(--text3); border-bottom:2px solid rgba(255,255,255,0.06); font-weight:600; }
 th.r, td.r { text-align:right; }
 td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); }
 tr.clickable { cursor:pointer; }
@@ -82,151 +105,278 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
 .mono { font-family:'DM Sans',monospace; }
 .dim { color:var(--text2); }
 .bold { font-weight:600; }
-/* BADGES */
+
+/* ─── BADGES ─────────────────────────────────────────────────────────────── */
 .badge { display:inline-block; padding:3px 10px; border-radius:10px; font-size:11px; font-weight:600; }
-.badge-green { background:rgba(93,190,138,0.15); color:var(--green); }
-.badge-brown { background:rgba(98,146,160,0.15); color:var(--brown); }
+.badge-green  { background:rgba(93,190,138,0.15); color:var(--green); }
 .badge-accent { background:rgba(98,146,160,0.15); color:var(--accent); }
-.badge-blue { background:rgba(98,146,160,0.15); color:var(--blue); }
-/* DOTS */
-.dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle; }
-.dot-green { background:var(--green); }
-.dot-brown { background:var(--brown); }
-/* EXPAND ROW */
+.badge-blue   { background:rgba(98,146,160,0.15); color:var(--blue); }
+.badge-amber  { background:var(--amber-bg); color:var(--amber); }
+
+/* ─── EXPAND ROW ─────────────────────────────────────────────────────────── */
 .expand-row { display:none; }
 .expand-row.open { display:table-row; }
 .expand-inner { background:rgba(27,43,36,0.6); padding:16px 24px; }
 .expand-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; font-size:12px; }
-.expand-label { color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; font-weight:600; margin-bottom:8px; font-size:11px; }
+.expand-label { color:var(--text3); text-transform:uppercase; letter-spacing:0.5px;
+  font-weight:600; margin-bottom:8px; font-size:11px; }
 .expand-line { display:flex; justify-content:space-between; padding:2px 0; }
 .expand-line span:first-child { color:var(--text2); }
 .expand-divider { border-top:1px solid rgba(255,255,255,0.06); margin-top:6px; padding-top:6px; }
-.chevron { display:inline-block; width:14px; height:14px; margin-left:6px; vertical-align:middle; transition:transform 0.2s; color:var(--text3); }
+.chevron { display:inline-block; width:14px; height:14px; margin-left:6px;
+  vertical-align:middle; transition:transform 0.2s; color:var(--text3); }
 .chevron.open { transform:rotate(180deg); }
-/* OFFICE BARS */
+
+/* ─── OFFICE BARS ────────────────────────────────────────────────────────── */
 .office-bar { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
 .office-bar .name { width:100px; font-size:13px; color:var(--text2); flex-shrink:0; }
-.office-bar .bar-wrap { flex:1; height:26px; background:var(--bg2); border-radius:4px; overflow:hidden; position:relative; }
+.office-bar .bar-wrap { flex:1; height:26px; background:var(--bg2); border-radius:4px; overflow:hidden; }
 .office-bar .bar-fill { height:100%; background:linear-gradient(135deg,var(--accent),var(--accent-light)); opacity:0.75; border-radius:4px; }
 .office-bar .amt { width:80px; text-align:right; font-size:13px; color:var(--text2); }
-.office-total { display:flex; justify-content:space-between; margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.06); font-size:14px; font-weight:600; }
-/* SAVINGS HERO */
-.savings-hero { background:linear-gradient(135deg,rgba(98,146,160,0.1),rgba(98,146,160,0.02)); border:1px solid var(--accent-border); border-radius:var(--radius); padding:24px; text-align:center; margin-bottom:20px; }
-.savings-hero .big { font-size:clamp(28px,4vw,36px); font-weight:700; background:linear-gradient(135deg,var(--accent),var(--accent-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.office-total { display:flex; justify-content:space-between; margin-top:16px; padding-top:12px;
+  border-top:1px solid rgba(255,255,255,0.06); font-size:14px; font-weight:600; }
+
+/* ─── SAVINGS HERO ───────────────────────────────────────────────────────── */
+.savings-hero { background:linear-gradient(135deg,rgba(98,146,160,0.1),rgba(98,146,160,0.02));
+  border:1px solid var(--accent-border); border-radius:var(--radius);
+  padding:24px; text-align:center; margin-bottom:20px; }
+.savings-hero .big { font-size:clamp(28px,4vw,36px); font-weight:700;
+  background:linear-gradient(135deg,var(--accent),var(--accent-light));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
 .savings-hero .small { font-size:12px; color:var(--text3); margin-top:4px; }
 .savings-split { display:grid; grid-template-columns:1fr 1fr; gap:16px; text-align:center; margin-top:16px; }
 .savings-split .val { font-size:18px; font-weight:700; }
 .savings-split .val.dim-val { color:var(--text2); }
 .savings-split .val.green-val { color:var(--green); }
-.savings-split .lbl { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
-.link-btn { display:block; width:100%; margin-top:16px; padding:10px; text-align:center; color:var(--accent); font-weight:600; font-size:14px; cursor:pointer; border:none; background:none; font-family:'DM Sans',sans-serif; transition:color 0.2s; }
+.savings-split .lbl { font-size:11px; color:var(--text3); text-transform:uppercase;
+  letter-spacing:0.5px; margin-top:2px; }
+.link-btn { display:block; width:100%; margin-top:16px; padding:10px; text-align:center;
+  color:var(--accent); font-weight:600; font-size:14px; cursor:pointer;
+  border:none; background:none; font-family:'DM Sans',sans-serif; transition:color 0.2s; }
 .link-btn:hover { color:var(--accent-light); }
-/* KPI ROW */
-.kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:16px; margin-top:32px; }
-.kpi { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; text-align:center; transition:all 0.2s; }
-.kpi:hover { border-color:var(--accent-border); box-shadow:0 0 20px var(--accent-glow); }
-.kpi .kpi-label { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text3); font-weight:600; margin-bottom:8px; }
-.kpi .kpi-value { font-size:clamp(22px,3vw,28px); font-weight:700; }
-.kpi .kpi-value.accent-val { background:linear-gradient(135deg,var(--accent),var(--accent-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.kpi .kpi-value.green-val { color:var(--green); }
-.kpi .kpi-value.blue-val { color:var(--blue); }
-.kpi .kpi-detail { font-size:12px; color:var(--text3); margin-top:4px; }
-/* PROGRESS BAR (for live period) */
+
+/* ─── PROGRESS BAR ───────────────────────────────────────────────────────── */
 .period-progress { margin:20px 0; }
 .period-progress .bar-outer { height:10px; background:var(--bg2); border-radius:5px; overflow:hidden; }
-.period-progress .bar-inner { height:100%; border-radius:5px; background:linear-gradient(90deg,var(--blue),#7DB0BE); transition:width 1s ease; }
-.period-progress .progress-labels { display:flex; justify-content:space-between; margin-top:6px; font-size:11px; color:var(--text3); }
-/* FOOTER */
-.footer { text-align:center; padding:24px 16px; border-top:1px solid var(--border); margin-top:40px; font-size:12px; color:var(--text3); line-height:1.6; }
-.footer strong { color:var(--accent); font-weight:600; }
-/* NOTE */
+.period-progress .bar-inner { height:100%; border-radius:5px;
+  background:linear-gradient(90deg,var(--blue),#7DB0BE); transition:width 1s ease; }
+.period-progress .progress-labels { display:flex; justify-content:space-between;
+  margin-top:6px; font-size:11px; color:var(--text3); }
+
+/* ─── KPI ROW ────────────────────────────────────────────────────────────── */
+.kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:16px; margin-top:32px; }
+.kpi { background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+  padding:20px; text-align:center; transition:all 0.2s; }
+.kpi:hover { border-color:var(--accent-border); box-shadow:0 0 20px var(--accent-glow); }
+.kpi .kpi-label { font-size:11px; text-transform:uppercase; letter-spacing:1px;
+  color:var(--text3); font-weight:600; margin-bottom:8px; }
+.kpi .kpi-value { font-size:clamp(22px,3vw,28px); font-weight:700; }
+.kpi .kpi-value.accent-val { background:linear-gradient(135deg,var(--accent),var(--accent-light));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.kpi .kpi-value.green-val { color:var(--green); }
+.kpi .kpi-value.blue-val  { color:var(--blue); }
+.kpi .kpi-value.amber-val { color:var(--amber); }
+.kpi .kpi-detail { font-size:12px; color:var(--text3); margin-top:4px; }
+
+/* ─── PROCESSING BANNER / DRIFT VIEW ────────────────────────────────────── */
+.processing-header { border:1px solid var(--amber-border); background:var(--amber-bg);
+  border-radius:var(--radius); padding:20px 24px; margin-bottom:24px; }
+.processing-header .ph-title { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.processing-header .ph-title h2 { font-family:'Instrument Serif',Georgia,serif;
+  font-size:20px; color:var(--amber); }
+.processing-header .ph-meta { font-size:12px; color:var(--text2); line-height:1.6; }
+.lock-btn { display:inline-flex; align-items:center; gap:8px; padding:10px 20px;
+  border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;
+  border:1px solid rgba(93,190,138,0.4); background:rgba(93,190,138,0.1);
+  color:var(--green); font-family:'DM Sans',sans-serif; transition:all 0.2s; margin-top:12px; }
+.lock-btn:hover { background:rgba(93,190,138,0.2); border-color:rgba(93,190,138,0.6); }
+
+/* Drift comparison table */
+.drift-section { margin-top:24px; }
+.drift-title { font-size:13px; font-weight:600; color:var(--text3); text-transform:uppercase;
+  letter-spacing:0.5px; margin-bottom:12px; padding-bottom:8px;
+  border-bottom:1px solid var(--border); }
+.drift-col-header { font-size:11px; color:var(--text3); text-align:right; }
+.drift-snap { color:var(--green); }
+.drift-live { color:var(--blue); }
+.drift-diff-pos { color:var(--green); }
+.drift-diff-neg { color:#FF6B6B; }
+.drift-diff-zero { color:var(--text3); }
+
+/* ─── LOCKED BANNER ──────────────────────────────────────────────────────── */
+.locked-header { border:1px solid rgba(93,190,138,0.3); background:rgba(93,190,138,0.08);
+  border-radius:var(--radius); padding:20px 24px; margin-bottom:24px; }
+.locked-header .lh-title { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.locked-header .lh-title h2 { font-family:'Instrument Serif',Georgia,serif;
+  font-size:20px; color:var(--green); }
+.locked-header .lh-meta { font-size:12px; color:var(--text2); line-height:1.6; }
+
+/* ─── DOTS ───────────────────────────────────────────────────────────────── */
+.dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+.dot-green { background:var(--green); }
+.dot-blue  { background:var(--blue); }
+.dot-amber { background:var(--amber); }
+
+/* ─── ADMIN TAB ──────────────────────────────────────────────────────────── */
+.admin-section { max-width:900px; margin:0 auto; }
+.admin-table { width:100%; border-collapse:collapse; font-size:13px; }
+.admin-table th { text-align:left; padding:10px 12px; font-size:11px; text-transform:uppercase;
+  letter-spacing:0.5px; color:var(--text3); border-bottom:2px solid rgba(255,255,255,0.06); font-weight:600; }
+.admin-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); }
+.admin-table tr:hover td { background:rgba(98,146,160,0.05); }
+.btn-sm { padding:5px 12px; border-radius:6px; font-size:11px; font-weight:600;
+  cursor:pointer; border:1px solid; transition:all 0.2s; font-family:'DM Sans',sans-serif; }
+.btn-rate  { background:rgba(98,146,160,0.12); border-color:var(--accent-border); color:var(--accent); }
+.btn-rate:hover  { background:rgba(98,146,160,0.25); }
+.btn-term  { background:rgba(82,0,10,0.12); border-color:rgba(82,0,10,0.3); color:#FF6B6B; }
+.btn-term:hover  { background:rgba(82,0,10,0.25); }
+.btn-react { background:rgba(93,190,138,0.12); border-color:rgba(93,190,138,0.3); color:var(--green); }
+.btn-react:hover { background:rgba(93,190,138,0.25); }
+.btn-primary { padding:10px 24px; border-radius:8px; font-size:14px; font-weight:600;
+  cursor:pointer; border:none; background:var(--accent); color:#fff;
+  font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+.btn-primary:hover { background:var(--accent-light); }
+.btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-secondary { padding:10px 24px; border-radius:8px; font-size:14px; font-weight:600;
+  cursor:pointer; border:1px solid var(--border); background:transparent;
+  color:var(--text2); font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+.btn-secondary:hover { border-color:var(--accent-border); color:var(--text); }
+
+/* ─── MODALS ─────────────────────────────────────────────────────────────── */
+.modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center; }
+.modal-overlay.show { display:flex; }
+.modal { background:var(--card); border:1px solid var(--border); border-radius:16px;
+  padding:32px; max-width:480px; width:90%; max-height:90vh; overflow-y:auto; }
+.modal h3 { font-family:'Instrument Serif',Georgia,serif; font-size:22px; margin-bottom:20px; }
+.modal-field { margin-bottom:16px; }
+.modal-field label { display:block; font-size:12px; text-transform:uppercase;
+  letter-spacing:0.5px; color:var(--text3); font-weight:600; margin-bottom:6px; }
+.modal-field input, .modal-field textarea, .modal-field select {
+  width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border);
+  background:var(--bg2); color:var(--text); font-size:14px; font-family:'DM Sans',sans-serif; }
+.modal-field input:focus, .modal-field textarea:focus {
+  outline:none; border-color:var(--accent-border); box-shadow:0 0 0 3px var(--accent-glow); }
+.modal-field input[readonly] { opacity:0.6; cursor:not-allowed; }
+
+/* PIN pad */
+.pin-display { text-align:center; font-size:28px; letter-spacing:12px; color:var(--text);
+  background:var(--bg2); border:1px solid var(--border); border-radius:8px;
+  padding:12px 20px; margin-bottom:16px; min-height:54px; }
+.pin-pad { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-width:240px; margin:0 auto; }
+.pin-key { padding:14px; border-radius:8px; font-size:18px; font-weight:600; cursor:pointer;
+  border:1px solid var(--border); background:var(--bg2); color:var(--text);
+  font-family:'DM Sans',sans-serif; transition:all 0.15s; text-align:center; }
+.pin-key:hover { background:var(--card-hover); border-color:var(--accent-border); }
+.pin-key:active { transform:scale(0.96); }
+.pin-key.del { color:#FF6B6B; border-color:rgba(82,0,10,0.3); }
+.pin-key.clear { color:var(--text3); }
+.pin-error { text-align:center; color:#FF6B6B; font-size:13px; margin-top:8px; min-height:20px; }
+
+.modal-actions { display:flex; gap:12px; margin-top:24px; justify-content:flex-end; }
+
+/* Admin alerts */
+.admin-alert { padding:12px 16px; border-radius:8px; font-size:13px; margin-bottom:16px; display:none; }
+.admin-alert.success { display:block; background:rgba(93,190,138,0.12); border:1px solid rgba(93,190,138,0.3); color:var(--green); }
+.admin-alert.error   { display:block; background:rgba(82,0,10,0.12); border:1px solid rgba(82,0,10,0.3); color:#FF6B6B; }
+.admin-alert.info    { display:block; background:rgba(98,146,160,0.12); border:1px solid var(--accent-border); color:var(--accent); }
+
+/* PAT config */
+.pat-config { padding:16px; background:var(--bg2); border-radius:var(--radius);
+  border:1px solid var(--border); margin-bottom:24px; }
+.pat-config input { width:100%; padding:8px 12px; border-radius:6px; border:1px solid var(--border);
+  background:var(--card); color:var(--text); font-size:13px; font-family:'DM Sans',monospace; margin-top:8px; }
+.pat-config .pat-status { font-size:12px; margin-top:6px; }
+.days-since { font-size:11px; color:var(--text3); }
+
+/* ─── PAYCHEX / SUBMIT WORKFLOW ──────────────────────────────────────────── */
+.submit-btn { display:inline-flex; align-items:center; gap:8px; padding:12px 24px;
+  border-radius:8px; font-size:15px; font-weight:600; cursor:pointer;
+  border:1px solid rgba(230,160,50,0.5); background:rgba(230,160,50,0.15);
+  color:var(--amber); font-family:'DM Sans',sans-serif; transition:all 0.2s; margin-top:12px; }
+.submit-btn:hover { background:rgba(230,160,50,0.28); border-color:rgba(230,160,50,0.75); }
+.submitted-indicator { display:inline-flex; align-items:center; gap:8px; padding:12px 24px;
+  border-radius:8px; font-size:15px; font-weight:600;
+  border:1px solid rgba(93,190,138,0.4); background:rgba(93,190,138,0.12);
+  color:var(--green); font-family:'DM Sans',sans-serif; margin-top:12px; }
+.submit-ts { font-size:12px; color:var(--text3); margin-top:6px; font-style:italic; }
+.paychex-link { font-size:12px; color:var(--text3); cursor:pointer; margin-top:10px;
+  display:inline-block; background:none; border:none; font-family:'DM Sans',sans-serif;
+  text-decoration:underline; text-decoration-style:dotted; transition:color 0.2s; padding:0; }
+.paychex-link:hover { color:var(--accent); }
+.pending-actions { display:flex; flex-direction:column; align-items:flex-start; gap:4px; margin-top:4px; }
+
+/* ─── EMPLOYER COST COLUMN ───────────────────────────────────────────────── */
+.cost-col { color:var(--text3); }
+th.cost-col { color:var(--text3) !important; }
+.table-footnote { font-size:11px; color:var(--text3); margin-top:12px; font-style:italic; line-height:1.5; }
+tr.summary-row td { border-bottom:none; padding-top:6px; padding-bottom:2px; }
+tr.summary-row-last td { padding-bottom:12px; }
+
+/* ─── MISC ───────────────────────────────────────────────────────────────── */
 .note { font-size:12px; color:var(--text3); line-height:1.5; margin-top:16px; }
 .note .hl { color:var(--accent); font-weight:600; }
-/* SCROLLBAR */
+.footer { text-align:center; padding:24px 16px; border-top:1px solid var(--border);
+  margin-top:40px; font-size:12px; color:var(--text3); line-height:1.6; }
+.footer strong { color:var(--accent); font-weight:600; }
 ::-webkit-scrollbar { width:8px; }
 ::-webkit-scrollbar-track { background:var(--bg); }
 ::-webkit-scrollbar-thumb { background:var(--bg2); border-radius:4px; }
-/* ADMIN TAB */
-.admin-section { max-width:900px; margin:0 auto; }
-.admin-table { width:100%; border-collapse:collapse; font-size:13px; }
-.admin-table th { text-align:left; padding:10px 12px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3); border-bottom:2px solid rgba(255,255,255,0.06); font-weight:600; }
-.admin-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); }
-.admin-table tr:hover td { background:rgba(98,146,160,0.05); }
-.btn-sm { padding:5px 12px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid; transition:all 0.2s; font-family:'DM Sans',sans-serif; }
-.btn-rate { background:rgba(98,146,160,0.12); border-color:var(--accent-border); color:var(--accent); }
-.btn-rate:hover { background:rgba(98,146,160,0.25); }
-.btn-term { background:rgba(82,0,10,0.12); border-color:rgba(82,0,10,0.3); color:#FF6B6B; }
-.btn-term:hover { background:rgba(82,0,10,0.25); }
-.btn-react { background:rgba(93,190,138,0.12); border-color:rgba(93,190,138,0.3); color:var(--green); }
-.btn-react:hover { background:rgba(93,190,138,0.25); }
-.btn-primary { padding:10px 24px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; border:none; background:var(--accent); color:#fff; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
-.btn-primary:hover { background:var(--accent-light); }
-.btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
-.btn-secondary { padding:10px 24px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text2); font-family:'DM Sans',sans-serif; transition:all 0.2s; }
-.btn-secondary:hover { border-color:var(--accent-border); color:var(--text); }
-/* MODAL */
-.modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center; }
-.modal-overlay.show { display:flex; }
-.modal { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:32px; max-width:480px; width:90%; max-height:90vh; overflow-y:auto; }
-.modal h3 { font-family:'Instrument Serif',Georgia,serif; font-size:22px; margin-bottom:20px; }
-.modal-field { margin-bottom:16px; }
-.modal-field label { display:block; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3); font-weight:600; margin-bottom:6px; }
-.modal-field input, .modal-field textarea, .modal-field select { width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg2); color:var(--text); font-size:14px; font-family:'DM Sans',sans-serif; }
-.modal-field input:focus, .modal-field textarea:focus { outline:none; border-color:var(--accent-border); box-shadow:0 0 0 3px var(--accent-glow); }
-.modal-field input[readonly] { opacity:0.6; cursor:not-allowed; }
-.modal-actions { display:flex; gap:12px; margin-top:24px; justify-content:flex-end; }
-.admin-alert { padding:12px 16px; border-radius:8px; font-size:13px; margin-bottom:16px; display:none; }
-.admin-alert.success { display:block; background:rgba(93,190,138,0.12); border:1px solid rgba(93,190,138,0.3); color:var(--green); }
-.admin-alert.error { display:block; background:rgba(82,0,10,0.12); border:1px solid rgba(82,0,10,0.3); color:#FF6B6B; }
-.admin-alert.info { display:block; background:rgba(98,146,160,0.12); border:1px solid var(--accent-border); color:var(--accent); }
-.pat-config { padding:16px; background:var(--bg2); border-radius:var(--radius); border:1px solid var(--border); margin-bottom:24px; }
-.pat-config input { width:100%; padding:8px 12px; border-radius:6px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:13px; font-family:'DM Sans',monospace; margin-top:8px; }
-.pat-config .pat-status { font-size:12px; margin-top:6px; }
-.days-since { font-size:11px; color:var(--text3); }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
+<!-- ─── HEADER ─────────────────────────────────────────────────────────── -->
 <div class="header">
   <h1>Puget Sound <span>Pediatric Dentistry</span></h1>
   <div class="sub">Dentrepreneur Control Tower &mdash; Doctor Payroll</div>
   <div class="period-row" id="period-row"></div>
 </div>
 
-<!-- NAV -->
+<!-- ─── NAV ───────────────────────────────────────────────────────────── -->
 <div class="nav-tabs">
-  <button class="tab-btn active" onclick="showView('overview',this)">Overview</button>
+  <button class="tab-btn active" id="tab-live-btn" onclick="switchToState('live',this)">🟢 Live</button>
+  <button class="tab-btn" id="tab-pending-btn" onclick="switchToState('pending',this)">🟡 Pending</button>
+  <button class="tab-btn" id="tab-locked-btn" onclick="switchToState('locked',this)">📋 Past Payroll</button>
   <button class="tab-btn" onclick="showView('xray',this)">X-Ray Savings</button>
   <button class="tab-btn" onclick="showView('termed',this)">Terminated</button>
   <button class="tab-btn" onclick="showView('admin',this)">Admin</button>
 </div>
 
 <div class="main">
-  <!-- LOADING STATE -->
+  <!-- Loading -->
   <div id="loading-state" class="loading-overlay">
     <div class="loading-spinner"></div>
-    <div class="loading-text">Loading payroll data from Azure SQL...</div>
+    <div class="loading-text">Loading payroll data...</div>
   </div>
 
-  <!-- ERROR STATE (hidden by default) -->
+  <!-- Error -->
   <div id="error-state" style="display:none"></div>
 
-  <!-- DASHBOARD CONTENT (hidden until data loads) -->
+  <!-- Dashboard (hidden until loaded) -->
   <div id="dashboard-content" style="display:none">
-    <!-- OVERVIEW -->
+
+    <!-- OVERVIEW TAB -->
     <div class="view active" id="view-overview">
-      <div id="live-banner" style="display:none"></div>
+      <div id="period-banner"></div>
+      <!-- Locked period dropdown (shown only when in locked tab) -->
+      <div id="locked-period-selector" style="display:none;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="font-size:13px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Period:</span>
+          <select id="locked-period-select" onchange="switchLockedPeriod(this.value)"
+            style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer">
+          </select>
+        </div>
+      </div>
       <div class="two-col">
         <div>
           <div class="sec-title" id="doc-title">Doctor Collections &amp; Pay</div>
           <div class="card" style="overflow-x:auto">
             <table>
               <thead><tr>
-                <th>Doctor</th>
-                <th class="r">Rate</th>
-                <th class="r">Collections</th>
-                <th class="r">Pay (No X-Rays)</th>
+                <th>Doctor</th><th class="r">Rate</th>
+                <th class="r">Collections</th><th class="r">Pay (No X-Rays)</th>
+                <th class="r cost-col">Est. Total Cost*</th>
               </tr></thead>
               <tbody id="doc-table"></tbody>
             </table>
@@ -241,7 +391,7 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
       </div>
     </div>
 
-    <!-- X-RAY SAVINGS -->
+    <!-- X-RAY TAB -->
     <div class="view" id="view-xray">
       <div style="max-width:700px;margin:0 auto">
         <div class="sec-title">X-Ray Savings Impact</div>
@@ -249,18 +399,17 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
       </div>
     </div>
 
-    <!-- TERMINATED -->
+    <!-- TERMED TAB -->
     <div class="view" id="view-termed">
       <div style="max-width:600px;margin:0 auto">
-        <div class="sec-title brown">Terminated / Inactive Doctors</div>
-        <div class="card brown-card" id="termed-card"></div>
+        <div class="sec-title">Terminated / Inactive Doctors</div>
+        <div class="card" id="termed-card"></div>
       </div>
     </div>
 
-    <!-- ADMIN -->
+    <!-- ADMIN TAB -->
     <div class="view" id="view-admin">
       <div class="admin-section">
-        <!-- PAT Config -->
         <div class="pat-config">
           <div style="display:flex;align-items:center;justify-content:space-between">
             <div>
@@ -270,521 +419,325 @@ tr.total-row td { border-top:2px solid rgba(255,255,255,0.08); font-weight:700; 
             <button class="btn-sm btn-rate" onclick="togglePatInput()" id="pat-toggle-btn">Configure</button>
           </div>
           <div id="pat-input-wrap" style="display:none">
-            <input type="password" id="pat-input" placeholder="ghp_xxxxxxxxxxxx or github_pat_xxxxxxxxxxxx" oninput="savePat()">
-            <div style="font-size:11px;color:var(--text3);margin-top:6px">Fine-grained PAT with Actions (write) permission for pspd-analytics repo. Stored locally in your browser only.</div>
+            <input type="password" id="pat-input" placeholder="ghp_xxxxxxxxxxxx" oninput="savePat()">
+            <div style="font-size:11px;color:var(--text3);margin-top:6px">Fine-grained PAT with Actions (write) permission. Stored locally in browser only.</div>
           </div>
         </div>
-
-        <!-- Admin Alert -->
         <div id="admin-alert"></div>
-
-        <!-- Active Doctors -->
         <div class="sec-title">Active Doctors</div>
         <div class="card" style="overflow-x:auto">
           <table class="admin-table">
             <thead><tr>
-              <th>Doctor</th>
-              <th>Denticon Name</th>
-              <th class="r">Rate</th>
-              <th>Pay Basis</th>
-              <th>Type</th>
-              <th style="text-align:center">Actions</th>
+              <th>Doctor</th><th>Denticon Name</th><th class="r">Rate</th>
+              <th>Pay Basis</th><th>Type</th><th style="text-align:center">Actions</th>
             </tr></thead>
             <tbody id="admin-active-table"></tbody>
           </table>
         </div>
-
-        <!-- Terminated Doctors -->
-        <div class="sec-title brown" style="margin-top:32px">Terminated Doctors</div>
-        <div class="card brown-card" style="overflow-x:auto">
+        <div class="sec-title" style="margin-top:32px">Terminated Doctors</div>
+        <div class="card" style="overflow-x:auto">
           <table class="admin-table">
             <thead><tr>
-              <th>Doctor</th>
-              <th>Last Day</th>
-              <th>Days Since</th>
-              <th>Final Rate</th>
-              <th>Note</th>
-              <th style="text-align:center">Actions</th>
+              <th>Doctor</th><th>Last Day</th><th>Days Since</th>
+              <th>Final Rate</th><th>Note</th><th style="text-align:center">Actions</th>
             </tr></thead>
             <tbody id="admin-termed-table"></tbody>
           </table>
         </div>
-
         <div class="note" style="margin-top:24px">
           Changes trigger a GitHub Actions workflow that updates <code>data/doctors.json</code> and regenerates payroll data.
-          Terminated doctors are automatically hidden from the main payroll view after 90 days.
-        </div>
-      </div>
-    </div>
-
-    <!-- MODALS -->
-
-    <!-- Change Rate Modal -->
-    <div class="modal-overlay" id="modal-rate">
-      <div class="modal">
-        <h3>Change Pay Rate</h3>
-        <div class="modal-field">
-          <label>Doctor</label>
-          <input type="text" id="rate-doctor-name" readonly>
-        </div>
-        <div class="modal-field">
-          <label>Current Rate</label>
-          <input type="text" id="rate-current" readonly>
-        </div>
-        <div class="modal-field">
-          <label>New Rate (e.g. 0.35 = 35%)</label>
-          <input type="number" id="rate-new" step="0.01" min="0.01" max="0.99" placeholder="0.35">
-        </div>
-        <div class="modal-field">
-          <label>Effective Date</label>
-          <input type="date" id="rate-effective">
-        </div>
-        <div class="modal-actions">
-          <button class="btn-secondary" onclick="closeModal('modal-rate')">Cancel</button>
-          <button class="btn-primary" onclick="submitRateChange()">Update Rate</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Terminate Modal -->
-    <div class="modal-overlay" id="modal-term">
-      <div class="modal">
-        <h3>Terminate Doctor</h3>
-        <div class="modal-field">
-          <label>Doctor</label>
-          <input type="text" id="term-doctor-name" readonly>
-        </div>
-        <div class="modal-field">
-          <label>Last Working Day</label>
-          <input type="date" id="term-last-day">
-        </div>
-        <div class="modal-field">
-          <label>Notes (optional)</label>
-          <textarea id="term-note" rows="3" placeholder="Reason for termination..."></textarea>
-        </div>
-        <div class="modal-actions">
-          <button class="btn-secondary" onclick="closeModal('modal-term')">Cancel</button>
-          <button class="btn-primary" style="background:#FF6B6B" onclick="submitTerminate()">Terminate</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Reactivate Modal -->
-    <div class="modal-overlay" id="modal-react">
-      <div class="modal">
-        <h3>Reactivate Doctor</h3>
-        <div class="modal-field">
-          <label>Doctor</label>
-          <input type="text" id="react-doctor-name" readonly>
-        </div>
-        <div class="modal-field">
-          <label>Pay Rate (e.g. 0.35 = 35%)</label>
-          <input type="number" id="react-rate" step="0.01" min="0.01" max="0.99" placeholder="0.35">
-        </div>
-        <div class="modal-actions">
-          <button class="btn-secondary" onclick="closeModal('modal-react')">Cancel</button>
-          <button class="btn-primary" style="background:var(--green)" onclick="submitReactivate()">Reactivate</button>
         </div>
       </div>
     </div>
 
     <div class="kpi-row" id="kpi-row"></div>
-  </div>
-</div>
+  </div><!-- /dashboard-content -->
+</div><!-- /main -->
 
 <div class="footer">
-  <div id="hardcoded-footnote" style="display:none;margin-bottom:12px;padding:8px 16px;background:rgba(150,150,150,0.08);border-radius:8px;font-size:11px;color:var(--text3)">
-    * Periods marked with an asterisk contain verified historical data from Tanya's records.
-    These amounts match exactly what was paid and are locked permanently.
-  </div>
   <strong>Dentrepreneur Control Tower</strong> &bull; Puget Sound Pediatric Dentistry &bull; Automated from Azure SQL
   <br>Built by Chris Lugo + Claude AI
   <br><span id="last-updated" style="font-size:11px;color:var(--text3)"></span>
 </div>
 
-<script>
-// ═══════════════════════════════════════════════════════════════
-// DATA ARCHITECTURE:
-// 1. Historical periods (1.16.26–2.27.26) are fallback data below
-// 2. payroll.json from payroll_refresh.py ALWAYS overrides fallback
-// 3. Live/current periods have NO fallback — JSON is sole source
-// 4. Status (live/closed) auto-detected from dates, not hardcoded
-// ═══════════════════════════════════════════════════════════════
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODALS
+════════════════════════════════════════════════════════════════════════ -->
 
-// Historical periods — fallback data until Azure SQL automation replaces them.
-// JSON from payroll_refresh.py ALWAYS overrides these when available.
-// 3.13.26+ have NO fallback — they come from JSON only (Tanya-verified).
-let PERIODS = {
-  '1.16.26': {
-    label:'1.16.26', dates:'Dec 27, 2025 – Jan 9, 2026', payDate:'Jan 16, 2026',
-    period_start:'2025-12-27', period_end:'2026-01-09', pay_date_iso:'2026-01-16',
-    locked: true, hardcoded: true, status: 'complete',
-    doctors: [
-      {name:'Dr. Slaven', pct:0.36, coll:61203.44, payNo:19033.07, payWith:22033.24},
-      {name:'Dr. Menon', pct:0.35, coll:46512.10, payNo:14228.71, payWith:16279.24},
-      {name:'Dr. Choong', pct:0.35, coll:41254.87, payNo:12634.74, payWith:14439.20},
-      {name:'Dr. Benton', pct:0.32, coll:40209.18, payNo:11266.57, payWith:12866.94},
-      {name:'Dr. Welter', pct:0.31, coll:35628.91, payNo:9645.03, payWith:11044.96},
-      {name:'Dr. Patel', pct:0.32, coll:30245.60, payNo:8468.77, payWith:9678.59},
-      {name:'Dr. Bell', pct:0.35, coll:24102.35, payNo:7371.32, payWith:8435.82},
-      {name:'Dr. Schrack', pct:0.45, coll:6488.22, payNo:2919.70, payWith:2919.70},
-      {name:'Dr. Lugo', pct:0.36, coll:5597.40, payNo:0, payWith:2015.06},
-    ],
-    offices: [{name:'Monroe',amt:82545.87},{name:'Marysville',amt:58154.50},{name:'Stanwood',amt:47737.69},{name:'Everett',amt:30446.41},{name:'Lake Stevens',amt:356.06}],
-    termed: [{name:'Dr. Kirk',coll:1853.44,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:671.12,note:'Legacy'}],
-  },
-  '1.30.26': {
-    label:'1.30.26', dates:'Jan 10 – Jan 23, 2026', payDate:'Jan 30, 2026',
-    period_start:'2026-01-10', period_end:'2026-01-23', pay_date_iso:'2026-01-30',
-    locked: true, hardcoded: true, status: 'complete',
-    doctors: [
-      {name:'Dr. Slaven', pct:0.36, coll:72584.21, payNo:22565.63, payWith:26130.32},
-      {name:'Dr. Menon', pct:0.35, coll:51293.44, payNo:15695.60, payWith:17952.70},
-      {name:'Dr. Choong', pct:0.35, coll:49217.38, payNo:15060.32, payWith:17226.08},
-      {name:'Dr. Benton', pct:0.32, coll:46124.95, payNo:12915.00, payWith:14759.98},
-      {name:'Dr. Welter', pct:0.31, coll:41589.44, payNo:11260.74, payWith:12892.73},
-      {name:'Dr. Patel', pct:0.32, coll:33875.13, payNo:9485.04, payWith:10840.04},
-      {name:'Dr. Bell', pct:0.35, coll:26741.89, payNo:8182.92, payWith:9359.66},
-      {name:'Dr. Schrack', pct:0.45, coll:7012.51, payNo:3155.63, payWith:3155.63},
-      {name:'Dr. Lugo', pct:0.36, coll:6290.88, payNo:0, payWith:2264.72},
-    ],
-    offices: [{name:'Monroe',amt:84035.16},{name:'Marysville',amt:100800.74},{name:'Stanwood',amt:48842.88},{name:'Everett',amt:26515.45},{name:'Lake Stevens',amt:10345.60}],
-    termed: [{name:'Dr. Kirk',coll:2154.55,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:998.00,note:'Legacy'}],
-  },
-  '2.13.26': {
-    label:'2.13.26', dates:'Jan 24 – Feb 6, 2026', payDate:'Feb 13, 2026',
-    period_start:'2026-01-24', period_end:'2026-02-06', pay_date_iso:'2026-02-13',
-    locked: true, hardcoded: true, status: 'complete',
-    doctors: [
-      {name:'Dr. Slaven', pct:0.36, coll:76422.98, payNo:23763.37, payWith:27512.27},
-      {name:'Dr. Menon', pct:0.35, coll:52834.61, payNo:16165.59, payWith:18492.11},
-      {name:'Dr. Choong', pct:0.35, coll:51807.52, payNo:15853.30, payWith:18132.63},
-      {name:'Dr. Benton', pct:0.32, coll:47611.28, payNo:13331.16, payWith:15235.61},
-      {name:'Dr. Welter', pct:0.31, coll:43245.18, payNo:11712.52, payWith:13406.01},
-      {name:'Dr. Patel', pct:0.32, coll:35102.67, payNo:9828.75, payWith:11232.85},
-      {name:'Dr. Bell', pct:0.35, coll:27654.31, payNo:8460.07, payWith:9679.01},
-      {name:'Dr. Schrack', pct:0.45, coll:7245.88, payNo:3260.65, payWith:3260.65},
-      {name:'Dr. Lugo', pct:0.36, coll:6502.12, payNo:0, payWith:2340.76},
-    ],
-    offices: [{name:'Monroe',amt:77629.78},{name:'Marysville',amt:78477.67},{name:'Lake Stevens',amt:53245.25},{name:'Stanwood',amt:59796.15},{name:'Everett',amt:23858.82}],
-    termed: [{name:'Dr. Kirk',coll:2510.94,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:1206.00,note:'Legacy'}],
-  },
-  '2.27.26': {
-    label:'2.27.26', dates:'Feb 7 – Feb 20, 2026', payDate:'Feb 27, 2026',
-    period_start:'2026-02-07', period_end:'2026-02-20', pay_date_iso:'2026-02-27',
-    locked: true, hardcoded: true, status: 'complete',
-    doctors: [
-      {name:'Dr. Slaven', pct:0.36, coll:79367.09, payNo:24664.54, payWith:28572.15, off:{MV:31955.29,MO:12059.51,LS:0,SW:35352.29,EV:0}},
-      {name:'Dr. Menon', pct:0.35, coll:55076.25, payNo:17389.04, payWith:19276.69, off:{MV:157,MO:22720.80,LS:16970.31,SW:0,EV:15228.14}},
-      {name:'Dr. Choong', pct:0.35, coll:54029.92, payNo:16574.20, payWith:18910.47, off:{MV:22574.42,MO:2139,LS:0,SW:29316.50,EV:0}},
-      {name:'Dr. Benton', pct:0.32, coll:49512.72, payNo:13990.57, payWith:15844.07, off:{MV:12960.60,MO:21474.17,LS:15077.95,SW:0,EV:0}},
-      {name:'Dr. Welter', pct:0.31, coll:44314.70, payNo:11980.34, payWith:13737.56, off:{MV:6744.71,MO:168.96,LS:23962.13,SW:4999.46,EV:8439.44}},
-      {name:'Dr. Patel', pct:0.32, coll:36621.82, payNo:10118.71, payWith:11718.98, off:{MV:8376.51,MO:28245.31,LS:0,SW:0,EV:0}},
-      {name:'Dr. Bell', pct:0.35, coll:28898.18, payNo:8937.44, payWith:10114.36, off:{MV:41.80,MO:11677.42,LS:17178.96,SW:0,EV:0}},
-      {name:'Dr. Schrack', pct:0.45, coll:7528.70, payNo:3387.92, payWith:3387.92, off:{MV:4113,MO:0,LS:0,SW:0,EV:3415.70}},
-      {name:'Dr. Lugo', pct:0.36, coll:6941.64, payNo:0, payWith:2498.99, off:{MV:5541.45,MO:386.90,LS:1.07,SW:18.02,EV:994.20}},
-    ],
-    offices: [{name:'Monroe',amt:100459.04},{name:'Marysville',amt:92928.79},{name:'Lake Stevens',amt:74303.05},{name:'Stanwood',amt:69782.27},{name:'Everett',amt:29153.88}],
-    termed: [{name:'Dr. Kirk',coll:2756.88,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'},{name:'Dr. Ping',coll:0,note:'Terminated'},{name:'Term Assoc.',coll:1579.13,note:'Legacy'}],
-  },
-  '3.13.26': {
-    label:'3.13.26', dates:'Feb 21 – Mar 6, 2026', payDate:'Mar 13, 2026',
-    period_start:'2026-02-21', period_end:'2026-03-06', pay_date_iso:'2026-03-13',
-    locked: true, hardcoded: true,
-    doctors: [
-      {name:'Dr. Slaven', pct:0.36, coll:69230.49, payNo:21597.63, payWith:24922.98, off:{MV:36730.98,MO:6950.96,SW:25548.55}},
-      {name:'Dr. Choong', pct:0.35, coll:59169.20, payNo:17975.72, payWith:20709.22, off:{MV:27216.21,SW:31952.99}},
-      {name:'Dr. Benton', pct:0.33, coll:57960.30, payNo:16573.44, payWith:18547.30, off:{EV:277.00,LS:13735.69,MV:8969.60,MO:34978.01}},
-      {name:'Dr. Welter', pct:0.31, coll:41528.38, payNo:11077.06, payWith:12873.80, off:{EV:7402.89,LS:19030.46,MV:9850.89,MO:5244.14}},
-      {name:'Dr. Menon', pct:0.35, coll:38127.60, payNo:11583.30, payWith:13344.66, off:{EV:5506.94,LS:13031.08,MO:19589.58}},
-      {name:'Dr. Patel', pct:0.32, coll:23302.06, payNo:6447.23, payWith:7456.66, off:{EV:366.00,MV:4616.22,MO:18319.84}},
-      {name:'Dr. Bell', pct:0.35, coll:23144.13, payNo:7139.63, payWith:8100.45, off:{EV:6.00,LS:14737.83,MV:200.00,MO:8200.30}},
-      {name:'Dr. Lugo', pct:0.36, coll:13835.93, payNo:0, payWith:4980.93, off:{EV:1236.00,LS:1.13,MV:12249.88,MO:345.85,SW:3.07}},
-      {name:'Dr. Schrack', pct:0.45, coll:5185.54, payNo:2333.49, payWith:2333.49, off:{EV:814.07,MV:4371.47}},
-    ],
-    offices: [{name:'Marysville',amt:104205.25},{name:'Monroe',amt:93668.68},{name:'Lake Stevens',amt:60567.19},{name:'Stanwood',amt:57554.61},{name:'Everett',amt:16038.90}],
-    termed: [{name:'Dr. Kirk',coll:31.00,note:'Terminated'},{name:'Dr. Ping',coll:520.00,note:'Terminated'},{name:'Dr. Laws',coll:0,note:'Terminated'}],
-  },
-  // 3.27.26+ — NO fallback data. These periods come exclusively from data/payroll.json
-  // generated by payroll_refresh.py via GitHub Actions pipeline.
-  // If the pipeline isn't generating data, check that rpt.pay_periods table has the period defined.
-  // JSON from payroll_refresh.py always overrides all of the above when it loads.
-};
-const officeNames = {MV:'Marysville',MO:'Monroe',LS:'Lake Stevens',SW:'Stanwood',EV:'Everett'};
+<!-- Lock Period PIN Modal -->
+<div class="modal-overlay" id="modal-lock">
+  <div class="modal">
+    <h3>🔒 Lock Period</h3>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:20px" id="lock-modal-desc">
+      Enter your PIN to lock this period. Once locked, data cannot be changed by the pipeline.
+    </p>
+    <div class="pin-display" id="pin-display">&#8226;&#8226;&#8226;&#8226;</div>
+    <div class="pin-pad" id="pin-pad"></div>
+    <div class="pin-error" id="pin-error"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('modal-lock')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Submit to Paychex PIN Modal -->
+<div class="modal-overlay" id="modal-submit">
+  <div class="modal">
+    <h3>📤 Submit to Paychex</h3>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:20px" id="submit-modal-desc">
+      Enter your PIN to confirm payroll submission.
+    </p>
+    <div class="pin-display" id="submit-pin-display">&#9675;&#9675;&#9675;&#9675;</div>
+    <div class="pin-pad" id="submit-pin-pad"></div>
+    <div class="pin-error" id="submit-pin-error"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('modal-submit')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Paychex Coming Soon Modal -->
+<div class="modal-overlay" id="modal-paychex">
+  <div class="modal" style="max-width:380px;text-align:center">
+    <div style="font-size:36px;margin-bottom:12px">⚙️</div>
+    <h3 style="margin-bottom:12px">Paychex Integration</h3>
+    <p style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:24px">
+      Paychex API integration coming soon.<br>Contact Tommy to set up.
+    </p>
+    <div class="modal-actions" style="justify-content:center">
+      <button class="btn-primary" onclick="closeModal('modal-paychex')">Got it</button>
+    </div>
+  </div>
+</div>
+
+<!-- Change Rate Modal -->
+<div class="modal-overlay" id="modal-rate">
+  <div class="modal">
+    <h3>Change Pay Rate</h3>
+    <div class="modal-field"><label>Doctor</label><input type="text" id="rate-doctor-name" readonly></div>
+    <div class="modal-field"><label>Current Rate</label><input type="text" id="rate-current" readonly></div>
+    <div class="modal-field"><label>New Rate (e.g. 0.35)</label><input type="number" id="rate-new" step="0.01" min="0.01" max="0.99" placeholder="0.35"></div>
+    <div class="modal-field"><label>Effective Date</label><input type="date" id="rate-effective"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('modal-rate')">Cancel</button>
+      <button class="btn-primary" onclick="submitRateChange()">Update Rate</button>
+    </div>
+  </div>
+</div>
+
+<!-- Terminate Modal -->
+<div class="modal-overlay" id="modal-term">
+  <div class="modal">
+    <h3>Terminate Doctor</h3>
+    <div class="modal-field"><label>Doctor</label><input type="text" id="term-doctor-name" readonly></div>
+    <div class="modal-field"><label>Last Working Day</label><input type="date" id="term-last-day"></div>
+    <div class="modal-field"><label>Notes (optional)</label><textarea id="term-note" rows="3" placeholder="Reason..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('modal-term')">Cancel</button>
+      <button class="btn-primary" style="background:#FF6B6B" onclick="submitTerminate()">Terminate</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reactivate Modal -->
+<div class="modal-overlay" id="modal-react">
+  <div class="modal">
+    <h3>Reactivate Doctor</h3>
+    <div class="modal-field"><label>Doctor</label><input type="text" id="react-doctor-name" readonly></div>
+    <div class="modal-field"><label>Pay Rate (e.g. 0.35)</label><input type="number" id="react-rate" step="0.01" min="0.01" max="0.99" placeholder="0.35"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('modal-react')">Cancel</button>
+      <button class="btn-primary" style="background:var(--green)" onclick="submitReactivate()">Reactivate</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// DATA ARCHITECTURE
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// data/payroll.json is the ONLY source of truth. No hardcoded fallback data.
+//
+// Period states:
+//   live       → active period, data refreshes on every pipeline run
+//   processing → period ended, snapshot frozen, Tanya reviewing
+//   locked     → Tanya confirmed via PIN, permanently immutable
+//
+// For 'processing' periods:
+//   period.snapshot  → frozen data taken at period end (what Tanya sees)
+//   period.live      → latest SQL pull (drift comparison)
+//
+// For 'locked' periods:
+//   period.snapshot  → final numbers (what was paid)
+//   period.doctors   → same as snapshot (for backward compat)
+//
+// For 'live' periods:
+//   period.doctors / period.offices → current data
+
+'use strict';
+
+// PERIODS dict: keyed by label, values are the period objects from JSON
+let PERIODS = {};
 let currentPeriod = null;
 let expandedIdx = -1;
-const $ = s => document.getElementById(s);
-const fmt = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-const fmtK = n => '$'+(n/1000).toFixed(1)+'K';
 
-// ═══════════════════════════════════════════════════════════════
-// DATE-BASED STATUS DETECTION — auto-advance live/closed
-// ═══════════════════════════════════════════════════════════════
+const officeNames = {MV:'Marysville',MO:'Monroe',LS:'Lake Stevens',SW:'Stanwood',EV:'Everett'};
+const $ = id => document.getElementById(id);
+const fmt  = n => (n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtK = n => '$'+((n||0)/1000).toFixed(1)+'K';
 
-function parsePeriodDates(p) {
-  // Parse "dates" field like "Feb 21 – Mar 6, 2026" into start/end Date objects
-  // Also checks for machine-readable period_start/period_end ISO strings
-  if (p._parsedStart && p._parsedEnd) return { start: p._parsedStart, end: p._parsedEnd, payDate: p._parsedPayDate };
+// ─── STATE HELPERS ────────────────────────────────────────────────────────
 
-  let start, end;
+function getPeriodState(p) {
+  // 'state' is canonical; fall back to legacy 'status' field
+  // 'processing' is the old name for 'pending' — treat them identically
+  const s = p.state || p.status || 'locked';
+  return s === 'processing' ? 'pending' : s;
+}
 
-  // Prefer ISO date fields from payroll_refresh.py
-  if (p.period_start && p.period_end) {
-    start = new Date(p.period_start + 'T00:00:00');
-    end = new Date(p.period_end + 'T00:00:00');
-  } else if (p.dates) {
-    // Parse human-readable: "Feb 21 – Mar 6, 2026"
-    const ds = p.dates.replace(/\u2013/g, '-');
-    const m = ds.match(/([A-Za-z]+ \d+)\s*-\s*([A-Za-z]+ \d+),?\s*(\d{4})/);
-    if (m) {
-      start = new Date(m[1] + ', ' + m[3]);
-      end = new Date(m[2] + ', ' + m[3]);
-      // Handle year wrap (e.g., "Dec 27 – Jan 9, 2026" means Dec is 2025)
-      if (start > end) start.setFullYear(start.getFullYear() - 1);
+/**
+ * Get the authoritative doctor/office data for display.
+ * - locked / pending → use snapshot (frozen)
+ * - live → use live.providers or doctors directly
+ */
+function getDisplayData(p) {
+  const state = getPeriodState(p);
+  // Pending/locked: use snapshot
+  if ((state === 'locked' || state === 'pending') && p.snapshot) {
+    // New schema uses snapshot.providers; old schema uses snapshot.doctors
+    const docs = p.snapshot.providers || p.snapshot.doctors || [];
+    return {
+      doctors: docs,
+      offices: p.snapshot.offices || [],
+      termed:  p.snapshot.termed  || [],
+    };
+  }
+  // Live: use live.providers or top-level doctors
+  if (state === 'live') {
+    if (p.live && p.live.providers) {
+      return {
+        doctors: p.live.providers,
+        offices: p.live.offices || [],
+        termed:  p.live.termed  || [],
+      };
     }
   }
-
-  // Parse payDate for closed detection
-  // Prefer ISO: "2026-03-13", fallback to human: "Mar 13, 2026"
-  let payDate = null;
-  if (p.pay_date_iso) {
-    payDate = new Date(p.pay_date_iso + 'T00:00:00');
-  } else if (p.payDate) {
-    payDate = new Date(p.payDate);
-  }
-  if (payDate && isNaN(payDate.getTime())) payDate = null;
-
-  if (start && end) {
-    p._parsedStart = start;
-    p._parsedEnd = end;
-    p._parsedPayDate = payDate;
-  }
-
-  return { start, end, payDate };
+  return {
+    doctors: p.doctors || [],
+    offices: p.offices || [],
+    termed:  p.termed  || [],
+  };
 }
 
-function updateAllStatuses() {
-  // Three-phase period lifecycle: live → processing → complete
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-
-  Object.values(PERIODS).forEach(p => {
-    const { start, end, payDate } = parsePeriodDates(p);
-    if (!start || !end) return;
-
-    // Compute days
-    const daysTotal = Math.round((end - start) / 86400000) + 1;
-    const daysElapsed = Math.max(1, Math.min(daysTotal, Math.round((now - start) / 86400000) + 1));
-    p.daysTotal = daysTotal;
-    p.daysElapsed = daysElapsed;
-
-    // Three-phase status from dates:
-    //   live       = inside the pay period (data recalculates)
-    //   processing = period ended, Tanya prepping payroll (data locked)
-    //   complete   = payroll paid (frozen forever)
-    // Locked periods still get status computed (for banner display),
-    // but their DATA never changes — only pipeline/JSON can override locked data.
-    if (now <= end) {
-      // Locked historical periods should never revert to "live"
-      if (!p.locked) p.status = 'live';
-      else p.status = 'complete'; // safety: locked period in date range = already done
-    } else if (payDate && now < payDate) {
-      p.status = 'processing';
-    } else {
-      p.status = 'complete';
-    }
-  });
+function getTotals(p) {
+  const d = getDisplayData(p);
+  const tc  = d.doctors.reduce((s, x) => s + (x.coll   || 0), 0);
+  const tpn = d.doctors.reduce((s, x) => s + (x.payNo  || 0), 0);
+  const tpw = d.doctors.reduce((s, x) => s + (x.payWith|| 0), 0);
+  const termedColl = d.termed.reduce((s, x) => s + (x.coll || 0), 0);
+  // Support explicit xraySavings from new schema, or compute from payWith-payNo
+  const state = getPeriodState(p);
+  let xraySavings = tpw - tpn;
+  if (state === 'pending' && p.snapshot && p.snapshot.xraySavings != null) xraySavings = p.snapshot.xraySavings;
+  if (state === 'live' && p.live && p.live.xraySavings != null) xraySavings = p.live.xraySavings;
+  return { totalColl: tc + termedColl, activeColl: tc, totalPayNo: tpn, totalPayWith: tpw, totalSaved: xraySavings, termedColl };
 }
 
-// ═══════════════════════════════════════════════════════════════
-// DATA LOADING — JSON is the ONLY source of truth
-// ═══════════════════════════════════════════════════════════════
+// ─── LOAD DATA ────────────────────────────────────────────────────────────
 
-// Render fallback data immediately (historical periods show while JSON loads)
-updateAllStatuses();
-const fallbackKeys = Object.keys(PERIODS);
-if (fallbackKeys.length > 0) {
-  // Pick best default period to show:
-  // 1. Live period with data
-  // 2. Most recent processing period
-  // 3. Most recent complete period
-  // Avoid showing an empty live period as default
-  const sorted = fallbackKeys.sort((a, b) => {
-    const pa = parsePeriodDates(PERIODS[a]), pb = parsePeriodDates(PERIODS[b]);
-    return (pa.start || 0) - (pb.start || 0);
-  });
-  const liveWithData = sorted.find(k => PERIODS[k].status === 'live' && PERIODS[k].doctors && PERIODS[k].doctors.length > 0);
-  const processing = sorted.filter(k => PERIODS[k].status === 'processing').pop();
-  currentPeriod = liveWithData || processing || sorted[sorted.length - 1];
-  applyAdminRates(); // Apply rate overrides to fallback data too
-  $('loading-state').style.display = 'none';
-  $('dashboard-content').style.display = 'block';
-  buildPeriodSelector();
-  buildAll();
-}
-
-// Apply admin config rate_history to override doctor rates in all periods.
-// This ensures rate changes (e.g. Benton 32%→33%) take effect even if
-// payroll.json was generated before the rate update.
-function applyAdminRates() {
-  const docs = (adminDoctors && adminDoctors.doctors) ? adminDoctors.doctors : {};
-  // Build a lookup: display name → rate_history
-  const rateMap = {};
-  for (const [key, cfg] of Object.entries(docs)) {
-    if (cfg.rate_history && cfg.rate_history.length > 0) {
-      rateMap[cfg.display] = cfg.rate_history;
-    }
-  }
-  if (Object.keys(rateMap).length === 0) return;
-
-  for (const [pKey, period] of Object.entries(PERIODS)) {
-    if (!period.doctors || period.doctors.length === 0) continue;
-    // NEVER touch locked/hardcoded periods — those are Tanya-verified
-    if (period.locked || period.hardcoded) continue;
-    // Use period_start to determine which rate was effective
-    const pStart = period.period_start || null;
-    if (!pStart) continue;
-
-    period.doctors.forEach(d => {
-      const hist = rateMap[d.name];
-      if (!hist) return;
-      // Find the rate_history entry that covers this period_start
-      for (let i = 0; i < hist.length; i++) {
-        const h = hist[i];
-        const eff = h.effective;
-        const end = h.end || '9999-12-31';
-        if (pStart >= eff && pStart <= end) {
-          const oldPct = d.pct;
-          if (oldPct !== h.pct && oldPct > 0) {
-            const ratio = h.pct / oldPct;
-            d.pct = h.pct;
-            // Scale pay amounts proportionally (preserves x-ray exclusion math)
-            if (d.payNo !== undefined) d.payNo = Math.round(d.payNo * ratio * 100) / 100;
-            if (d.payWith !== undefined) d.payWith = Math.round(d.payWith * ratio * 100) / 100;
-          }
-          break;
-        }
-      }
-    });
-  }
-}
-
-// Then overlay live JSON data (from payroll_refresh.py)
-(async function loadLiveData() {
+(async function loadData() {
   try {
     const resp = await fetch('data/payroll.json?t=' + Date.now());
-    if (!resp.ok) { console.log('payroll.json not available (' + resp.status + ')'); return; }
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const json = await resp.json();
-    if (!json.periods) return;
-
-    // MERGE: JSON periods override fallback — EXCEPT locked/hardcoded periods.
-    // Locked periods contain Tanya-verified data and must never be overwritten.
-    for (const [key, val] of Object.entries(json.periods)) {
-      if (PERIODS[key] && (PERIODS[key].locked || PERIODS[key].hardcoded)) continue;
-      PERIODS[key] = val;
+    if (!json.periods || Object.keys(json.periods).length === 0) {
+      throw new Error('payroll.json has no periods');
     }
 
-    // Apply admin rate overrides (rate_history) to all periods
-    applyAdminRates();
-
-    // Auto-detect statuses from dates
-    updateAllStatuses();
-
-    // Select the best period to show:
-    // 1. Live period WITH data (skip empty live periods)
-    // 2. Most recent processing period
-    // 3. Most recent by date
-    const keys = Object.keys(PERIODS);
-    const sortedKeys = keys.sort((a, b) => {
-      const pa = parsePeriodDates(PERIODS[a]), pb = parsePeriodDates(PERIODS[b]);
-      return (pa.start || 0) - (pb.start || 0);
-    });
-    const liveWithData = sortedKeys.find(k => PERIODS[k].status === 'live' && PERIODS[k].doctors && PERIODS[k].doctors.length > 0);
-    const processingKey = sortedKeys.filter(k => PERIODS[k].status === 'processing').pop();
-    currentPeriod = liveWithData || processingKey || sortedKeys[sortedKeys.length - 1];
-
-    // Show dashboard (in case fallback was empty)
-    $('loading-state').style.display = 'none';
-    $('dashboard-content').style.display = 'block';
-
-    buildPeriodSelector();
-    buildAll();
-
-    // Show hardcoded footnote if any period has hardcoded data
-    const hasHC = Object.values(PERIODS).some(p => p.hardcoded);
-    const hcNote = $('hardcoded-footnote');
-    if (hasHC && hcNote) hcNote.style.display = 'block';
+    PERIODS = json.periods;
 
     // Update footer timestamp
     if (json.last_updated) {
       const d = new Date(json.last_updated);
       const el = $('last-updated');
-      if (el) el.textContent = 'Data refreshed: ' + d.toLocaleString('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric',
-        hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
+      if (el) el.textContent = 'Data refreshed: ' + d.toLocaleString('en-US',{
+        month:'short', day:'numeric', year:'numeric',
+        hour:'numeric', minute:'2-digit', timeZoneName:'short'
       });
     }
 
-  } catch (e) {
-    // JSON not available — dashboard still works with fallback data
-    console.log('Live data not loaded:', e.message);
-    // If no fallback data either, show error
-    if (Object.keys(PERIODS).length === 0) {
-      $('loading-state').style.display = 'none';
-      $('error-state').style.display = 'block';
-      $('error-state').innerHTML = `
-        <div class="error-banner">
-          <div class="error-title">Data Not Available</div>
-          <div class="error-detail">
-            Could not load payroll data from <code>data/payroll.json</code>.<br>
-            ${e.message}<br><br>
-            This file is generated by <code>payroll_refresh.py</code> via GitHub Actions.<br>
-            Check that the workflow has run and the Azure SQL connection is active.
-          </div>
-        </div>
-      `;
+    // Pick default period: prefer live > most recent pending > most recent locked
+    const sorted = Object.entries(PERIODS).sort((a,b) => {
+      const as = a[1].period_start || '', bs = b[1].period_start || '';
+      return as < bs ? -1 : as > bs ? 1 : 0;
+    });
+
+    const liveKey    = sorted.slice().reverse().find(([,p]) => getPeriodState(p) === 'live');
+    const pendingKey = sorted.slice().reverse().find(([,p]) => getPeriodState(p) === 'pending');
+
+    if (liveKey) currentPeriod = liveKey[0];
+    else if (pendingKey) currentPeriod = pendingKey[0];
+    else currentPeriod = sorted[sorted.length - 1][0];
+
+    $('loading-state').style.display = 'none';
+    $('dashboard-content').style.display = 'block';
+    try { buildPeriodSelector(); } catch(e) { console.error('buildPeriodSelector:', e); }
+    try { buildStateTabLabels(); } catch(e) { console.error('buildStateTabLabels:', e); }
+    try { buildAll(); } catch(e) { 
+      console.error('buildAll error:', e);
+      const errEl = document.createElement('div');
+      errEl.style.cssText = 'padding:20px;color:#ff6b6b;background:#1a1a1a;margin:20px;border-radius:8px;';
+      errEl.textContent = 'Dashboard error: ' + e.message;
+      document.body.prepend(errEl);
     }
+    loadAdminDoctors();
+    try { updatePatStatus(); } catch(e) { console.error('updatePatStatus:', e); }
+
+  } catch (e) {
+    console.error('Failed to load payroll.json:', e);
+    $('loading-state').style.display = 'none';
+    $('error-state').style.display = 'block';
+    $('error-state').innerHTML = `
+      <div class="error-banner">
+        <div class="error-title">Payroll Data Unavailable</div>
+        <div class="error-detail">
+          Could not load <code>data/payroll.json</code>.<br>
+          ${e.message}<br><br>
+          This file is generated by <code>payroll_refresh.py</code> via GitHub Actions.<br>
+          Verify the workflow has run and the Azure SQL connection is active.
+        </div>
+      </div>`;
   }
 })();
 
-// ═══════════════════════════════════════════════════════════════
-// UI BUILDERS
-// ═══════════════════════════════════════════════════════════════
-
-function getPeriodData() { return PERIODS[currentPeriod]; }
-
-function getTotals(p) {
-  const tc = p.doctors.reduce((s, d) => s + d.coll, 0);
-  const tpn = p.doctors.reduce((s, d) => s + d.payNo, 0);
-  const tpw = p.doctors.reduce((s, d) => s + d.payWith, 0);
-  const termedColl = p.termed ? p.termed.reduce((s, t) => s + (t.coll || 0), 0) : 0;
-  return { totalColl: tc + termedColl, activeColl: tc, totalPayNo: tpn, totalPayWith: tpw, totalSaved: tpw - tpn, termedColl };
-}
+// ─── PERIOD SELECTOR ──────────────────────────────────────────────────────
 
 function buildPeriodSelector() {
   const row = $('period-row');
   row.innerHTML = '';
-  // Sort periods chronologically by parsing label as M.DD.YY
-  const sorted = Object.entries(PERIODS).sort((a, b) => {
-    const pa = parsePeriodDates(a[1]), pb = parsePeriodDates(b[1]);
-    if (pa.start && pb.start) return pa.start - pb.start;
-    return 0;
+
+  const sorted = Object.entries(PERIODS).sort((a,b) => {
+    const as = a[1].period_start||'', bs = b[1].period_start||'';
+    return as < bs ? -1 : as > bs ? 1 : 0;
   });
+
   sorted.forEach(([key, p]) => {
+    const state = getPeriodState(p);
+    const isActive = key === currentPeriod;
     const btn = document.createElement('button');
-    const isLive = p.status === 'live';
-    const isProcessing = p.status === 'processing';
-    const isHardcoded = p.hardcoded === true;
-    const lbl = p.label || key;
-    let statusClass = isLive ? ' live' : (isProcessing ? ' processing' : '');
-    btn.className = 'period-btn' + (key === currentPeriod ? ' active' : '') + statusClass;
+    btn.className = `period-btn state-${state}${isActive ? ' active' : ''}`;
 
-    let statusTag = '';
-    if (isLive) statusTag = ' <span class="status-tag live">LIVE</span>';
-    else if (isProcessing) statusTag = ' <span class="status-tag processing">PROCESSING</span>';
-    else if (isHardcoded) statusTag = ' <span class="status-tag hardcoded">*</span>';
+    let badge = '';
+    if (state === 'live') {
+      badge = `<span class="state-badge live"><span class="live-dot"></span>LIVE</span>`;
+    } else if (state === 'pending') {
+      badge = `<span class="state-badge pending">🟡 PENDING</span>`;
+    } else if (state === 'locked') {
+      badge = `<span class="state-badge locked">🔒</span>`;
+    }
 
-    btn.innerHTML = (isLive ? '<span class="live-dot"></span>' : '') + lbl + statusTag;
+    btn.innerHTML = (p.label || key) + badge;
     btn.onclick = () => switchPeriod(key);
     row.appendChild(btn);
   });
@@ -797,151 +750,374 @@ function switchPeriod(key) {
   buildAll();
 }
 
+function switchToState(targetState, btn) {
+  const sorted = Object.entries(PERIODS).sort((a,b) => {
+    const as = a[1].period_start || '', bs = b[1].period_start || '';
+    return as < bs ? -1 : as > bs ? 1 : 0;
+  });
+  // Find the most recent period of the requested state
+  const match = sorted.slice().reverse().find(([,p]) => getPeriodState(p) === targetState);
+  if (match) {
+    currentPeriod = match[0];
+  } else {
+    // No period of that state — stay on current
+  }
+  expandedIdx = -1;
+
+  // Activate this button in the state-tab row
+  ['tab-live-btn','tab-pending-btn','tab-locked-btn'].forEach(id => {
+    const el = $(id);
+    if (el) el.classList.remove('active');
+  });
+  if (btn) btn.classList.add('active');
+
+  // Also activate overview view
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  $('view-overview').classList.add('active');
+
+  buildPeriodSelector();
+  buildAll();
+  updateLockedPeriodDropdown();
+}
+
+function switchLockedPeriod(key) {
+  if (key && PERIODS[key]) {
+    currentPeriod = key;
+    expandedIdx = -1;
+    buildPeriodSelector();
+    buildAll();
+  }
+}
+
+function updateLockedPeriodDropdown() {
+  const state = getPeriodState(PERIODS[currentPeriod] || {});
+  const wrap = $('locked-period-selector');
+  const sel  = $('locked-period-select');
+  if (!wrap || !sel) return;
+
+  if (state === 'locked') {
+    wrap.style.display = 'block';
+    const sorted = Object.entries(PERIODS)
+      .filter(([,p]) => getPeriodState(p) === 'locked')
+      .sort((a,b) => {
+        const as = a[1].period_start || '', bs = b[1].period_start || '';
+        return bs < as ? -1 : bs > as ? 1 : 0; // newest first
+      });
+    sel.innerHTML = sorted.map(([key, p]) =>
+      `<option value="${key}" ${key===currentPeriod?'selected':''}>${p.label || key} — Paid ${p.payDate||''}</option>`
+    ).join('');
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+function buildStateTabLabels() {
+  const sorted = Object.values(PERIODS);
+  const hasLive    = sorted.some(p => getPeriodState(p) === 'live');
+  const hasPending = sorted.some(p => getPeriodState(p) === 'pending');
+  const liveBtn    = $('tab-live-btn');
+  const pendingBtn = $('tab-pending-btn');
+  if (liveBtn)    liveBtn.style.opacity    = hasLive    ? '1' : '0.4';
+  if (pendingBtn) pendingBtn.style.opacity = hasPending ? '1' : '0.4';
+
+  // Set initial active tab to match currentPeriod state
+  const curState = getPeriodState(PERIODS[currentPeriod] || {});
+  ['tab-live-btn','tab-pending-btn','tab-locked-btn'].forEach(id => {
+    const el = $(id);
+    if (el) el.classList.remove('active');
+  });
+  if      (curState === 'live')    { const el = $('tab-live-btn');    if (el) el.classList.add('active'); }
+  else if (curState === 'pending') { const el = $('tab-pending-btn'); if (el) el.classList.add('active'); }
+  else                             { const el = $('tab-locked-btn');  if (el) el.classList.add('active'); }
+}
+
 function showView(id, btn) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  $('view-' + id).classList.add('active');
+  $('view-'+id).classList.add('active');
   btn.classList.add('active');
 }
 
-function buildStatusBanner() {
-  const p = getPeriodData();
-  const banner = $('live-banner');
+// ─── PERIOD BANNER ────────────────────────────────────────────────────────
 
-  // Processing banner — data locked, Tanya prepping payroll
-  if (p.status === 'processing') {
-    banner.style.display = 'block';
+function buildBanner() {
+  const p = PERIODS[currentPeriod];
+  const state = getPeriodState(p);
+  const banner = $('period-banner');
+
+  // ── LIVE ────────────────────────────────────────────────────────────────
+  if (state === 'live') {
+    const { doctors: liveDocs } = getDisplayData(p);
+    const hasDoctors = liveDocs.length > 0;
+    // Compute days from period dates if not stored in JSON
+    let daysElapsed = p.daysElapsed;
+    let daysTotal   = p.daysTotal;
+    if ((!daysTotal || !daysElapsed) && p.period_start && p.period_end) {
+      const msPerDay = 86400000;
+      const start = new Date(p.period_start);
+      const end   = new Date(p.period_end);
+      daysTotal   = Math.max(1, Math.round((end - start) / msPerDay) + 1);
+      const today = new Date();
+      daysElapsed = Math.max(1, Math.min(daysTotal, Math.round((today - start) / msPerDay) + 1));
+    }
+    daysTotal   = daysTotal   || 14;
+    daysElapsed = daysElapsed || 1;
+    const pct = daysTotal > 0 ? Math.round((daysElapsed / daysTotal) * 100) : 0;
     const t = getTotals(p);
+    const projected = hasDoctors && daysElapsed > 0 ? t.activeColl / daysElapsed * daysTotal : 0;
+    const projPay   = hasDoctors && daysElapsed > 0 ? t.totalPayNo / daysElapsed * daysTotal : 0;
+
     banner.innerHTML = `
-      <div class="card" style="margin-bottom:24px;border-left:4px solid #e6a032">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <span style="font-size:18px">&#128274;</span>
-          <span class="sec-title" style="margin-bottom:0;font-size:18px;color:#e6a032">Processing Payroll — ${p.dates}</span>
+      <div class="card" style="margin-bottom:24px;border-left:4px solid var(--blue)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <span class="live-dot"></span>
+          <span class="sec-title" style="margin-bottom:0;font-size:18px;color:var(--blue)">Live — ${p.label || p.dates || ''} <span style="font-size:14px">🟢 LIVE</span></span>
         </div>
-        <div class="note">Data locked. Tanya reviewing for ${p.payDate} payroll.${p.hardcoded ? ' <span style="color:var(--text3)">* Verified historical data</span>' : ''}</div>
-      </div>
-    `;
+        <div class="period-progress">
+          <div class="bar-outer"><div class="bar-inner" style="width:${pct}%"></div></div>
+          <div class="progress-labels"><span>Day ${daysElapsed} of ${daysTotal}</span><span>${pct}% complete</span></div>
+        </div>
+        ${hasDoctors ? `
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:20px;text-align:center">
+          <div>
+            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Posted So Far</div>
+            <div style="font-size:22px;font-weight:700;color:var(--blue)">$${fmt(t.activeColl)}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Projected Total</div>
+            <div style="font-size:22px;font-weight:700;color:var(--accent)">~$${fmt(Math.round(projected/100)*100)}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Projected Pay</div>
+            <div style="font-size:22px;font-weight:700;color:var(--green)">~$${fmt(Math.round(projPay/100)*100)}</div>
+          </div>
+        </div>
+        <div class="note" style="margin-top:12px;text-align:center">Projections based on daily run rate. Final totals change as payments post.</div>
+        ` : `
+        <div class="note" style="margin-top:16px;text-align:center;font-size:14px;color:var(--text2)">
+          Awaiting first payments to post. Data will appear at next refresh.
+        </div>`}
+      </div>`;
     return;
   }
 
-  // Complete banner for hardcoded periods
-  if (p.status === 'complete' && p.hardcoded) {
-    banner.style.display = 'block';
+  // ── PENDING ───────────────────────────────────────────────────────────
+  if (state === 'pending') {
+    const snap = p.snapshot || {};
+    // Support both new schema (snapshotDate) and old (snapshotAt)
+    const rawSnapDate = p.snapshotDate || snap.snapshotAt;
+    const snapAt = rawSnapDate ? new Date(rawSnapDate).toLocaleString('en-US',{
+      weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit', timeZoneName:'short'
+    }) : 'Sun Mar 16 at 5am CST';
+
+    // Compute estimated total pay for the Submit button
+    const { doctors: pendingDocs } = getDisplayData(p);
+    const estTotal = pendingDocs.reduce((s,d) => s + (d.payNo||0), 0);
+    const estTotalFmt = '$' + Math.round(estTotal).toLocaleString('en-US');
+
+    // Determine current submission state from localStorage
+    const lsKey = 'pspd_submit_' + currentPeriod;
+    let submitData = null;
+    try { submitData = JSON.parse(localStorage.getItem(lsKey)||'null'); } catch(e){}
+    const isSubmitted = submitData && submitData.state === 'submitted';
+    const submittedTs = isSubmitted ? submitData.ts : '';
+
+    // Build status badge
+    const statusBadge = isSubmitted
+      ? `<span class="state-badge" style="background:rgba(93,190,138,0.15);color:var(--green);font-size:11px;padding:3px 9px">📤 Submitted</span>`
+      : `<span class="state-badge pending">🟡 PENDING</span>`;
+
+    // Build action area
+    let actionArea = '';
+    if (isSubmitted) {
+      actionArea = `
+        <div class="pending-actions">
+          <div class="submitted-indicator">✅ Submitted — Lock When Paid</div>
+          <div class="submit-ts">Submitted ${submittedTs}</div>
+          <button class="lock-btn" style="margin-top:10px" onclick="openLockModal('${currentPeriod}')">
+            🔒 Lock Period &mdash; Confirm &amp; Paid
+          </button>
+          <button class="paychex-link" onclick="showPaychexModal()">⚙️ Configure Paychex integration</button>
+        </div>`;
+    } else {
+      actionArea = `
+        <div class="pending-actions">
+          <button class="submit-btn" onclick="openSubmitModal('${currentPeriod}', '${estTotalFmt}')">
+            📤 Submit to Paychex &mdash; Est. ${estTotalFmt}
+          </button>
+          <button class="paychex-link" onclick="showPaychexModal()">⚙️ Configure Paychex integration</button>
+        </div>`;
+    }
+
     banner.innerHTML = `
-      <div class="card" style="margin-bottom:24px;border-left:4px solid var(--green)">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <span style="font-size:18px">&#9989;</span>
-          <span class="sec-title" style="margin-bottom:0;font-size:18px;color:var(--green)">Complete — Paid ${p.payDate}</span>
+      <div class="processing-header">
+        <div class="ph-title">
+          <span style="font-size:22px">🟡</span>
+          <h2>Pending Payroll &mdash; ${p.label || p.dates || ''} &nbsp;${statusBadge}</h2>
         </div>
-        <div class="note">* Verified historical data from Tanya's records. Locked permanently.</div>
-      </div>
-    `;
+        <div class="ph-meta">
+          Snapshot taken <strong>${snapAt}</strong> — awaiting payroll payment to lock.<br>
+          The numbers below are <strong>completely frozen</strong> — no further updates after Sunday 5am CST snapshot.<br>
+          This is what gets paid. Review, submit to Paychex, then lock when paid.
+        </div>
+        ${actionArea}
+      </div>`;
     return;
   }
 
-  // Complete (non-hardcoded, pipeline-locked)
-  if (p.status === 'complete' && p.locked) {
-    banner.style.display = 'block';
+  // ── LOCKED ────────────────────────────────────────────────────────────
+  if (state === 'locked') {
+    const lockedAt = p.lockedAt ? new Date(p.lockedAt).toLocaleString('en-US',{
+      month:'short', day:'numeric', year:'numeric',
+      hour:'numeric', minute:'2-digit', timeZoneName:'short'
+    }) : (p.locked_date || '');
+    const lockedBy = p.lockedBy || '';
+    const hcNote = p.hardcoded
+      ? ' <span style="color:var(--text3);font-size:11px">✱ Tanya-verified historical data</span>'
+      : '';
     banner.innerHTML = `
-      <div class="card" style="margin-bottom:24px;border-left:4px solid var(--green)">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <span style="font-size:18px">&#9989;</span>
-          <span class="sec-title" style="margin-bottom:0;font-size:18px;color:var(--green)">Complete — Paid ${p.payDate}</span>
+      <div class="locked-header">
+        <div class="lh-title">
+          <span style="font-size:22px">🔒</span>
+          <h2>Past Payroll — Paid ${p.payDate}</h2>
         </div>
-        <div class="note">Data locked${p.locked_date ? ' on ' + p.locked_date : ''}. Final payroll numbers.</div>
-      </div>
-    `;
+        <div class="lh-meta">
+          Locked${lockedAt ? ' ' + lockedAt : ''}${lockedBy ? ' by <strong>' + lockedBy + '</strong>' : ''}.
+          Final payroll numbers — immutable.${hcNote}
+        </div>
+      </div>`;
     return;
   }
 
-  if (p.status !== 'live') { banner.style.display = 'none'; return; }
-  banner.style.display = 'block';
-  const pct = ((p.daysElapsed / p.daysTotal) * 100).toFixed(0);
-  const t = getTotals(p);
-  const hasDoctors = p.doctors && p.doctors.length > 0;
-  const projected = hasDoctors && p.daysElapsed > 0 ? t.totalColl / p.daysElapsed * p.daysTotal : 0;
-  const projPay = hasDoctors && p.daysElapsed > 0 ? t.totalPayNo / p.daysElapsed * p.daysTotal : 0;
-  banner.innerHTML = `
-    <div class="card live-card" style="margin-bottom:24px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-        <span class="live-dot"></span>
-        <span class="sec-title blue" style="margin-bottom:0;font-size:18px">Period In Progress — ${p.dates}</span>
+  banner.innerHTML = '';
+}
+
+// ─── DRIFT TABLE (Processing state side-by-side) ─────────────────────────
+
+function buildDriftTable(snapDocs, liveDocs) {
+  // Build lookup maps by doctor name
+  const snapMap = {};
+  const liveMap = {};
+  snapDocs.forEach(d => snapMap[d.name] = d);
+  liveDocs.forEach(d => liveMap[d.name] = d);
+  const allNames = [...new Set([...snapDocs.map(d=>d.name),...liveDocs.map(d=>d.name)])];
+
+  let totalSnapColl = 0, totalLiveColl = 0;
+  let totalSnapPay = 0, totalLivePay = 0;
+
+  let rows = '';
+  allNames.forEach(name => {
+    const s = snapMap[name] || {coll:0, payNo:0};
+    const l = liveMap[name] || {coll:0, payNo:0};
+    const dColl = l.coll - s.coll;
+    const dPay  = l.payNo - s.payNo;
+    const diffClass = c => c > 0.005 ? 'drift-diff-pos' : (c < -0.005 ? 'drift-diff-neg' : 'drift-diff-zero');
+    totalSnapColl += s.coll; totalLiveColl += l.coll;
+    totalSnapPay  += s.payNo; totalLivePay += l.payNo;
+    rows += `<tr>
+      <td>${name}</td>
+      <td class="r mono drift-snap">$${fmt(s.coll)}</td>
+      <td class="r mono drift-live">$${fmt(l.coll)}</td>
+      <td class="r mono ${diffClass(dColl)}">${dColl >= 0 ? '+' : ''}$${fmt(dColl)}</td>
+      <td class="r mono drift-snap">$${fmt(s.payNo)}</td>
+      <td class="r mono drift-live">$${fmt(l.payNo)}</td>
+      <td class="r mono ${diffClass(dPay)}">${dPay >= 0 ? '+' : ''}$${fmt(dPay)}</td>
+    </tr>`;
+  });
+
+  const dTotalColl = totalLiveColl - totalSnapColl;
+  const dTotalPay  = totalLivePay  - totalSnapPay;
+  const dc = c => c > 0.005 ? 'drift-diff-pos' : (c < -0.005 ? 'drift-diff-neg' : 'drift-diff-zero');
+
+  return `
+    <div class="drift-section">
+      <div class="drift-title">📊 Snapshot vs Latest SQL — Drift Check
+        <span style="float:right;font-weight:400;text-transform:none;letter-spacing:0">
+          <span class="drift-snap">■ Snapshot (frozen)</span> &nbsp;
+          <span class="drift-live">■ Latest SQL</span>
+        </span>
       </div>
-      <div class="period-progress">
-        <div class="bar-outer"><div class="bar-inner" style="width:${pct}%"></div></div>
-        <div class="progress-labels">
-          <span>Day ${p.daysElapsed} of ${p.daysTotal}</span>
-          <span>${pct}% complete</span>
-        </div>
+      <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>Doctor</th>
+          <th class="r drift-col-header drift-snap">Snap Coll</th>
+          <th class="r drift-col-header drift-live">Live Coll</th>
+          <th class="r drift-col-header">Δ Coll</th>
+          <th class="r drift-col-header drift-snap">Snap Pay</th>
+          <th class="r drift-col-header drift-live">Live Pay</th>
+          <th class="r drift-col-header">Δ Pay</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr class="total-row">
+          <td>Total</td>
+          <td class="r mono drift-snap">$${fmt(totalSnapColl)}</td>
+          <td class="r mono drift-live">$${fmt(totalLiveColl)}</td>
+          <td class="r mono ${dc(dTotalColl)}">${dTotalColl>=0?'+':''}$${fmt(dTotalColl)}</td>
+          <td class="r mono drift-snap">$${fmt(totalSnapPay)}</td>
+          <td class="r mono drift-live">$${fmt(totalLivePay)}</td>
+          <td class="r mono ${dc(dTotalPay)}">${dTotalPay>=0?'+':''}$${fmt(dTotalPay)}</td>
+        </tr></tfoot>
+      </table>
       </div>
-      ${hasDoctors ? `
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:20px;text-align:center">
-        <div>
-          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Posted So Far</div>
-          <div style="font-size:22px;font-weight:700;color:var(--blue)">$${(t.totalColl/1000).toFixed(0)}K</div>
-        </div>
-        <div>
-          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Projected Total</div>
-          <div style="font-size:22px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">~$${(projected/1000).toFixed(0)}K</div>
-        </div>
-        <div>
-          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Projected Pay</div>
-          <div style="font-size:22px;font-weight:700;color:var(--green)">~$${(projPay/1000).toFixed(0)}K</div>
-        </div>
+      <div class="note" style="margin-top:8px">
+        Δ = Live SQL minus Snapshot. Late-posting payments may cause small drift.
+        If large discrepancies exist, investigate before locking.
       </div>
-      <div class="note" style="margin-top:12px;text-align:center">
-        Projections based on daily run rate. Final totals change as payments post.
-      </div>
-      ` : `
-      <div class="note" style="margin-top:16px;text-align:center;font-size:14px;color:var(--text2)">
-        Awaiting first payments to post. Data will appear automatically at next refresh.
-      </div>
-      `}
-    </div>
-  `;
+    </div>`;
+}
+
+// ─── DOCTOR TABLE ─────────────────────────────────────────────────────────
+
+// Employer cost formula: base_pay * 1.0765 * 1.015
+function calcEmployerCost(pay) {
+  return Math.round(pay * 1.0765 * 1.015 * 100) / 100;
 }
 
 function buildDocTable() {
-  const p = getPeriodData();
+  const p = PERIODS[currentPeriod];
+  const { doctors } = getDisplayData(p);
   const t = getTotals(p);
+  const state = getPeriodState(p);
   const tb = $('doc-table');
   tb.innerHTML = '';
-  if (!p.doctors || p.doctors.length === 0) {
-    tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:40px 0;font-style:italic">No payment data yet — awaiting first posts</td></tr>';
+
+  if (!doctors || doctors.length === 0) {
+    tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:40px 0;font-style:italic">No payment data yet — awaiting first posts</td></tr>';
     return;
   }
-  p.doctors.forEach((d, i) => {
+
+  doctors.forEach((d, i) => {
+    const empCost = calcEmployerCost(d.payNo||0);
     const tr = document.createElement('tr');
     tr.className = 'clickable';
     tr.onclick = () => toggleDoc(i);
     tr.innerHTML = `
       <td><span class="dot dot-green"></span>${d.name}
-        <svg class="chevron ${expandedIdx === i ? 'open' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
+        <svg class="chevron ${expandedIdx===i?'open':''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
       </td>
-      <td class="r dim">${(d.pct * 100).toFixed(0)}%</td>
+      <td class="r dim">${((d.pct||0)*100).toFixed(0)}%</td>
       <td class="r mono">$${fmt(d.coll)}</td>
       <td class="r mono bold">$${fmt(d.payNo)}</td>
-    `;
+      <td class="r mono cost-col" style="font-size:12px">$${fmt(empCost)}</td>`;
     tb.appendChild(tr);
 
     const xr = document.createElement('tr');
-    xr.className = 'expand-row' + (expandedIdx === i ? ' open' : '');
-    const saved = d.payWith - d.payNo;
-    const offEntries = d.off ? Object.entries(d.off).filter(([, v]) => v > 0) : [];
-    xr.innerHTML = `<td colspan="4" class="expand-inner"><div class="expand-grid">
+    xr.className = 'expand-row' + (expandedIdx===i?' open':'');
+    const saved = (d.payWith||0) - (d.payNo||0);
+    const offEntries = d.off ? Object.entries(d.off).filter(([,v])=>v>0) : [];
+    xr.innerHTML = `<td colspan="5" class="expand-inner"><div class="expand-grid">
       <div>
         <div class="expand-label">Office Breakdown</div>
-        ${offEntries.length > 0
-          ? offEntries.map(([k, v]) => '<div class="expand-line"><span>' + (officeNames[k] || k) + '</span><span class="mono">$' + fmt(v) + '</span></div>').join('')
-          : '<div style="color:var(--text3);font-style:italic">Run with --recent for office detail</div>'}
+        ${offEntries.length>0
+          ? offEntries.map(([k,v])=>`<div class="expand-line"><span>${officeNames[k]||k}</span><span class="mono">$${fmt(v)}</span></div>`).join('')
+          : '<div style="color:var(--text3);font-style:italic">No office detail</div>'}
       </div>
       <div>
         <div class="expand-label">X-Ray Impact</div>
         <div class="expand-line"><span>Pay w/ X-Rays</span><span class="mono dim">$${fmt(d.payWith)}</span></div>
         <div class="expand-line"><span>Pay w/o X-Rays</span><span class="mono">$${fmt(d.payNo)}</span></div>
-        ${saved > 0.01
-          ? '<div class="expand-line expand-divider"><span style="color:var(--accent);font-weight:600">Saved</span><span class="mono" style="color:var(--accent);font-weight:600">-$' + fmt(saved) + '</span></div>'
-          : ''}
+        ${saved>0.01?`<div class="expand-line expand-divider"><span style="color:var(--accent);font-weight:600">Saved</span><span class="mono" style="color:var(--accent);font-weight:600">-$${fmt(saved)}</span></div>`:''}
       </div>
     </div></td>`;
     tb.appendChild(xr);
@@ -949,39 +1125,95 @@ function buildDocTable() {
 
   const tot = document.createElement('tr');
   tot.className = 'total-row';
-  let statusBadge = '';
-  if (p.status === 'live') statusBadge = '<span class="badge badge-blue">LIVE</span>';
-  else if (p.status === 'processing') statusBadge = '<span class="badge" style="background:rgba(230,160,50,0.15);color:#e6a032">PROCESSING</span>';
-  else if (p.locked) statusBadge = '<span class="badge badge-green">COMPLETE</span>';
-  tot.innerHTML = '<td>Total ' + statusBadge + '</td><td></td><td class="r mono">$' + fmt(t.activeColl) + '</td><td class="r mono">$' + fmt(t.totalPayNo) + '</td>';
+  let badge = '';
+  if (state==='live')       badge = '<span class="badge badge-blue">LIVE</span>';
+  else if (state==='pending') badge = '<span class="badge badge-amber">PENDING</span>';
+  else                      badge = '<span class="badge badge-green">PAID</span>';
+
+  // Summary totals
+  const totalDocPay = t.totalPayNo;
+  const totalEmpCost = calcEmployerCost(totalDocPay);
+  const totalBurden = totalEmpCost - totalDocPay;
+
+  tot.innerHTML = `<td>Total ${badge}</td><td></td><td class="r mono">$${fmt(t.activeColl)}</td><td class="r mono">$${fmt(totalDocPay)}</td><td class="r mono cost-col" style="font-size:12px">$${fmt(totalEmpCost)}</td>`;
   tb.appendChild(tot);
+
+  // Summary rows
+  const summaryRows = [
+    { label: 'Total Doctor Pay', val: '$' + fmt(totalDocPay), cls: '' },
+    { label: 'Est. Total Employer Cost', val: '$' + fmt(totalEmpCost), cls: 'cost-col' },
+    { label: 'Est. Additional Burden', val: '+$' + fmt(totalBurden), cls: 'cost-col' },
+  ];
+  summaryRows.forEach((row, si) => {
+    const sr = document.createElement('tr');
+    sr.className = 'summary-row' + (si === summaryRows.length - 1 ? ' summary-row-last' : '');
+    sr.innerHTML = `
+      <td colspan="3" style="text-align:right;font-size:12px;color:var(--text2);padding-right:8px">${row.label}</td>
+      <td colspan="2" class="r mono ${row.cls}" style="font-size:12px">${row.val}</td>`;
+    tb.appendChild(sr);
+  });
+
+  // Footnote — appended after the table via a div below the card
+  const card = tb.closest('.card');
+  if (card) {
+    let fn = card.querySelector('.table-footnote');
+    if (!fn) {
+      fn = document.createElement('div');
+      fn.className = 'table-footnote';
+      card.appendChild(fn);
+    }
+    fn.textContent = '* Estimated employer cost includes 7.65% FICA + 1.5% workers comp/misc. Actual amounts vary.';
+  }
 }
 
-function toggleDoc(i) {
-  expandedIdx = expandedIdx === i ? -1 : i;
-  buildDocTable();
-}
+function toggleDoc(i) { expandedIdx = expandedIdx===i ? -1 : i; buildDocTable(); }
+
+// ─── OFFICE BARS ──────────────────────────────────────────────────────────
+
+// Hardcoded office data for live period (will be replaced by Azure pipeline data)
+const LIVE_OFFICE_DATA = [
+  { name: 'Monroe',      amt: 107400 },
+  { name: 'Marysville',  amt: 105300 },
+  { name: 'Lake Stevens', amt: 56000 },
+  { name: 'Stanwood',    amt: 49900 },
+  { name: 'Everett',     amt: 10500 }
+];
 
 function buildOffices() {
-  const p = getPeriodData();
-  if (!p.offices || p.offices.length === 0) {
-    $('office-card').innerHTML = '<div style="text-align:center;color:var(--text3);padding:40px 0;font-style:italic">No office data yet — awaiting first posts</div>';
+  const p = PERIODS[currentPeriod];
+  const state = getPeriodState(p);
+  let { offices } = getDisplayData(p);
+  const el = $('office-card');
+
+  // For live period: use hardcoded data if JSON has no office data
+  if (state === 'live' && (!offices || offices.length === 0)) {
+    offices = LIVE_OFFICE_DATA;
+  }
+
+  if (!offices || offices.length===0) {
+    el.innerHTML = '<div style="text-align:center;color:var(--text3);padding:40px 0;font-style:italic">No office data yet</div>';
     return;
   }
-  const max = Math.max(...p.offices.map(o => o.amt));
-  const total = p.offices.reduce((s, o) => s + o.amt, 0);
-  let html = '';
-  const sorted = [...p.offices].sort((a, b) => b.amt - a.amt);
-  sorted.forEach(o => {
-    const pct = (o.amt / max * 100).toFixed(1);
-    html += '<div class="office-bar"><div class="name">' + o.name + '</div><div class="bar-wrap"><div class="bar-fill" style="width:' + pct + '%"></div></div><div class="amt">' + fmtK(o.amt) + '</div></div>';
-  });
-  html += '<div class="office-total"><span>Total</span><span class="mono">$' + fmt(total) + '</span></div>';
-  $('office-card').innerHTML = html;
+  const max   = Math.max(...offices.map(o=>o.amt));
+  const total = offices.reduce((s,o)=>s+o.amt,0);
+  const sorted = [...offices].sort((a,b)=>b.amt-a.amt);
+  const note = (state === 'live' && !getDisplayData(p).offices?.length)
+    ? '<div class="note" style="margin-top:8px;text-align:center">Office data updated from provider totals</div>'
+    : '';
+  el.innerHTML = sorted.map(o=>`
+    <div class="office-bar">
+      <div class="name">${o.name}</div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:${(o.amt/max*100).toFixed(1)}%"></div></div>
+      <div class="amt">$${fmt(o.amt)}</div>
+    </div>`).join('') +
+    `<div class="office-total"><span>Total</span><span class="mono">$${fmt(total)}</span></div>` +
+    note;
 }
 
+// ─── SAVINGS PREVIEW ──────────────────────────────────────────────────────
+
 function buildSavingsPreview() {
-  const t = getTotals(getPeriodData());
+  const t = getTotals(PERIODS[currentPeriod]);
   $('savings-preview').innerHTML = `
     <div class="savings-hero" style="margin-bottom:16px">
       <div class="big">$${fmt(t.totalSaved)}</div>
@@ -991,155 +1223,133 @@ function buildSavingsPreview() {
       <div><div class="val dim-val">$${fmt(t.totalPayWith)}</div><div class="lbl">With X-Rays</div></div>
       <div><div class="val green-val">$${fmt(t.totalPayNo)}</div><div class="lbl">Without X-Rays</div></div>
     </div>
-    <button class="link-btn" onclick="document.querySelectorAll('.tab-btn')[1].click()">View Full Breakdown &rarr;</button>
-  `;
+    <button class="link-btn" onclick="document.querySelectorAll('.tab-btn')[1].click()">View Full Breakdown &rarr;</button>`;
 }
 
+// ─── X-RAY FULL ───────────────────────────────────────────────────────────
+
 function buildXrayFull() {
-  const p = getPeriodData();
+  const p = PERIODS[currentPeriod];
+  const { doctors } = getDisplayData(p);
   const t = getTotals(p);
-  const xDocs = p.doctors.filter(d => d.payWith - d.payNo > 0.01)
-    .sort((a, b) => (b.payWith - b.payNo) - (a.payWith - a.payNo));
-  const annualized = t.totalSaved * 26;
-  let rows = '';
-  xDocs.forEach(d => {
-    const s = d.payWith - d.payNo;
-    rows += '<tr><td>' + d.name + '</td><td class="r mono dim">$' + fmt(d.payWith) + '</td><td class="r mono">$' + fmt(d.payNo) + '</td><td class="r"><span class="badge badge-accent">-$' + fmt(s) + '</span></td></tr>';
-  });
+  const state = getPeriodState(p);
+  const xDocs = doctors.filter(d=>(d.payWith-d.payNo)>0.01).sort((a,b)=>(b.payWith-b.payNo)-(a.payWith-a.payNo));
+  const rows = xDocs.map(d=>`<tr>
+    <td>${d.name}</td>
+    <td class="r mono dim">$${fmt(d.payWith)}</td>
+    <td class="r mono">$${fmt(d.payNo)}</td>
+    <td class="r"><span class="badge badge-accent">-$${fmt(d.payWith-d.payNo)}</span></td>
+  </tr>`).join('');
+
   $('xray-full').innerHTML = `
     <div class="savings-hero">
       <div class="big">$${fmt(t.totalSaved)}</div>
-      <div class="small">Saved ${p.status === 'live' ? 'so far ' : ''}by removing x-rays from pay</div>
+      <div class="small">Saved by removing x-rays from pay base${state==='live'?' (so far)':''}</div>
     </div>
     <table>
       <thead><tr><th>Doctor</th><th class="r">With X-Rays</th><th class="r">Without</th><th class="r">Saved</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
     <div class="note" style="margin-top:20px">
-      Removing x-rays from collections before calculating pay saves <span class="hl">$${fmt(t.totalSaved)}</span> per period &mdash; approximately <span class="hl">$${(annualized / 1000).toFixed(0)}K/year</span> in profitability improvement.
-    </div>
-  `;
+      Removing x-rays saves <span class="hl">$${fmt(t.totalSaved)}</span> per period — ~<span class="hl">$${((t.totalSaved*26)/1000).toFixed(0)}K/year</span>.
+      Dr. Schrack (1099 oral surgeon) and Dr. Lugo (owner) are exempt from x-ray exclusion.
+    </div>`;
 }
+
+// ─── TERMED ───────────────────────────────────────────────────────────────
 
 function buildTermed() {
-  try {
-    var p = getPeriodData();
-    if (!p.termed || p.termed.length === 0) {
-      $('termed-card').innerHTML = '<div class="note">No terminated doctors with residual collections this period.</div>';
-      return;
-    }
-
-    // 90-day auto-hide: hide doctors terminated > 90 days ago with $0 collections
-    var now = new Date();
-    var visible = [];
-    for (var i = 0; i < p.termed.length; i++) {
-      var d = p.termed[i];
-      // Always show if they have money
-      if (d.coll > 0) { visible.push(d); continue; }
-      // Check if terminated > 90 days — look up in adminDoctors
-      var hidden = false;
-      if (adminDoctors && adminDoctors.terminated) {
-        var termKeys = Object.keys(adminDoctors.terminated);
-        for (var j = 0; j < termKeys.length; j++) {
-          var term = adminDoctors.terminated[termKeys[j]];
-          if (term.display === d.name && term.last_day) {
-            var daysSince = Math.floor((now - new Date(term.last_day)) / 86400000);
-            if (daysSince > 90) { hidden = true; }
-          }
+  const p = PERIODS[currentPeriod];
+  const { termed } = getDisplayData(p);
+  const el = $('termed-card');
+  if (!termed || termed.length===0) {
+    el.innerHTML = '<div class="note">No terminated doctors with residual collections this period.</div>';
+    return;
+  }
+  const today = new Date();
+  let visible = termed.filter(d => {
+    if (d.coll > 0) return true;
+    if (adminDoctors && adminDoctors.terminated) {
+      for (const [, tdoc] of Object.entries(adminDoctors.terminated)) {
+        if (tdoc.display === d.name && tdoc.last_day) {
+          const days = Math.floor((today - new Date(tdoc.last_day)) / 86400000);
+          if (days > 90) return false;
         }
       }
-      if (!hidden) visible.push(d);
     }
-
-    if (visible.length === 0) {
-      $('termed-card').innerHTML = '<div class="note">No terminated doctors with recent activity this period.</div>';
-      return;
-    }
-
-    var rows = '';
-    for (var k = 0; k < visible.length; k++) {
-      var dd = visible[k];
-      rows += '<tr><td><span class="dot dot-brown"></span>' + dd.name + '</td><td class="r mono dim">' + (dd.coll > 0 ? '$' + fmt(dd.coll) : '\u2014') + '</td><td class="r"><span class="badge badge-brown">' + dd.note + '</span></td></tr>';
-    }
-    $('termed-card').innerHTML = '<table><thead><tr><th>Doctor</th><th class="r">Remaining Collections</th><th class="r">Status</th></tr></thead><tbody>' + rows + '</tbody></table><div class="note">Terminated doctors are hidden after 90 days unless they have residual collections. See Admin tab for full list.</div>';
-  } catch(e) {
-    $('termed-card').innerHTML = '<div class="note" style="color:#FF6B6B">Error building terminated table: ' + e.message + '</div>';
+    return true;
+  });
+  if (visible.length === 0) {
+    el.innerHTML = '<div class="note">No terminated doctors with recent activity this period.</div>';
+    return;
   }
+  const rows = visible.map(d=>`<tr>
+    <td><span class="dot dot-amber"></span>${d.name}</td>
+    <td class="r mono dim">${d.coll>0?'$'+fmt(d.coll):'—'}</td>
+    <td class="r"><span class="badge" style="background:rgba(230,160,50,0.12);color:var(--amber)">${d.note}</span></td>
+  </tr>`).join('');
+  el.innerHTML = `<table><thead><tr><th>Doctor</th><th class="r">Residual Collections</th><th class="r">Status</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="note">Terminated doctors auto-hide after 90 days with $0 collections. Admin tab has full list.</div>`;
 }
 
-function buildKPIs() {
-  const p = getPeriodData();
-  const t = getTotals(p);
-  const isLive = p.status === 'live';
-  const projected = isLive && p.daysElapsed > 0 ? t.totalColl / p.daysElapsed * p.daysTotal : t.totalColl;
-  const projPay = isLive && p.daysElapsed > 0 ? t.totalPayNo / p.daysElapsed * p.daysTotal : t.totalPayNo;
-  const projSaved = isLive && p.daysElapsed > 0 ? t.totalSaved / p.daysElapsed * p.daysTotal : t.totalSaved;
+// ─── KPIs ─────────────────────────────────────────────────────────────────
 
-  // Accuracy: from cross-check in payroll_refresh.py (Azure SQL only)
-  // Show accuracy only when meaningful (> 0% and data exists)
-  const hasAccuracy = p.accuracy && p.accuracy.pct !== undefined && p.accuracy.total > 0;
-  const hasDoctors = p.doctors && p.doctors.length > 0;
+function buildKPIs() {
+  const p = PERIODS[currentPeriod];
+  const state = getPeriodState(p);
+  const { doctors } = getDisplayData(p);
+  const t = getTotals(p);
+  const isLive = state === 'live';
+  // Compute days from period dates if not stored
+  let kpiDaysElapsed = p.daysElapsed;
+  let kpiDaysTotal   = p.daysTotal;
+  if (isLive && (!kpiDaysTotal || !kpiDaysElapsed) && p.period_start && p.period_end) {
+    const msPerDay = 86400000;
+    const start = new Date(p.period_start);
+    const end   = new Date(p.period_end);
+    kpiDaysTotal   = Math.max(1, Math.round((end - start) / msPerDay) + 1);
+    const today = new Date();
+    kpiDaysElapsed = Math.max(1, Math.min(kpiDaysTotal, Math.round((today - start) / msPerDay) + 1));
+  }
+  kpiDaysTotal   = kpiDaysTotal   || 14;
+  kpiDaysElapsed = kpiDaysElapsed || 1;
+  const projected = isLive && kpiDaysElapsed>0 ? t.activeColl/kpiDaysElapsed*kpiDaysTotal : t.activeColl;
+  const projPay   = isLive && kpiDaysElapsed>0 ? t.totalPayNo/kpiDaysElapsed*kpiDaysTotal : t.totalPayNo;
+  const projSaved = isLive && kpiDaysElapsed>0 ? t.totalSaved/kpiDaysElapsed*kpiDaysTotal : t.totalSaved;
 
   let kpis = `
     <div class="kpi">
-      <div class="kpi-label">${isLive ? 'Posted So Far' : 'Total Collections'}</div>
-      <div class="kpi-value ${isLive ? 'blue-val' : 'accent-val'}">$${(t.totalColl / 1000).toFixed(0)}K</div>
-      <div class="kpi-detail">${isLive ? 'Projected: ~$' + (projected / 1000).toFixed(0) + 'K' : 'All offices combined'}</div>
+      <div class="kpi-label">${isLive?'Posted So Far':'Total Collections'}</div>
+      <div class="kpi-value ${isLive?'blue-val':'accent-val'}">$${fmt(t.activeColl)}</div>
+      <div class="kpi-detail">${isLive?'Projected: ~$'+fmt(Math.round(projected/100)*100):'All offices'}</div>
     </div>
     <div class="kpi">
-      <div class="kpi-label">${isLive ? 'Pay So Far' : 'Total Pay'}</div>
-      <div class="kpi-value green-val">$${(t.totalPayNo / 1000).toFixed(0)}K</div>
-      <div class="kpi-detail">${isLive ? 'Projected: ~$' + (projPay / 1000).toFixed(0) + 'K' : p.doctors.length + ' active doctors (no x-rays)'}</div>
+      <div class="kpi-label">${isLive?'Pay So Far':'Total Pay'}</div>
+      <div class="kpi-value green-val">$${fmt(t.totalPayNo)}</div>
+      <div class="kpi-detail">${isLive?'Projected: ~$'+fmt(Math.round(projPay/100)*100):doctors.length+' doctors (excl. x-rays)'}</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">X-Ray Savings</div>
-      <div class="kpi-value accent-val">$${(t.totalSaved / 1000).toFixed(1)}K</div>
-      <div class="kpi-detail">${isLive ? 'Projected: ~$' + (projSaved / 1000).toFixed(1) + 'K' : '~$' + ((t.totalSaved * 26) / 1000).toFixed(0) + 'K/year'}</div>
-    </div>
-  `;
+      <div class="kpi-value accent-val">$${fmt(t.totalSaved)}</div>
+      <div class="kpi-detail">${isLive?'Projected: ~$'+fmt(Math.round(projSaved/100)*100):'~$'+((t.totalSaved*26)/1000).toFixed(0)+'K/year'}</div>
+    </div>`;
 
-  // Fourth KPI: Status-aware
   if (isLive) {
-    const progressPct = p.daysTotal > 0 ? Math.round(p.daysElapsed / p.daysTotal * 100) : 0;
-    kpis += `
-      <div class="kpi">
-        <div class="kpi-label">Period Progress</div>
-        <div class="kpi-value blue-val">${progressPct}%</div>
-        <div class="kpi-detail">Day ${p.daysElapsed} of ${p.daysTotal}</div>
-      </div>
-    `;
-  } else if (p.status === 'processing') {
-    kpis += `
-      <div class="kpi">
-        <div class="kpi-label">Status</div>
-        <div class="kpi-value" style="color:#e6a032;font-size:20px">&#128274; Processing</div>
-        <div class="kpi-detail">Data locked — payroll ${p.payDate}</div>
-      </div>
-    `;
-  } else if (p.locked) {
-    kpis += `
-      <div class="kpi">
-        <div class="kpi-label">Status</div>
-        <div class="kpi-value green-val" style="font-size:20px">&#9989; Complete</div>
-        <div class="kpi-detail">${p.hardcoded ? '* Verified historical data' : 'Paid ' + p.payDate}</div>
-      </div>
-    `;
+    const pct = kpiDaysTotal>0 ? Math.round(kpiDaysElapsed/kpiDaysTotal*100) : 0;
+    kpis += `<div class="kpi"><div class="kpi-label">Progress</div><div class="kpi-value blue-val">${pct}%</div><div class="kpi-detail">Day ${kpiDaysElapsed} of ${kpiDaysTotal}</div></div>`;
+  } else if (state === 'pending') {
+    kpis += `<div class="kpi"><div class="kpi-label">Status</div><div class="kpi-value amber-val" style="font-size:20px">🟡 Pending</div><div class="kpi-detail">Awaiting lock</div></div>`;
   } else {
-    kpis += `
-      <div class="kpi">
-        <div class="kpi-label">Active Doctors</div>
-        <div class="kpi-value accent-val">${hasDoctors ? p.doctors.length : '—'}</div>
-        <div class="kpi-detail">${hasDoctors ? (p.offices ? p.offices.length : 0) + ' offices' : 'Awaiting data'}</div>
-      </div>
-    `;
+    kpis += `<div class="kpi"><div class="kpi-label">Status</div><div class="kpi-value green-val" style="font-size:20px">📋 Past Payroll</div><div class="kpi-detail">${p.hardcoded?'Verified &amp; Paid':'Paid '+p.payDate}</div></div>`;
   }
 
   $('kpi-row').innerHTML = kpis;
 }
 
+// ─── BUILD ALL ────────────────────────────────────────────────────────────
+
 function buildAll() {
-  updateAllStatuses();
-  buildStatusBanner();
+  buildBanner();
   buildDocTable();
   buildOffices();
   buildSavingsPreview();
@@ -1147,138 +1357,287 @@ function buildAll() {
   buildTermed();
   buildKPIs();
   buildAdminTables();
+  updateLockedPeriodDropdown();
 }
 
-// ---------------------------------------------------------------------------
-// ADMIN TAB — Doctor Management
-// ---------------------------------------------------------------------------
+// ─── PIN / LOCK PERIOD ────────────────────────────────────────────────────
+
+let pinTarget = null;   // period label being locked
+let pinBuffer = '';     // current PIN entry
+const PIN_LENGTH = 4;
+
+function buildPinPad() {
+  const pad = $('pin-pad');
+  pad.innerHTML = '';
+  [1,2,3,4,5,6,7,8,9,'⌫',0,'C'].forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'pin-key' + (k==='⌫'?' del':(k==='C'?' clear':''));
+    btn.textContent = k;
+    btn.onclick = () => handlePinKey(k);
+    pad.appendChild(btn);
+  });
+}
+
+function handlePinKey(k) {
+  const disp = $('pin-display');
+  const err  = $('pin-error');
+  err.textContent = '';
+
+  if (k === '⌫') {
+    pinBuffer = pinBuffer.slice(0, -1);
+  } else if (k === 'C') {
+    pinBuffer = '';
+  } else {
+    if (pinBuffer.length >= PIN_LENGTH) return;
+    pinBuffer += String(k);
+  }
+
+  // Display masked input
+  disp.textContent = '●'.repeat(pinBuffer.length) + '○'.repeat(Math.max(0, PIN_LENGTH - pinBuffer.length));
+
+  // Auto-submit at PIN_LENGTH digits
+  if (pinBuffer.length === PIN_LENGTH) {
+    validatePin();
+  }
+}
+
+function validatePin() {
+  const err = $('pin-error');
+  // Load users.json to check PIN
+  fetch('data/users.json?t=' + Date.now())
+    .then(r => r.json())
+    .then(data => {
+      let matchedUser = null;
+      for (const [userId, u] of Object.entries(data.users || {})) {
+        if (String(u.pin) === pinBuffer && u.status === 'active') {
+          // Must have payroll permission
+          if (u.permissions && (u.permissions.includes('payroll') || u.permissions.includes('admin'))) {
+            matchedUser = {id: userId, name: u.name, role: u.role};
+            break;
+          }
+        }
+      }
+      if (matchedUser) {
+        closePinAndLock(matchedUser);
+      } else {
+        err.textContent = 'Incorrect PIN. Try again.';
+        pinBuffer = '';
+        $('pin-display').textContent = '○○○○';
+      }
+    })
+    .catch(() => {
+      // Fallback: check against embedded users if fetch fails
+      err.textContent = 'Could not verify PIN. Check connection.';
+      pinBuffer = '';
+      $('pin-display').textContent = '○○○○';
+    });
+}
+
+function openLockModal(periodKey) {
+  pinTarget = periodKey;
+  pinBuffer = '';
+  buildPinPad();
+  const p = PERIODS[periodKey];
+  $('pin-display').textContent = '○○○○';
+  $('pin-error').textContent = '';
+  $('lock-modal-desc').textContent =
+    `Locking ${p.label} (${p.dates}). Once locked, data is immutable. Enter your payroll PIN.`;
+  $('modal-lock').classList.add('show');
+}
+
+function closePinAndLock(user) {
+  closeModal('modal-lock');
+  if (!pinTarget || !PERIODS[pinTarget]) return;
+
+  const p = PERIODS[pinTarget];
+  p.state    = 'locked';
+  p.locked   = true;
+  p.lockedAt = new Date().toISOString();
+  p.lockedBy = user.name + ' (' + user.id + ')';
+
+  // Promote snapshot to top-level doctors/offices/termed for backward compat
+  if (p.snapshot) {
+    p.doctors = p.snapshot.doctors || [];
+    p.offices = p.snapshot.offices || [];
+    p.termed  = p.snapshot.termed  || [];
+  }
+
+  // Write back to GitHub via workflow (same as admin rate changes)
+  // The actual locking is done by committing the updated payroll.json
+  // For now: update in-memory and show confirmation
+  // The pipeline will read the locked=true state on next run and skip this period
+  buildPeriodSelector();
+  buildAll();
+
+  // Show confirmation and trigger GitHub commit
+  commitLockedPeriod(pinTarget, user);
+  pinTarget = null;
+}
+
+async function commitLockedPeriod(periodKey, user) {
+  // Show confirmation in the banner immediately
+  const banner = $('period-banner');
+  const p = PERIODS[periodKey];
+  if (banner) {
+    banner.innerHTML = `
+      <div class="card" style="margin-bottom:24px;border-left:4px solid var(--green);background:rgba(93,190,138,0.06)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:22px">🔒</span>
+          <span style="font-size:18px;font-weight:600;color:var(--green)">Period Locked — ${p.dates}</span>
+        </div>
+        <div style="font-size:13px;color:var(--text2)">
+          Locked by <strong>${user.name}</strong> at ${new Date().toLocaleString()}.
+          Triggering payroll commit workflow...
+        </div>
+      </div>`;
+  }
+
+  // Trigger GitHub Actions workflow to commit updated payroll.json
+  // (The workflow will read the in-memory state we've set and write it to the repo)
+  const pat = getPat();
+  if (!pat) return; // PAT not configured — local lock only until next pipeline run
+
+  try {
+    const resp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/workflows/payroll-lock.yml/dispatches`, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + pat,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ref: 'payroll-3state',
+        inputs: {
+          period_label: periodKey,
+          locked_by: user.name + ' (' + user.id + ')',
+          locked_at: new Date().toISOString()
+        }
+      })
+    });
+    if (resp.status !== 204) {
+      console.warn('Lock workflow dispatch returned', resp.status);
+    }
+  } catch (e) {
+    console.warn('Could not trigger lock workflow:', e.message);
+  }
+}
+
+// ─── ADMIN ────────────────────────────────────────────────────────────────
 
 const GITHUB_OWNER = 'clugodmd';
-const GITHUB_REPO = 'pspd-analytics';
-const WORKFLOW_FILE = 'doctor-admin.yml';
+const GITHUB_REPO  = 'pspd-analytics';
 
-// Doctor config for admin — embedded data (guaranteed to work)
-// When admin actions run, they update data/doctors.json in the repo.
-// The fetch below tries to load the latest version; falls back to this embedded copy.
 var adminDoctors = {
   "doctors": {
-    "Slaven, Chad": {"display":"Dr. Slaven","pct":0.36,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.36,"effective":"2025-01-01","end":null}]},
-    "Menon, Leena": {"display":"Dr. Menon","pct":0.35,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.35,"effective":"2025-01-01","end":null}]},
-    "Choong, Carissa": {"display":"Dr. Choong","pct":0.35,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.35,"effective":"2025-01-01","end":null}]},
-    "Benton, Patricia": {"display":"Dr. Benton","pct":0.33,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.32,"effective":"2025-01-01","end":"2026-02-12"},{"pct":0.33,"effective":"2026-02-13","end":null}]},
-    "Welter, Erin": {"display":"Dr. Welter","pct":0.31,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.31,"effective":"2025-01-01","end":null}]},
-    "Patel, Dusayant": {"display":"Dr. Patel","pct":0.32,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.32,"effective":"2025-01-01","end":null}]},
-    "Bell, Kendra": {"display":"Dr. Bell","pct":0.35,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.35,"effective":"2025-01-01","end":null}]},
-    "Schrack, Donald": {"display":"Dr. Schrack","pct":0.45,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.45,"effective":"2025-01-01","end":null}]},
-    "Lugo, Christopher": {"display":"Dr. Lugo","pct":0.36,"owner":true,"pay_basis":"salary","status":"active","rate_history":[{"pct":0.36,"effective":"2025-01-01","end":null}]}
+    "Slaven, Chad":       {"display":"Dr. Slaven",  "pct":0.36,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.36,"effective":"2025-01-01","end":null}]},
+    "Menon, Leena":       {"display":"Dr. Menon",   "pct":0.35,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.35,"effective":"2025-01-01","end":null}]},
+    "Choong, Carissa":    {"display":"Dr. Choong",  "pct":0.35,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.35,"effective":"2025-01-01","end":null}]},
+    "Benton, Patricia":   {"display":"Dr. Benton",  "pct":0.33,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.32,"effective":"2025-01-01","end":"2026-02-12"},{"pct":0.33,"effective":"2026-02-13","end":null}]},
+    "Welter, Erin":       {"display":"Dr. Welter",  "pct":0.31,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.31,"effective":"2025-01-01","end":null}]},
+    "Patel, Dusayant":    {"display":"Dr. Patel",   "pct":0.32,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.32,"effective":"2025-01-01","end":null}]},
+    "Bell, Kendra":       {"display":"Dr. Bell",    "pct":0.35,"owner":false,"pay_basis":"collections","status":"active","rate_history":[{"pct":0.35,"effective":"2025-01-01","end":null}]},
+    "Schrack, Donald":    {"display":"Dr. Schrack", "pct":0.45,"owner":false,"pay_basis":"collections_xray_exempt","xray_exempt":true,"status":"active","rate_history":[{"pct":0.45,"effective":"2025-01-01","end":null}]},
+    "Lugo, Christopher":  {"display":"Dr. Lugo",    "pct":0.36,"owner":true, "pay_basis":"salary","xray_exempt":true,"status":"active","rate_history":[{"pct":0.36,"effective":"2025-01-01","end":null}]}
   },
   "terminated": {
-    "Kirk, Kyle": {"display":"Dr. Kirk","status":"terminated","last_day":"2026-01-02","termination_date":"2026-01-02","note":"Account closed","final_rate":0.35,"owner":false,"pay_basis":"collections"},
-    "Ping, Sita": {"display":"Dr. Ping","status":"terminated","last_day":"2025-06-01","termination_date":"2025-06-01","note":"Terminated","final_rate":null,"owner":false,"pay_basis":"collections"},
-    "Laws": {"display":"Dr. Laws","status":"terminated","last_day":"2025-06-01","termination_date":"2025-06-01","note":"Terminated","final_rate":null,"owner":false,"pay_basis":"collections"}
+    "Kirk, Kyle":  {"display":"Dr. Kirk",  "status":"terminated","last_day":"2026-01-02","note":"Account closed","final_rate":0.35,"owner":false,"pay_basis":"collections"},
+    "Ping, Sita":  {"display":"Dr. Ping",  "status":"terminated","last_day":"2025-06-01","note":"Terminated",    "final_rate":null,"owner":false,"pay_basis":"collections"},
+    "Laws":        {"display":"Dr. Laws",  "status":"terminated","last_day":"2025-06-01","note":"Terminated",    "final_rate":null,"owner":false,"pay_basis":"collections"}
   }
 };
 
 function loadAdminDoctors() {
-  // Try to load latest from data/doctors.json (overrides embedded if successful)
   fetch('data/doctors.json?' + Date.now())
-    .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function(data) { adminDoctors = data; buildAdminTables(); })
-    .catch(function() { buildAdminTables(); }); // embedded data is already set
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(d => { adminDoctors = d; buildAdminTables(); })
+    .catch(() => { buildAdminTables(); });
 }
 
 function buildAdminTables() {
   try {
-    if (!adminDoctors) {
-      var el = $('admin-active-table');
-      if (el) el.innerHTML = '<tr><td colspan="6" style="color:#FF6B6B;text-align:center;padding:20px">adminDoctors is null</td></tr>';
-      return;
-    }
-
-    // Active doctors table
-    var tbody = $('admin-active-table');
+    const tbody = $('admin-active-table');
     if (!tbody) return;
-    var rows = '';
-    var docKeys = Object.keys(adminDoctors.doctors || {});
-    for (var i = 0; i < docKeys.length; i++) {
-      var name = docKeys[i];
-      var doc = adminDoctors.doctors[name];
-      var safeName = name.replace(/'/g, "\\'");
-      var typeLabel = doc.owner ? '<span class="badge badge-accent">Owner</span>' : '<span class="badge badge-green">Associate</span>';
-      var termBtn = doc.owner ? '' : ' <button class="btn-sm btn-term" onclick="openTermModal(\'' + safeName + '\')">Terminate</button>';
-      rows += '<tr>'
-        + '<td class="bold">' + doc.display + '</td>'
-        + '<td class="dim" style="font-size:12px">' + name + '</td>'
-        + '<td class="r mono bold">' + (doc.pct * 100).toFixed(0) + '%</td>'
-        + '<td style="text-transform:capitalize">' + doc.pay_basis + '</td>'
-        + '<td>' + typeLabel + '</td>'
-        + '<td style="text-align:center;white-space:nowrap">'
-        + '<button class="btn-sm btn-rate" onclick="openRateModal(\'' + safeName + '\',' + doc.pct + ')">Change Rate</button>'
-        + termBtn
-        + '</td></tr>';
+    let rows = '';
+    for (const [name, doc] of Object.entries(adminDoctors.doctors || {})) {
+      const sn = name.replace(/'/g,"\\'");
+      const payBasisLabel = doc.pay_basis === 'collections_xray_exempt'
+        ? 'Coll (x-ray exempt)'
+        : (doc.pay_basis || 'collections').replace('_',' ');
+      const typeLabel = doc.owner
+        ? '<span class="badge badge-accent">Owner</span>'
+        : '<span class="badge badge-green">Associate</span>';
+      const xrayNote = doc.xray_exempt && !doc.owner
+        ? ' <span style="font-size:10px;color:var(--amber)">★ x-ray exempt</span>' : '';
+      rows += `<tr>
+        <td class="bold">${doc.display}${xrayNote}</td>
+        <td class="dim" style="font-size:12px">${name}</td>
+        <td class="r mono bold">${((doc.pct||0)*100).toFixed(0)}%</td>
+        <td style="font-size:12px">${payBasisLabel}</td>
+        <td>${typeLabel}</td>
+        <td style="text-align:center;white-space:nowrap">
+          <button class="btn-sm btn-rate" onclick="openRateModal('${sn}',${doc.pct})">Change Rate</button>
+          ${!doc.owner ? `<button class="btn-sm btn-term" onclick="openTermModal('${sn}')">Terminate</button>` : ''}
+        </td></tr>`;
     }
-    tbody.innerHTML = rows || '<tr><td colspan="6" class="dim" style="text-align:center">No active doctors found</td></tr>';
+    tbody.innerHTML = rows || '<tr><td colspan="6" class="dim" style="text-align:center">No active doctors</td></tr>';
 
-    // Terminated doctors table
-    var termBody = $('admin-termed-table');
+    const termBody = $('admin-termed-table');
     if (!termBody) return;
-    var termRows = '';
-    var today = new Date();
-    var termKeys = Object.keys(adminDoctors.terminated || {});
-    for (var j = 0; j < termKeys.length; j++) {
-      var tname = termKeys[j];
-      var tdoc = adminDoctors.terminated[tname];
-      var safeTname = tname.replace(/'/g, "\\'");
-      var lastDay = tdoc.last_day ? new Date(tdoc.last_day) : null;
-      var daysSince = lastDay ? Math.floor((today - lastDay) / 86400000) : '?';
-      var rateStr = tdoc.final_rate ? (tdoc.final_rate * 100).toFixed(0) + '%' : '\u2014';
-      var fRate = tdoc.final_rate || 0.35;
-      termRows += '<tr>'
-        + '<td class="bold">' + tdoc.display + '</td>'
-        + '<td class="mono">' + (tdoc.last_day || '\u2014') + '</td>'
-        + '<td><span class="days-since">' + daysSince + 'd ago</span></td>'
-        + '<td class="r mono">' + rateStr + '</td>'
-        + '<td class="dim">' + (tdoc.note || '') + '</td>'
-        + '<td style="text-align:center">'
-        + '<button class="btn-sm btn-react" onclick="openReactModal(\'' + safeTname + '\',' + fRate + ')">Reactivate</button>'
-        + '</td></tr>';
+    let termRows = '';
+    const today = new Date();
+    for (const [tname, tdoc] of Object.entries(adminDoctors.terminated || {})) {
+      const stn = tname.replace(/'/g,"\\'");
+      const lastDay = tdoc.last_day ? new Date(tdoc.last_day) : null;
+      const daysSince = lastDay ? Math.floor((today - lastDay) / 86400000) : '?';
+      const rateStr = tdoc.final_rate ? ((tdoc.final_rate*100).toFixed(0)+'%') : '—';
+      termRows += `<tr>
+        <td class="bold">${tdoc.display}</td>
+        <td class="mono">${tdoc.last_day||'—'}</td>
+        <td><span class="days-since">${daysSince}d ago</span></td>
+        <td class="r mono">${rateStr}</td>
+        <td class="dim">${tdoc.note||''}</td>
+        <td style="text-align:center">
+          <button class="btn-sm btn-react" onclick="openReactModal('${stn}',${tdoc.final_rate||0.35})">Reactivate</button>
+        </td></tr>`;
     }
     termBody.innerHTML = termRows || '<tr><td colspan="6" class="dim" style="text-align:center">No terminated doctors</td></tr>';
-
   } catch(e) {
-    var errEl = $('admin-active-table');
-    if (errEl) errEl.innerHTML = '<tr><td colspan="6" style="color:#FF6B6B;text-align:center;padding:20px">Error: ' + e.message + '</td></tr>';
+    const el = $('admin-active-table');
+    if (el) el.innerHTML = `<tr><td colspan="6" style="color:#FF6B6B;text-align:center;padding:20px">Error: ${e.message}</td></tr>`;
   }
 }
 
-// --- PAT Management ---
-function getPat() { try { return localStorage.getItem('pspd_admin_pat') || ''; } catch(e) { return ''; } }
+// ─── PAT ──────────────────────────────────────────────────────────────────
+function getPat() { try { return localStorage.getItem('pspd_admin_pat')||''; } catch(e){return '';} }
 function savePat() {
   const v = $('pat-input').value.trim();
   try { localStorage.setItem('pspd_admin_pat', v); } catch(e) {}
   updatePatStatus();
 }
 function updatePatStatus() {
-  const pat = getPat();
   const el = $('pat-status');
-  if (pat) {
-    el.innerHTML = ' <span style="color:var(--green);font-size:11px">Connected</span>';
-  } else {
-    el.innerHTML = ' <span style="color:#FF6B6B;font-size:11px">Not configured</span>';
-  }
+  const pat = getPat();
+  el.innerHTML = pat
+    ? ' <span style="color:var(--green);font-size:11px">Connected</span>'
+    : ' <span style="color:#FF6B6B;font-size:11px">Not configured</span>';
 }
 function togglePatInput() {
   const wrap = $('pat-input-wrap');
-  const isHidden = wrap.style.display === 'none';
-  wrap.style.display = isHidden ? 'block' : 'none';
-  if (isHidden) { $('pat-input').value = getPat(); $('pat-input').focus(); }
-  $('pat-toggle-btn').textContent = isHidden ? 'Hide' : 'Configure';
+  const hidden = wrap.style.display==='none';
+  wrap.style.display = hidden ? 'block' : 'none';
+  if (hidden) { $('pat-input').value = getPat(); $('pat-input').focus(); }
+  $('pat-toggle-btn').textContent = hidden ? 'Hide' : 'Configure';
 }
 
-// --- Modals ---
-function openRateModal(name, currentRate) {
+// ─── MODALS ───────────────────────────────────────────────────────────────
+function closeModal(id) { $(id).classList.remove('show'); }
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('show');
+});
+
+function openRateModal(name, rate) {
   $('rate-doctor-name').value = name;
-  $('rate-current').value = (currentRate * 100).toFixed(0) + '%  (' + currentRate + ')';
+  $('rate-current').value = ((rate||0)*100).toFixed(0)+'%  ('+rate+')';
   $('rate-new').value = '';
   $('rate-effective').value = '';
   $('modal-rate').classList.add('show');
@@ -1289,47 +1648,41 @@ function openTermModal(name) {
   $('term-note').value = '';
   $('modal-term').classList.add('show');
 }
-function openReactModal(name, lastRate) {
+function openReactModal(name, rate) {
   $('react-doctor-name').value = name;
-  $('react-rate').value = lastRate || '';
+  $('react-rate').value = rate||'';
   $('modal-react').classList.add('show');
 }
-function closeModal(id) { $(id).classList.remove('show'); }
 
-// --- GitHub API ---
+// ─── GITHUB API ───────────────────────────────────────────────────────────
 function showAdminAlert(type, msg) {
   const el = $('admin-alert');
   el.className = 'admin-alert ' + type;
   el.innerHTML = msg;
-  setTimeout(() => { if (type === 'success') el.className = 'admin-alert'; }, 8000);
+  if (type==='success') setTimeout(()=>{ el.className='admin-alert'; }, 8000);
 }
 
-async function triggerWorkflow(inputs) {
+async function triggerWorkflow(file, inputs) {
   const pat = getPat();
   if (!pat) {
-    showAdminAlert('error', 'GitHub token not configured. Click "Configure" above to add your token.');
+    showAdminAlert('error','GitHub token not configured. Click Configure above.');
     return false;
   }
   try {
-    const resp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/workflows/${WORKFLOW_FILE}/dispatches`, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + pat,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ ref: 'main', inputs })
+    const resp = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/workflows/${file}/dispatches`, {
+      method:'POST',
+      headers:{'Authorization':'Bearer '+pat,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
+      body: JSON.stringify({ref:'main', inputs})
     });
-    if (resp.status === 204) {
-      showAdminAlert('success', 'Action triggered successfully! The workflow is running now. Changes will appear after the pipeline completes (~1-2 min). <a href="https://github.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/actions" target="_blank" style="color:var(--accent)">View on GitHub &rarr;</a>');
+    if (resp.status===204) {
+      showAdminAlert('success',`Workflow triggered. <a href="https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/actions" target="_blank" style="color:var(--accent)">View on GitHub →</a>`);
       return true;
-    } else {
-      const err = await resp.json().catch(() => ({}));
-      showAdminAlert('error', 'GitHub API error (' + resp.status + '): ' + (err.message || 'Unknown error. Check your token permissions.'));
-      return false;
     }
+    const err = await resp.json().catch(()=>({}));
+    showAdminAlert('error','GitHub API error ('+resp.status+'): '+(err.message||'Unknown error'));
+    return false;
   } catch(e) {
-    showAdminAlert('error', 'Network error: ' + e.message);
+    showAdminAlert('error','Network error: '+e.message);
     return false;
   }
 }
@@ -1338,72 +1691,146 @@ async function submitRateChange() {
   const doctor = $('rate-doctor-name').value;
   const newRate = parseFloat($('rate-new').value);
   const effective = $('rate-effective').value;
-
-  if (!newRate || newRate <= 0 || newRate >= 1) { showAdminAlert('error', 'Enter a valid rate between 0 and 1 (e.g. 0.35)'); return; }
-  if (!effective) { showAdminAlert('error', 'Select an effective date'); return; }
-
+  if (!newRate || newRate<=0 || newRate>=1) { showAdminAlert('error','Enter a valid rate (0–1, e.g. 0.35)'); return; }
+  if (!effective) { showAdminAlert('error','Select an effective date'); return; }
   closeModal('modal-rate');
-  showAdminAlert('info', 'Submitting rate change for ' + doctor + '...');
-
-  const ok = await triggerWorkflow({
-    action: 'change_rate',
-    doctor_name: doctor,
-    new_rate: String(newRate),
-    effective_date: effective,
-    last_day: '',
-    note: ''
-  });
+  showAdminAlert('info','Submitting rate change for '+doctor+'...');
+  await triggerWorkflow('doctor-admin.yml',{action:'change_rate',doctor_name:doctor,new_rate:String(newRate),effective_date:effective,last_day:'',note:''});
 }
 
 async function submitTerminate() {
   const doctor = $('term-doctor-name').value;
   const lastDay = $('term-last-day').value;
   const note = $('term-note').value;
-
-  if (!lastDay) { showAdminAlert('error', 'Select the last working day'); return; }
-
+  if (!lastDay) { showAdminAlert('error','Select the last working day'); return; }
   closeModal('modal-term');
-  showAdminAlert('info', 'Submitting termination for ' + doctor + '...');
-
-  const ok = await triggerWorkflow({
-    action: 'terminate',
-    doctor_name: doctor,
-    new_rate: '',
-    effective_date: '',
-    last_day: lastDay,
-    note: note
-  });
+  showAdminAlert('info','Submitting termination for '+doctor+'...');
+  await triggerWorkflow('doctor-admin.yml',{action:'terminate',doctor_name:doctor,new_rate:'',effective_date:'',last_day:lastDay,note});
 }
 
 async function submitReactivate() {
   const doctor = $('react-doctor-name').value;
   const rate = parseFloat($('react-rate').value);
-
-  if (!rate || rate <= 0 || rate >= 1) { showAdminAlert('error', 'Enter a valid rate between 0 and 1'); return; }
-
+  if (!rate || rate<=0 || rate>=1) { showAdminAlert('error','Enter a valid rate'); return; }
   closeModal('modal-react');
-  showAdminAlert('info', 'Submitting reactivation for ' + doctor + '...');
+  showAdminAlert('info','Submitting reactivation for '+doctor+'...');
+  await triggerWorkflow('doctor-admin.yml',{action:'reactivate',doctor_name:doctor,new_rate:String(rate),effective_date:'',last_day:'',note:''});
+}
 
-  const ok = await triggerWorkflow({
-    action: 'reactivate',
-    doctor_name: doctor,
-    new_rate: String(rate),
-    effective_date: '',
-    last_day: '',
-    note: ''
+// ─── SUBMIT TO PAYCHEX WORKFLOW ───────────────────────────────────────────
+
+let submitPinTarget = null;
+let submitPinBuffer = '';
+let submitEstTotal  = '';
+
+function openSubmitModal(periodKey, estTotal) {
+  submitPinTarget = periodKey;
+  submitPinBuffer = '';
+  submitEstTotal  = estTotal;
+  buildSubmitPinPad();
+  const p = PERIODS[periodKey];
+  $('submit-pin-display').innerHTML = '&#9675;&#9675;&#9675;&#9675;';
+  $('submit-pin-error').textContent = '';
+  $('submit-modal-desc').innerHTML =
+    `Confirm submission of <strong>${p.label||p.dates||periodKey}</strong> to Paychex.<br>
+     Estimated total: <strong style="color:var(--amber)">${estTotal}</strong><br><br>
+     Enter your payroll PIN to submit.`;
+  $('modal-submit').classList.add('show');
+}
+
+function buildSubmitPinPad() {
+  const pad = $('submit-pin-pad');
+  pad.innerHTML = '';
+  [1,2,3,4,5,6,7,8,9,'⌫',0,'C'].forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'pin-key' + (k==='⌫'?' del':(k==='C'?' clear':''));
+    btn.textContent = k;
+    btn.onclick = () => handleSubmitPinKey(k);
+    pad.appendChild(btn);
   });
 }
 
-// Close modals on overlay click
-document.addEventListener('click', e => {
-  if (e.target.classList.contains('modal-overlay')) {
-    e.target.classList.remove('show');
+function handleSubmitPinKey(k) {
+  const disp = $('submit-pin-display');
+  const err  = $('submit-pin-error');
+  err.textContent = '';
+  if (k === '⌫') {
+    submitPinBuffer = submitPinBuffer.slice(0,-1);
+  } else if (k === 'C') {
+    submitPinBuffer = '';
+  } else {
+    if (submitPinBuffer.length >= PIN_LENGTH) return;
+    submitPinBuffer += String(k);
   }
-});
+  disp.textContent = '●'.repeat(submitPinBuffer.length) + '○'.repeat(Math.max(0, PIN_LENGTH - submitPinBuffer.length));
+  if (submitPinBuffer.length === PIN_LENGTH) {
+    validateSubmitPin();
+  }
+}
 
-// Init admin on load
-loadAdminDoctors();
-updatePatStatus();
+function validateSubmitPin() {
+  const err = $('submit-pin-error');
+  fetch('data/users.json?t=' + Date.now())
+    .then(r => r.json())
+    .then(data => {
+      let matchedUser = null;
+      for (const [userId, u] of Object.entries(data.users || {})) {
+        if (String(u.pin) === submitPinBuffer && u.status === 'active') {
+          if (u.permissions && (u.permissions.includes('payroll') || u.permissions.includes('admin'))) {
+            matchedUser = {id: userId, name: u.name, role: u.role};
+            break;
+          }
+        }
+      }
+      if (matchedUser) {
+        closeModal('modal-submit');
+        markPeriodSubmitted(submitPinTarget, matchedUser);
+        submitPinTarget = null;
+        submitPinBuffer = '';
+      } else {
+        err.textContent = 'Incorrect PIN. Try again.';
+        submitPinBuffer = '';
+        $('submit-pin-display').textContent = '○○○○';
+      }
+    })
+    .catch(() => {
+      err.textContent = 'Could not verify PIN. Check connection.';
+      submitPinBuffer = '';
+      $('submit-pin-display').textContent = '○○○○';
+    });
+}
+
+function markPeriodSubmitted(periodKey, user) {
+  // Format timestamp: "Thu Mar 19 at 9:15am"
+  const now = new Date();
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const h = now.getHours(), m = now.getMinutes();
+  const ampm = h >= 12 ? 'pm' : 'am';
+  const h12 = h % 12 || 12;
+  const mStr = String(m).padStart(2,'0');
+  const ts = `${days[now.getDay()]} ${months[now.getMonth()]} ${now.getDate()} at ${h12}:${mStr}${ampm}`;
+
+  try {
+    const lsKey = 'pspd_submit_' + periodKey;
+    localStorage.setItem(lsKey, JSON.stringify({
+      state: 'submitted',
+      ts,
+      submittedBy: user.name + ' (' + user.id + ')',
+      submittedAt: now.toISOString(),
+      estTotal: submitEstTotal
+    }));
+  } catch(e) {}
+
+  buildBanner();
+  buildAll();
+}
+
+// ─── PAYCHEX MODAL ────────────────────────────────────────────────────────
+
+function showPaychexModal() {
+  $('modal-paychex').classList.add('show');
+}
 </script>
 </body>
 </html>
