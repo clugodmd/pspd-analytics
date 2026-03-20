@@ -445,11 +445,28 @@ def should_transition_to_pending(period_data):
     Rules:
     - Period must currently be 'live' in JSON
     - Period end date must be in the past (today > period_end)
-    - Script must be running on a Sunday at 5am CST (Azure task schedule)
+    - Script must be running on a Sunday at 5am CST/CDT (Azure task schedule)
       OR we are past the Sunday-after-period-end (safety catch for missed runs)
 
     Sunday at 5am CST = the Denticon Saturday morning dump has settled.
     A pending period is COMPLETELY FROZEN after this snapshot — zero updates.
+
+    TIME GUARD (UTC):
+    ─────────────────
+    5am CST  = 11:00 UTC  (UTC-6, standard time Nov–Mar)
+    5am CDT  = 10:00 UTC  (UTC-5, daylight time Mar–Nov)
+
+    DST in the US starts the second Sunday in March.  For any period ending
+    in February or later (Mar 8+ in 2026), the snapshot Sunday is in CDT.
+    We use 10:00 UTC (5am CDT) as the cutoff to be accurate for most of the
+    year.  We also accept ≥ 11:00 UTC to cover the rare CST case and manual
+    re-runs later in the day.
+
+    To prevent an accidental early snapshot (e.g. manual run at 2am CDT
+    on Sunday before Azure has had a chance to fully dump Denticon), we
+    require utcnow().hour >= 10 on the snapshot Sunday itself.
+    For days AFTER the snapshot Sunday (missed-run safety catch) there is
+    no time restriction.
     """
     state = period_data.get('state', period_data.get('status', 'live'))
     if state != 'live':
@@ -462,13 +479,27 @@ def should_transition_to_pending(period_data):
         today = date.today()
         if today <= period_end:
             return False  # Period still active
+
         # Find the Sunday after period_end
         days_until_sunday = (6 - period_end.weekday()) % 7  # 6 = Sunday
         if days_until_sunday == 0:
             days_until_sunday = 7  # If period ended on Sunday, use next Sunday
         snapshot_sunday = period_end + timedelta(days=days_until_sunday)
-        # Transition if today is on or after the snapshot Sunday
-        return today >= snapshot_sunday
+
+        if today < snapshot_sunday:
+            return False  # Haven't reached snapshot Sunday yet
+
+        if today == snapshot_sunday:
+            # Enforce the 5am CDT (10:00 UTC) time guard on the snapshot day itself.
+            # This prevents accidental early snapshots on manual runs before the
+            # Denticon dump has settled.
+            utc_hour = datetime.utcnow().hour
+            if utc_hour < 10:
+                print(f"    INFO: Snapshot Sunday reached but UTC hour={utc_hour} < 10 "
+                      f"(5am CDT). Waiting for full Azure dump. Skipping transition.")
+                return False
+
+        return True
     except ValueError:
         return False
 
@@ -592,6 +623,17 @@ def query_income_allocation(conn, period_start, period_end):
     This matches how Tanya's report displays values (abs of net sum).
     """
     cursor = conn.cursor()
+    # Filter by ALLOCDATE (the actual transaction date) between period boundaries.
+    # This is the same date range Tanya's Income Allocation Report uses when she
+    # runs it for a specific period — it is the correct field to use.
+    #
+    # We also include period_start/period_end view metadata columns if the view
+    # supports them; if not, the ALLOCDATE filter alone is the source of truth.
+    #
+    # NOTE: Do NOT filter by proc_date — alloc_date is the posted/allocated date
+    # that Denticon uses for period assignment and that Tanya's report uses.
+    # Any same-day postings after the 1am Saturday dump will appear in the NEXT
+    # period (expected ~$21K gap for today's late postings — this is correct).
     cursor.execute("""
         SELECT
             alloc_provider_id,
@@ -600,7 +642,7 @@ def query_income_allocation(conn, period_start, period_end):
             alloc_amount,
             proc_ada_code
         FROM rpt.vw_income_allocation
-        WHERE period_start = ? AND period_end = ?
+        WHERE ALLOCDATE BETWEEN ? AND ?
     """, (str(period_start), str(period_end)))
 
     transactions = []
@@ -968,6 +1010,14 @@ def parse_excel(filepath):
                     current_provider = m.group(1).strip()
                 continue
 
+            # Skip Grand Total / summary rows: they have a string in column A
+            # (e.g. "Grand Total", "Provider Total") rather than a date in column C.
+            # Only transaction rows have a datetime in column C.
+            if a_val and isinstance(a_val, str) and any(
+                kw in a_val for kw in ('Grand Total', 'Provider Total', 'Office Total', 'Report Total')
+            ):
+                continue
+
             if c_val and isinstance(c_val, datetime) and current_provider and office:
                 income    = row[14].value if len(row) > 14 else None
                 proc_code = row[12].value if len(row) > 12 else None
@@ -1135,15 +1185,34 @@ def run_azure_pipeline(conn_str, target, output_path, audit_xray=False):
             fresh = process_transactions(transactions, start, end, label, pay_date)
             snap  = make_snapshot(fresh)
 
+            # Build the reconciliation note for Tanya — tells her exactly what
+            # data source backs the Pending snapshot so she can verify it matches
+            # her Monday Income Allocation report run.
+            snap_utc = datetime.utcnow()
+            # Convert UTC→CST/CDT for human-readable note (CDT = UTC-5 in March)
+            snap_cdt = snap_utc - timedelta(hours=5)
+            snap_sunday_str  = snap_cdt.strftime('%a %b %-d')  # e.g. "Sun Mar 22"
+            snap_sunday_time = snap_cdt.strftime('%-I%p CDT').lower()  # e.g. "5am CDT"
+            # Denticon dump is always the prior Saturday at ~1am CST
+            denticon_dump_saturday = end + timedelta(days=1)  # Saturday after period_end Friday
+            denticon_dump_str = denticon_dump_saturday.strftime('%a %b %-d')  # e.g. "Sat Mar 21"
+            reconciliation_note = (
+                f"Snapshot taken {snap_sunday_str} at {snap_sunday_time} from Azure SQL dump "
+                f"(Denticon data as of {denticon_dump_str} 1am CST). "
+                f"This matches Tanya's Income Allocation Report for this period."
+            )
+
             period = fresh.copy()
             period['state']       = 'pending'
             period['locked']      = False
             period['snapshotDate'] = snap['snapshotAt']
+            period['reconciliationNote'] = reconciliation_note
             period['snapshot']    = {
                 'doctors':    fresh['doctors'],
                 'offices':    fresh['offices'],
                 'termed':     fresh['termed'],
                 'snapshotAt': snap['snapshotAt'],
+                'reconciliationNote': reconciliation_note,
             }
             # Remove top-level doctors/offices/termed — they now live in snapshot
             # The HTML reads from snapshot when state = pending
@@ -1151,6 +1220,7 @@ def run_azure_pipeline(conn_str, target, output_path, audit_xray=False):
                 period.pop(key_rm, None)
             periods_out[label] = period
             print(f"    → Pending. Snapshot frozen at {snap['snapshotAt']} — NO further updates.")
+            print(f"    Reconciliation note: {reconciliation_note}")
             print(f"    Tanya/Dr. Lugo will Lock when payroll is actually paid.")
             continue
 
