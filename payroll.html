@@ -330,7 +330,6 @@ tr.summary-row-last td { padding-bottom:12px; }
 <div class="header">
   <h1>Puget Sound <span>Pediatric Dentistry</span></h1>
   <div class="sub">Dentrepreneur Control Tower &mdash; Doctor Payroll</div>
-  <div class="period-row" id="period-row"></div>
 </div>
 
 <!-- ─── NAV ───────────────────────────────────────────────────────────── -->
@@ -376,7 +375,6 @@ tr.summary-row-last td { padding-bottom:12px; }
               <thead><tr>
                 <th>Doctor</th><th class="r">Rate</th>
                 <th class="r">Collections</th><th class="r">Pay (No X-Rays)</th>
-                <th class="r cost-col">Est. Total Cost*</th>
               </tr></thead>
               <tbody id="doc-table"></tbody>
             </table>
@@ -685,7 +683,6 @@ function getTotals(p) {
 
     $('loading-state').style.display = 'none';
     $('dashboard-content').style.display = 'block';
-    try { buildPeriodSelector(); } catch(e) { console.error('buildPeriodSelector:', e); }
     try { buildStateTabLabels(); } catch(e) { console.error('buildStateTabLabels:', e); }
     try { buildAll(); } catch(e) { 
       console.error('buildAll error:', e);
@@ -716,40 +713,10 @@ function getTotals(p) {
 
 // ─── PERIOD SELECTOR ──────────────────────────────────────────────────────
 
-function buildPeriodSelector() {
-  const row = $('period-row');
-  row.innerHTML = '';
-
-  const sorted = Object.entries(PERIODS).sort((a,b) => {
-    const as = a[1].period_start||'', bs = b[1].period_start||'';
-    return as < bs ? -1 : as > bs ? 1 : 0;
-  });
-
-  sorted.forEach(([key, p]) => {
-    const state = getPeriodState(p);
-    const isActive = key === currentPeriod;
-    const btn = document.createElement('button');
-    btn.className = `period-btn state-${state}${isActive ? ' active' : ''}`;
-
-    let badge = '';
-    if (state === 'live') {
-      badge = `<span class="state-badge live"><span class="live-dot"></span>LIVE</span>`;
-    } else if (state === 'pending') {
-      badge = `<span class="state-badge pending">🟡 PENDING</span>`;
-    } else if (state === 'locked') {
-      badge = `<span class="state-badge locked">🔒</span>`;
-    }
-
-    btn.innerHTML = (p.label || key) + badge;
-    btn.onclick = () => switchPeriod(key);
-    row.appendChild(btn);
-  });
-}
 
 function switchPeriod(key) {
   currentPeriod = key;
   expandedIdx = -1;
-  buildPeriodSelector();
   buildAll();
 }
 
@@ -778,7 +745,6 @@ function switchToState(targetState, btn) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   $('view-overview').classList.add('active');
 
-  buildPeriodSelector();
   buildAll();
   updateLockedPeriodDropdown();
 }
@@ -787,7 +753,6 @@ function switchLockedPeriod(key) {
   if (key && PERIODS[key]) {
     currentPeriod = key;
     expandedIdx = -1;
-    buildPeriodSelector();
     buildAll();
   }
 }
@@ -843,6 +808,16 @@ function showView(id, btn) {
 
 // ─── PERIOD BANNER ────────────────────────────────────────────────────────
 
+function formatDateRange(p) {
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if (p.period_start && p.period_end) {
+    const s = new Date(p.period_start + 'T12:00:00');
+    const e = new Date(p.period_end   + 'T12:00:00');
+    return `${monthNames[s.getMonth()]} ${s.getDate()} – ${monthNames[e.getMonth()]} ${e.getDate()}, ${e.getFullYear()}`;
+  }
+  return p.dates || p.label || '';
+}
+
 function buildBanner() {
   const p = PERIODS[currentPeriod];
   const state = getPeriodState(p);
@@ -874,7 +849,7 @@ function buildBanner() {
       <div class="card" style="margin-bottom:24px;border-left:4px solid var(--blue)">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
           <span class="live-dot"></span>
-          <span class="sec-title" style="margin-bottom:0;font-size:18px;color:var(--blue)">Live — ${p.label || p.dates || ''} <span style="font-size:14px">🟢 LIVE</span></span>
+          <span class="sec-title" style="margin-bottom:0;font-size:18px;color:var(--blue)">${formatDateRange(p)} 🟢 Live · Day ${daysElapsed} of ${daysTotal} · ${pct}% complete</span>
         </div>
         <div class="period-progress">
           <div class="bar-outer"><div class="bar-inner" style="width:${pct}%"></div></div>
@@ -1086,12 +1061,11 @@ function buildDocTable() {
   tb.innerHTML = '';
 
   if (!doctors || doctors.length === 0) {
-    tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:40px 0;font-style:italic">No payment data yet — awaiting first posts</td></tr>';
+    tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:40px 0;font-style:italic">No payment data yet — awaiting first posts</td></tr>';
     return;
   }
 
   doctors.forEach((d, i) => {
-    const empCost = calcEmployerCost(d.payNo||0);
     const tr = document.createElement('tr');
     tr.className = 'clickable';
     tr.onclick = () => toggleDoc(i);
@@ -1101,15 +1075,14 @@ function buildDocTable() {
       </td>
       <td class="r dim">${((d.pct||0)*100).toFixed(0)}%</td>
       <td class="r mono">$${fmt(d.coll)}</td>
-      <td class="r mono bold">$${fmt(d.payNo)}</td>
-      <td class="r mono cost-col" style="font-size:12px">$${fmt(empCost)}</td>`;
+      <td class="r mono bold">$${fmt(d.payNo)}</td>`;
     tb.appendChild(tr);
 
     const xr = document.createElement('tr');
     xr.className = 'expand-row' + (expandedIdx===i?' open':'');
     const saved = (d.payWith||0) - (d.payNo||0);
     const offEntries = d.off ? Object.entries(d.off).filter(([,v])=>v>0) : [];
-    xr.innerHTML = `<td colspan="5" class="expand-inner"><div class="expand-grid">
+    xr.innerHTML = `<td colspan="4" class="expand-inner"><div class="expand-grid">
       <div>
         <div class="expand-label">Office Breakdown</div>
         ${offEntries.length>0
@@ -1133,39 +1106,14 @@ function buildDocTable() {
   else if (state==='pending') badge = '<span class="badge badge-amber">PENDING</span>';
   else                      badge = '<span class="badge badge-green">PAID</span>';
 
-  // Summary totals
-  const totalDocPay = t.totalPayNo;
-  const totalEmpCost = calcEmployerCost(totalDocPay);
-  const totalBurden = totalEmpCost - totalDocPay;
-
-  tot.innerHTML = `<td>Total ${badge}</td><td></td><td class="r mono">$${fmt(t.activeColl)}</td><td class="r mono">$${fmt(totalDocPay)}</td><td class="r mono cost-col" style="font-size:12px">$${fmt(totalEmpCost)}</td>`;
+  tot.innerHTML = `<td>Total ${badge}</td><td></td><td class="r mono">$${fmt(t.activeColl)}</td><td class="r mono">$${fmt(t.totalPayNo)}</td>`;
   tb.appendChild(tot);
 
-  // Summary rows
-  const summaryRows = [
-    { label: 'Total Doctor Pay', val: '$' + fmt(totalDocPay), cls: '' },
-    { label: 'Est. Total Employer Cost', val: '$' + fmt(totalEmpCost), cls: 'cost-col' },
-    { label: 'Est. Additional Burden', val: '+$' + fmt(totalBurden), cls: 'cost-col' },
-  ];
-  summaryRows.forEach((row, si) => {
-    const sr = document.createElement('tr');
-    sr.className = 'summary-row' + (si === summaryRows.length - 1 ? ' summary-row-last' : '');
-    sr.innerHTML = `
-      <td colspan="3" style="text-align:right;font-size:12px;color:var(--text2);padding-right:8px">${row.label}</td>
-      <td colspan="2" class="r mono ${row.cls}" style="font-size:12px">${row.val}</td>`;
-    tb.appendChild(sr);
-  });
-
-  // Footnote — appended after the table via a div below the card
+  // Remove any existing footnote
   const card = tb.closest('.card');
   if (card) {
-    let fn = card.querySelector('.table-footnote');
-    if (!fn) {
-      fn = document.createElement('div');
-      fn.className = 'table-footnote';
-      card.appendChild(fn);
-    }
-    fn.textContent = '* Estimated employer cost includes 7.65% FICA + 1.5% workers comp/misc. Actual amounts vary.';
+    const fn = card.querySelector('.table-footnote');
+    if (fn) fn.remove();
   }
 }
 
