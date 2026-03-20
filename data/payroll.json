@@ -1577,26 +1577,26 @@
         "offices": [
           {
             "name": "Monroe",
-            "amt": 107400
+            "amt": 107153.22
           },
           {
             "name": "Marysville",
-            "amt": 105300
+            "amt": 105058.05
           },
           {
             "name": "Lake Stevens",
-            "amt": 56000
+            "amt": 55871.33
           },
           {
             "name": "Stanwood",
-            "amt": 49900
+            "amt": 49785.34
           },
           {
             "name": "Everett",
-            "amt": 10500
+            "amt": 10475.87
           }
         ],
-        "totalColl": 328343.81,
+        "totalColl": 328343.81000000006,
         "totalPay": 92228.36,
         "xraySavings": 19646.33
       }

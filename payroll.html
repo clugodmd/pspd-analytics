@@ -1198,7 +1198,7 @@ function buildOffices() {
   const total = offices.reduce((s,o)=>s+o.amt,0);
   const sorted = [...offices].sort((a,b)=>b.amt-a.amt);
   const note = (state === 'live' && !getDisplayData(p).offices?.length)
-    ? '<div class="note" style="margin-top:8px;text-align:center">⚠ Approximate values — will update when Azure data posts</div>'
+    ? '<div class="note" style="margin-top:8px;text-align:center">Office data updated from provider totals</div>'
     : '';
   el.innerHTML = sorted.map(o=>`
     <div class="office-bar">
