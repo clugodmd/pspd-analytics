@@ -322,6 +322,43 @@ tr.summary-row-last td { padding-bottom:12px; }
 ::-webkit-scrollbar { width:8px; }
 ::-webkit-scrollbar-track { background:var(--bg); }
 ::-webkit-scrollbar-thumb { background:var(--bg2); border-radius:4px; }
+
+/* ─── X-RAY COMPACT WIDGET ───────────────────────────────────────────────── */
+.xray-compact { background:var(--card); border:1px solid var(--accent-border);
+  border-radius:var(--radius); padding:16px; margin-bottom:0; }
+.xray-compact .xc-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.xray-compact .xc-title { font-size:12px; font-weight:700; text-transform:uppercase;
+  letter-spacing:0.5px; color:var(--text3); }
+.xray-compact .xc-amount { font-size:20px; font-weight:700;
+  background:linear-gradient(135deg,var(--accent),var(--accent-light));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.xray-compact .xc-bars { margin-top:8px; }
+.xray-compact .xc-bar-row { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+.xray-compact .xc-bar-name { font-size:11px; color:var(--text2); width:80px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.xray-compact .xc-bar-wrap { flex:1; height:8px; background:var(--bg2); border-radius:3px; overflow:hidden; }
+.xray-compact .xc-bar-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-light)); border-radius:3px; }
+.xray-compact .xc-bar-val { font-size:11px; color:var(--text3); width:50px; text-align:right; flex-shrink:0; }
+
+/* ─── COST ANALYSIS ──────────────────────────────────────────────────────── */
+.cost-analysis { margin-top:32px; }
+.cost-table { width:100%; border-collapse:collapse; font-size:13px; }
+.cost-table th { text-align:left; padding:10px 12px; font-size:11px; text-transform:uppercase;
+  letter-spacing:0.5px; color:var(--text3); border-bottom:2px solid rgba(255,255,255,0.06); font-weight:600; }
+.cost-table th.r, .cost-table td.r { text-align:right; }
+.cost-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); }
+.cost-table tr:hover td { background:rgba(98,146,160,0.05); }
+.cost-table tr.cost-total-row td { border-top:2px solid rgba(255,255,255,0.1); font-weight:700; padding-top:14px; }
+.cost-type-w2   { background:rgba(98,146,160,0.12); color:var(--blue); padding:2px 7px; border-radius:8px; font-size:10px; font-weight:700; }
+.cost-type-1099 { background:rgba(230,160,50,0.12); color:var(--amber); padding:2px 7px; border-radius:8px; font-size:10px; font-weight:700; }
+.cost-type-sal  { background:rgba(93,190,138,0.12); color:var(--green); padding:2px 7px; border-radius:8px; font-size:10px; font-weight:700; }
+.cost-summary-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-top:20px; }
+.cost-summary-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius);
+  padding:16px; text-align:center; }
+.cost-summary-card .csc-label { font-size:11px; text-transform:uppercase; letter-spacing:0.5px;
+  color:var(--text3); font-weight:600; margin-bottom:6px; }
+.cost-summary-card .csc-val { font-size:22px; font-weight:700; }
+.cost-summary-card .csc-val.red-val { color:#FF6B6B; }
+.cost-disclaimer { font-size:11px; color:var(--text3); margin-top:12px; font-style:italic; }
 </style>
 </head>
 <body>
@@ -337,7 +374,6 @@ tr.summary-row-last td { padding-bottom:12px; }
   <button class="tab-btn active" id="tab-live-btn" onclick="switchToState('live',this)">🟢 Live</button>
   <button class="tab-btn" id="tab-pending-btn" onclick="switchToState('pending',this)">🟡 Pending</button>
   <button class="tab-btn" id="tab-locked-btn" onclick="switchToState('locked',this)">📋 Past Payroll</button>
-  <button class="tab-btn" onclick="showView('xray',this)">X-Ray Savings</button>
   <button class="tab-btn" onclick="showView('termed',this)">Terminated</button>
   <button class="tab-btn" onclick="showView('admin',this)">Admin</button>
 </div>
@@ -384,7 +420,7 @@ tr.summary-row-last td { padding-bottom:12px; }
           <div class="sec-title">Office Collections</div>
           <div class="card" id="office-card"></div>
           <div class="sec-title" style="margin-top:24px">X-Ray Savings</div>
-          <div class="card" id="savings-preview"></div>
+          <div id="savings-preview"></div>
         </div>
       </div>
     </div>
@@ -444,6 +480,25 @@ tr.summary-row-last td { padding-bottom:12px; }
         </div>
         <div class="note" style="margin-top:24px">
           Changes trigger a GitHub Actions workflow that updates <code>data/doctors.json</code> and regenerates payroll data.
+        </div>
+
+        <!-- COST ANALYSIS -->
+        <div class="cost-analysis">
+          <div class="sec-title">💰 Doctor Cost Analysis</div>
+          <div class="card" style="overflow-x:auto">
+            <table class="cost-table">
+              <thead><tr>
+                <th>Doctor</th>
+                <th>Type</th>
+                <th class="r">Gross Pay</th>
+                <th class="r">Employer Burden</th>
+                <th class="r">Total Cost</th>
+              </tr></thead>
+              <tbody id="cost-analysis-table"></tbody>
+            </table>
+            <div class="cost-disclaimer" id="cost-disclaimer"></div>
+          </div>
+          <div class="cost-summary-cards" id="cost-summary-cards"></div>
         </div>
       </div>
     </div>
@@ -1164,17 +1219,33 @@ function buildOffices() {
 // ─── SAVINGS PREVIEW ──────────────────────────────────────────────────────
 
 function buildSavingsPreview() {
-  const t = getTotals(PERIODS[currentPeriod]);
+  const p = PERIODS[currentPeriod];
+  const t = getTotals(p);
+  const { doctors } = getDisplayData(p);
+
+  // Build per-doctor savings for mini bars
+  const xDocs = doctors
+    .map(d => ({ name: d.name, saved: (d.payWith||0) - (d.payNo||0) }))
+    .filter(d => d.saved > 0.01)
+    .sort((a,b) => b.saved - a.saved)
+    .slice(0, 5);
+  const maxSaved = xDocs.length ? xDocs[0].saved : 1;
+
+  const bars = xDocs.map(d => `
+    <div class="xc-bar-row">
+      <div class="xc-bar-name">${d.name.replace(/^Dr\.\s*/,'Dr. ')}</div>
+      <div class="xc-bar-wrap"><div class="xc-bar-fill" style="width:${(d.saved/maxSaved*100).toFixed(1)}%"></div></div>
+      <div class="xc-bar-val">$${((d.saved/1000).toFixed(1))}K</div>
+    </div>`).join('');
+
   $('savings-preview').innerHTML = `
-    <div class="savings-hero" style="margin-bottom:16px">
-      <div class="big">$${fmt(t.totalSaved)}</div>
-      <div class="small">Saved this period</div>
-    </div>
-    <div class="savings-split">
-      <div><div class="val dim-val">$${fmt(t.totalPayWith)}</div><div class="lbl">With X-Rays</div></div>
-      <div><div class="val green-val">$${fmt(t.totalPayNo)}</div><div class="lbl">Without X-Rays</div></div>
-    </div>
-    <button class="link-btn" onclick="document.querySelectorAll('.tab-btn')[1].click()">View Full Breakdown &rarr;</button>`;
+    <div class="xray-compact">
+      <div class="xc-header">
+        <span class="xc-title">⚡ X-Ray Savings This Period</span>
+        <span class="xc-amount">$${fmt(t.totalSaved)}</span>
+      </div>
+      ${xDocs.length ? `<div class="xc-bars">${bars}</div>` : '<div style="font-size:12px;color:var(--text3)">No x-ray savings data yet</div>'}
+    </div>`;
 }
 
 // ─── X-RAY FULL ───────────────────────────────────────────────────────────
@@ -1555,6 +1626,118 @@ function buildAdminTables() {
   } catch(e) {
     const el = $('admin-active-table');
     if (el) el.innerHTML = `<tr><td colspan="6" style="color:#FF6B6B;text-align:center;padding:20px">Error: ${e.message}</td></tr>`;
+  }
+  try { buildCostAnalysis(); } catch(e) { console.error('buildCostAnalysis:', e); }
+}
+
+// ─── COST ANALYSIS ───────────────────────────────────────────────────────
+
+function buildCostAnalysis() {
+  const tbody = $('cost-analysis-table');
+  const summaryCards = $('cost-summary-cards');
+  const disclaimer = $('cost-disclaimer');
+  if (!tbody || !summaryCards) return;
+
+  // Get current period doctor pay data
+  const p = PERIODS[currentPeriod];
+  if (!p) return;
+  const { doctors } = getDisplayData(p);
+  const t = getTotals(p);
+
+  // Build lookup by display name from adminDoctors
+  const docInfoMap = {};
+  for (const [, doc] of Object.entries(adminDoctors.doctors || {})) {
+    docInfoMap[doc.display] = doc;
+  }
+
+  // Lugo salary from adminDoctors or fallback to 14681
+  const lugoInfo = docInfoMap['Dr. Lugo'] || {};
+  const lugoSalary = lugoInfo.salary_per_period || 14681;
+  const lugoEmployerBurden = Math.round(lugoSalary * 0.088);
+  const lugoTotalCost = lugoSalary + lugoEmployerBurden;
+
+  let rows = '';
+  let grandGross = 0, grandBurden = 0, grandTotal = 0;
+
+  // Associates and Schrack from payroll data
+  const sorted = [...doctors].sort((a,b) => (b.payNo||0) - (a.payNo||0));
+  sorted.forEach(d => {
+    const info = docInfoMap[d.name] || {};
+    // Skip Lugo — handled separately as salary row
+    if (info.owner || d.name === 'Dr. Lugo') return;
+
+    const isSchrack = d.name === 'Dr. Schrack';
+    const gross = d.payNo || 0;
+    const burden = isSchrack ? 0 : Math.round(gross * 0.088);
+    const total = gross + burden;
+    grandGross  += gross;
+    grandBurden += burden;
+    grandTotal  += total;
+
+    const typeTag = isSchrack
+      ? '<span class="cost-type-1099">1099</span>'
+      : '<span class="cost-type-w2">W-2</span>';
+    const burdenStr = isSchrack
+      ? '<span style="color:var(--text3)">$0</span>'
+      : `$${fmt(burden)} <span style="color:var(--text3);font-size:11px">(8.8%)</span>`;
+
+    rows += `<tr>
+      <td class="bold">${d.name}</td>
+      <td>${typeTag}</td>
+      <td class="r mono">$${fmt(gross)}</td>
+      <td class="r mono">${burdenStr}</td>
+      <td class="r mono bold">$${fmt(total)}</td>
+    </tr>`;
+  });
+
+  // Lugo row (salary)
+  grandGross  += lugoSalary;
+  grandBurden += lugoEmployerBurden;
+  grandTotal  += lugoTotalCost;
+  rows += `<tr>
+    <td class="bold">Dr. Lugo</td>
+    <td><span class="cost-type-sal">Salary</span></td>
+    <td class="r mono">$${fmt(lugoSalary)}</td>
+    <td class="r mono">~$${fmt(lugoEmployerBurden)} <span style="color:var(--text3);font-size:11px">(8.8%)</span></td>
+    <td class="r mono bold">$${fmt(lugoTotalCost)}</td>
+  </tr>`;
+
+  // Total row
+  rows += `<tr class="cost-total-row">
+    <td><strong>TOTAL</strong></td>
+    <td></td>
+    <td class="r mono"><strong>$${fmt(grandGross)}</strong></td>
+    <td class="r mono"><strong>$${fmt(grandBurden)}</strong></td>
+    <td class="r mono"><strong>$${fmt(grandTotal)}</strong></td>
+  </tr>`;
+
+  tbody.innerHTML = rows;
+
+  // Summary cards
+  const totalColl = t.totalColl || 0;
+  const costPct = totalColl > 0 ? (grandTotal / totalColl * 100).toFixed(1) : '—';
+  const remaining = totalColl - grandTotal;
+
+  summaryCards.innerHTML = `
+    <div class="cost-summary-card">
+      <div class="csc-label">Total Collections</div>
+      <div class="csc-val accent-val">$${fmt(totalColl)}</div>
+    </div>
+    <div class="cost-summary-card">
+      <div class="csc-label">Total Doctor Cost</div>
+      <div class="csc-val red-val">$${fmt(grandTotal)}</div>
+    </div>
+    <div class="cost-summary-card">
+      <div class="csc-label">Doctor Cost %</div>
+      <div class="csc-val amber-val">${costPct}%</div>
+    </div>
+    <div class="cost-summary-card">
+      <div class="csc-label">Remaining After Doctors</div>
+      <div class="csc-val green-val">$${fmt(remaining)}</div>
+    </div>`;
+
+  if (disclaimer) {
+    disclaimer.textContent = 'Lugo salary estimated from Paychex 3.13.26 report ($' + lugoSalary.toLocaleString() + '/period). Update salary_per_period in doctors.json to adjust. W-2 burden = 8.8% (SS + Medicare + WA state taxes). Dr. Schrack is 1099 — no employer burden.';
   }
 }
 

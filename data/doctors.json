@@ -86,6 +86,7 @@
       "pct": 0.36,
       "owner": true,
       "pay_basis": "salary",
+      "salary_per_period": 14681,
       "status": "active",
       "rate_history": [
         {"pct": 0.36, "effective": "2025-01-01", "end": null}
