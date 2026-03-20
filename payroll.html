@@ -337,7 +337,7 @@ tr.summary-row-last td { padding-bottom:12px; }
 <div class="nav-tabs">
   <button class="tab-btn active" id="tab-live-btn" onclick="switchToState('live',this)">🟢 Live</button>
   <button class="tab-btn" id="tab-pending-btn" onclick="switchToState('pending',this)">🟡 Pending</button>
-  <button class="tab-btn" id="tab-locked-btn" onclick="switchToState('locked',this)">🔒 Locked</button>
+  <button class="tab-btn" id="tab-locked-btn" onclick="switchToState('locked',this)">📋 Past Payroll</button>
   <button class="tab-btn" onclick="showView('xray',this)">X-Ray Savings</button>
   <button class="tab-btn" onclick="showView('termed',this)">Terminated</button>
   <button class="tab-btn" onclick="showView('admin',this)">Admin</button>
@@ -682,11 +682,17 @@ function getTotals(p) {
 
     $('loading-state').style.display = 'none';
     $('dashboard-content').style.display = 'block';
-    buildPeriodSelector();
-    buildStateTabLabels();
-    buildAll();
+    try { buildPeriodSelector(); } catch(e) { console.error('buildPeriodSelector:', e); }
+    try { buildStateTabLabels(); } catch(e) { console.error('buildStateTabLabels:', e); }
+    try { buildAll(); } catch(e) { 
+      console.error('buildAll error:', e);
+      const errEl = document.createElement('div');
+      errEl.style.cssText = 'padding:20px;color:#ff6b6b;background:#1a1a1a;margin:20px;border-radius:8px;';
+      errEl.textContent = 'Dashboard error: ' + e.message;
+      document.body.prepend(errEl);
+    }
     loadAdminDoctors();
-    updatePatStatus();
+    try { updatePatStatus(); } catch(e) { console.error('updatePatStatus:', e); }
 
   } catch (e) {
     console.error('Failed to load payroll.json:', e);
@@ -973,7 +979,7 @@ function buildBanner() {
       <div class="locked-header">
         <div class="lh-title">
           <span style="font-size:22px">🔒</span>
-          <h2>Locked — Paid ${p.payDate}</h2>
+          <h2>Past Payroll — Paid ${p.payDate}</h2>
         </div>
         <div class="lh-meta">
           Locked${lockedAt ? ' ' + lockedAt : ''}${lockedBy ? ' by <strong>' + lockedBy + '</strong>' : ''}.
@@ -1122,7 +1128,7 @@ function buildDocTable() {
   let badge = '';
   if (state==='live')       badge = '<span class="badge badge-blue">LIVE</span>';
   else if (state==='pending') badge = '<span class="badge badge-amber">PENDING</span>';
-  else                      badge = '<span class="badge badge-green">LOCKED</span>';
+  else                      badge = '<span class="badge badge-green">PAID</span>';
 
   // Summary totals
   const totalDocPay = t.totalPayNo;
@@ -1334,7 +1340,7 @@ function buildKPIs() {
   } else if (state === 'pending') {
     kpis += `<div class="kpi"><div class="kpi-label">Status</div><div class="kpi-value amber-val" style="font-size:20px">🟡 Pending</div><div class="kpi-detail">Awaiting lock</div></div>`;
   } else {
-    kpis += `<div class="kpi"><div class="kpi-label">Status</div><div class="kpi-value green-val" style="font-size:20px">🔒 Locked</div><div class="kpi-detail">${p.hardcoded?'Verified historical':'Paid '+p.payDate}</div></div>`;
+    kpis += `<div class="kpi"><div class="kpi-label">Status</div><div class="kpi-value green-val" style="font-size:20px">📋 Past Payroll</div><div class="kpi-detail">${p.hardcoded?'Verified &amp; Paid':'Paid '+p.payDate}</div></div>`;
   }
 
   $('kpi-row').innerHTML = kpis;
