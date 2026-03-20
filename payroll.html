@@ -592,8 +592,11 @@ const fmtK = n => '$'+((n||0)/1000).toFixed(1)+'K';
 function getPeriodState(p) {
   // 'state' is canonical; fall back to legacy 'status' field
   // 'processing' is the old name for 'pending' — treat them identically
+  // 'complete' is the old name for 'locked'
   const s = p.state || p.status || 'locked';
-  return s === 'processing' ? 'pending' : s;
+  if (s === 'processing') return 'pending';
+  if (s === 'complete') return 'locked';
+  return s;
 }
 
 /**

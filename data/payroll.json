@@ -572,7 +572,7 @@
       "period_start": "2026-02-21",
       "period_end": "2026-03-06",
       "pay_date_iso": "2026-03-13",
-      "status": "processing",
+      "status": "complete",
       "daysElapsed": 14,
       "daysTotal": 14,
       "doctors": [
