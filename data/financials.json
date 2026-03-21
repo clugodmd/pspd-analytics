@@ -1,16 +1,16 @@
 {
-  "last_updated": "2026-03-20T11:42:38.009042Z",
+  "last_updated": "2026-03-21T11:21:36.046264Z",
   "realm_id": "9130355740232106",
   "current_year": 2026,
   "prior_year": 2025,
   "ytd": {
     "current": {
       "totalIncome": 162663.88,
-      "totalExpenses": 1792917.0899999999,
+      "totalExpenses": 1793677.09,
       "costOfGoods": 0,
-      "operatingExpenses": 1722994.26,
-      "otherExpenses": 69922.82999999999,
-      "netIncome": 216563.84
+      "operatingExpenses": 1723419.09,
+      "otherExpenses": 70258.0,
+      "netIncome": 219438.01
     },
     "prior": {
       "totalIncome": 776220.8099999999,
@@ -7290,11 +7290,11 @@
       "endDate": "2026-03-31",
       "pnl": {
         "totalIncome": 111887.43,
-        "totalExpenses": 369883.61,
-        "netIncome": 178650.5,
+        "totalExpenses": 370643.61000000004,
+        "netIncome": 181524.67,
         "costOfGoods": 0,
-        "operatingExpenses": 345036.51,
-        "otherExpenses": 24847.1,
+        "operatingExpenses": 345461.34,
+        "otherExpenses": 25182.27,
         "expenseBreakdown": [
           {
             "name": "6760 Associate  Wages",
@@ -7346,7 +7346,7 @@
           },
           {
             "name": "7000 Suspense",
-            "amount": 2098.62
+            "amount": 2433.79
           },
           {
             "name": "6755 Payroll Service Fees",
@@ -7376,14 +7376,14 @@
         "lineItems": [
           {
             "name": "4020 Patient Fees Credit Cards",
-            "amount": 34631.9,
+            "amount": 36494.42,
             "section": "4000 Patient Fees",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "4050 Patient Fees Insurances",
-            "amount": 402226.98,
+            "amount": 404376.63,
             "section": "4000 Patient Fees",
             "isTotal": false,
             "depth": 1
@@ -7397,28 +7397,28 @@
           },
           {
             "name": "Total 4000 Patient Fees",
-            "amount": 437179.68,
+            "amount": 441191.85,
             "section": "Income",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "4500 Patient Refunds",
-            "amount": -533.0,
+            "amount": -911.0,
             "section": "Income",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "Total Income",
-            "amount": 436646.68,
+            "amount": 440280.85,
             "section": "",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "Gross Profit",
-            "amount": 436646.68,
+            "amount": 440280.85,
             "section": "",
             "isTotal": true,
             "depth": 0
@@ -7523,14 +7523,14 @@
           },
           {
             "name": "6320 Dues & Subscriptions",
-            "amount": 8061.19,
+            "amount": 8210.43,
             "section": "6600 Office Supplies",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "6610 General Office Supplies",
-            "amount": 3968.63,
+            "amount": 4148.74,
             "section": "6600 Office Supplies",
             "isTotal": false,
             "depth": 1
@@ -7558,14 +7558,14 @@
           },
           {
             "name": "6880 Telephone Expense",
-            "amount": 288.33,
+            "amount": 383.81,
             "section": "6600 Office Supplies",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "Total 6600 Office Supplies",
-            "amount": 52411.91,
+            "amount": 52836.74,
             "section": "Expenses",
             "isTotal": true,
             "depth": 0
@@ -7677,14 +7677,14 @@
           },
           {
             "name": "Total Expenses",
-            "amount": 345036.51,
+            "amount": 345461.34,
             "section": "",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "Net Operating Income",
-            "amount": 91610.17,
+            "amount": 94819.51,
             "section": "",
             "isTotal": true,
             "depth": 0
@@ -7726,28 +7726,28 @@
           },
           {
             "name": "7000 Suspense",
-            "amount": 2098.62,
+            "amount": 2433.79,
             "section": "Other Expenses",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "Total Other Expenses",
-            "amount": 24847.1,
+            "amount": 25182.27,
             "section": "",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "Net Other Income",
-            "amount": 87040.33,
+            "amount": 86705.16,
             "section": "",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "Net Income",
-            "amount": 178650.5,
+            "amount": 181524.67,
             "section": "",
             "isTotal": true,
             "depth": 0
@@ -7758,42 +7758,42 @@
         "lineItems": [
           {
             "name": "1000 PSPD Monroe  x4979- Timberland 4979",
-            "amount": 5086.35,
+            "amount": -16814.64,
             "section": "Bank Accounts",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "1001 Lake Stevens x4953- Timberland",
-            "amount": 3591.0,
+            "amount": -17583.14,
             "section": "Bank Accounts",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "1002 PSPD Everett x4944 - Timberland",
-            "amount": 4000.0,
+            "amount": -77.44,
             "section": "Bank Accounts",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "1003 PSPD Marysville x4961 - Timberland",
-            "amount": 5000.0,
+            "amount": -14970.82,
             "section": "Bank Accounts",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "1004 PSPD Stanwood 4987- Timberland",
-            "amount": 4313.0,
+            "amount": -13066.67,
             "section": "Bank Accounts",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "1005 Scorp Mgmt - x0104 Timberland",
-            "amount": 30000.0,
+            "amount": 113137.23,
             "section": "Bank Accounts",
             "isTotal": false,
             "depth": 1
@@ -7842,7 +7842,7 @@
           },
           {
             "name": "1120 PSPD Mgmt x5931 - Timberland",
-            "amount": 115000.0,
+            "amount": 120000.0,
             "section": "Bank Accounts",
             "isTotal": false,
             "depth": 1
@@ -7856,7 +7856,7 @@
           },
           {
             "name": "Total Bank Accounts",
-            "amount": 152463.35,
+            "amount": 156097.52,
             "section": "Current Assets",
             "isTotal": true,
             "depth": 0
@@ -7898,7 +7898,7 @@
           },
           {
             "name": "Total Current Assets",
-            "amount": 152463.35,
+            "amount": 156097.52,
             "section": "ASSETS",
             "isTotal": true,
             "depth": 0
@@ -8066,7 +8066,7 @@
           },
           {
             "name": "TOTAL ASSETS",
-            "amount": 2820704.46,
+            "amount": 2824338.63,
             "section": "",
             "isTotal": true,
             "depth": 0
@@ -8087,7 +8087,7 @@
           },
           {
             "name": "2100 Chase x1527 C. LUGO (1527) - 5",
-            "amount": 41394.63,
+            "amount": 41729.8,
             "section": "Credit Cards",
             "isTotal": false,
             "depth": 1
@@ -8101,7 +8101,7 @@
           },
           {
             "name": "2115 Chase x2457",
-            "amount": 7602.96,
+            "amount": 8027.79,
             "section": "Credit Cards",
             "isTotal": false,
             "depth": 1
@@ -8157,7 +8157,7 @@
           },
           {
             "name": "Total Credit Cards",
-            "amount": 89201.63,
+            "amount": 89961.63,
             "section": "Current Liabilities",
             "isTotal": true,
             "depth": 0
@@ -8318,7 +8318,7 @@
           },
           {
             "name": "Total Current Liabilities",
-            "amount": 126698.01,
+            "amount": 127458.01,
             "section": "Liabilities",
             "isTotal": true,
             "depth": 0
@@ -8486,7 +8486,7 @@
           },
           {
             "name": "Total Liabilities",
-            "amount": 5459265.63,
+            "amount": 5460025.63,
             "section": "LIABILITIES AND EQUITY",
             "isTotal": true,
             "depth": 0
@@ -8647,21 +8647,21 @@
           },
           {
             "name": "Net Income",
-            "amount": 216563.84,
+            "amount": 219438.01,
             "section": "Equity",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "Total Equity",
-            "amount": -2638561.17,
+            "amount": -2635687.0,
             "section": "LIABILITIES AND EQUITY",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "TOTAL LIABILITIES AND EQUITY",
-            "amount": 2820704.46,
+            "amount": 2824338.63,
             "section": "",
             "isTotal": true,
             "depth": 0
@@ -8673,7 +8673,7 @@
         "lineItems": [
           {
             "name": "Net Income",
-            "amount": 190965.72,
+            "amount": 193839.89,
             "section": "OPERATING ACTIVITIES",
             "isTotal": false,
             "depth": 1
@@ -8687,14 +8687,14 @@
           },
           {
             "name": "2100 Chase x1527 C. LUGO (1527) - 5",
-            "amount": -13706.64,
+            "amount": -13371.47,
             "section": "Adjustments to reconcile Net Income to Net Cash provided by operations:",
             "isTotal": false,
             "depth": 1
           },
           {
             "name": "2115 Chase x2457",
-            "amount": -11852.26,
+            "amount": -11427.43,
             "section": "Adjustments to reconcile Net Income to Net Cash provided by operations:",
             "isTotal": false,
             "depth": 1
@@ -8750,14 +8750,14 @@
           },
           {
             "name": "Total Adjustments to reconcile Net Income to Net Cash provided by operations:",
-            "amount": -83777.91,
+            "amount": -83017.91,
             "section": "OPERATING ACTIVITIES",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "Net cash provided by operating activities",
-            "amount": 107187.81,
+            "amount": 110821.98,
             "section": "",
             "isTotal": true,
             "depth": 0
@@ -8841,14 +8841,14 @@
           },
           {
             "name": "Net cash increase for period",
-            "amount": 65851.58,
+            "amount": 69485.75,
             "section": "",
             "isTotal": true,
             "depth": 0
           },
           {
             "name": "Cash at end of period",
-            "amount": 152463.35,
+            "amount": 156097.52,
             "section": "",
             "isTotal": true,
             "depth": 0
