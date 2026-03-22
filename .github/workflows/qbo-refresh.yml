@@ -27,8 +27,6 @@ jobs:
           QBO_CLIENT_SECRET: ${{ secrets.QBO_CLIENT_SECRET }}
           QBO_REFRESH_TOKEN: ${{ secrets.QBO_REFRESH_TOKEN }}
           QBO_REALM_ID: ${{ secrets.QBO_REALM_ID }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           python scripts/qbo_refresh.py
 

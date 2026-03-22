@@ -28,8 +28,24 @@ from calendar import monthrange
 # ── Configuration ──────────────────────────────────────────────────────────────
 CLIENT_ID     = os.environ.get("QBO_CLIENT_ID", "")
 CLIENT_SECRET = os.environ.get("QBO_CLIENT_SECRET", "")
-REFRESH_TOKEN = os.environ.get("QBO_REFRESH_TOKEN", "")
 REALM_ID      = os.environ.get("QBO_REALM_ID", "")
+
+# Token file for auto-rotation
+TOKEN_FILE    = "data/qbo_token.json"
+
+# Try to load refresh token from file first, fall back to env var
+def load_refresh_token():
+    """Load refresh token from file or environment."""
+    if os.path.exists(TOKEN_FILE):
+        try:
+            with open(TOKEN_FILE) as f:
+                data = json.load(f)
+                return data.get("refresh_token", os.environ.get("QBO_REFRESH_TOKEN", ""))
+        except:
+            pass
+    return os.environ.get("QBO_REFRESH_TOKEN", "")
+
+REFRESH_TOKEN = load_refresh_token()
 
 TOKEN_URL     = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
 BASE_URL      = f"https://quickbooks.api.intuit.com/v3/company/{REALM_ID}"
@@ -62,9 +78,12 @@ def get_access_token():
     new_refresh = tokens.get("refresh_token", REFRESH_TOKEN)
     access_token = tokens["access_token"]
 
-    # If running in GitHub Actions, update the refresh token secret
-    if new_refresh != REFRESH_TOKEN and os.environ.get("GITHUB_TOKEN"):
-        update_github_secret("QBO_REFRESH_TOKEN", new_refresh)
+    # Save new refresh token to file for next run
+    if new_refresh != REFRESH_TOKEN:
+        os.makedirs("data", exist_ok=True)
+        with open(TOKEN_FILE, "w") as f:
+            json.dump({"refresh_token": new_refresh, "saved_at": datetime.utcnow().isoformat()}, f)
+        print(f"✓ Saved new refresh token to {TOKEN_FILE}")
 
     print(f"✓ Got access token (expires in {tokens.get('expires_in', '?')}s)")
     return access_token
